@@ -72,6 +72,7 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .game-link { flex: 1; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; min-width: 0; }
 .game-link span, .game-link small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .game-link small { color: var(--muted); }
+.history-search { width: 100%; margin: 14px 0 4px; }
 .close-button { width: 28px; height: 28px; padding: 0; border-radius: 6px; background: transparent; color: var(--muted); }
 .close-button:hover { background: var(--panel-2); color: var(--ink); }
 .table-row { display: grid; grid-template-columns: 1fr auto auto auto; }
