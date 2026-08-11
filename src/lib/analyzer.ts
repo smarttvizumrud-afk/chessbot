@@ -3,20 +3,20 @@ import { getMovesWithFens, phaseForPly } from './pgn';
 import { StockfishClient } from './stockfish';
 import type { GameAnalysis, ImportedGame, MoveReport, PlayerColor } from './types';
 
-const MAX_ANALYZED_PLAYER_MOVES = 18;
+const MAX_ANALYZED_PLIES = 36;
 
 export async function analyzeGame(game: ImportedGame, engine: StockfishClient): Promise<GameAnalysis> {
   const moves = getMovesWithFens(game.pgn);
   const playerParity = game.color === 'white' ? 1 : 0;
-  const playerMoves = moves.filter((move) => move.ply % 2 === playerParity);
-  const sampled = playerMoves.slice(0, MAX_ANALYZED_PLAYER_MOVES);
+  const sampled = moves.slice(0, MAX_ANALYZED_PLIES);
   const reports: MoveReport[] = [];
 
   for (const move of sampled) {
     const before = await engine.evaluate(move.fenBefore);
     const afterFen = fenAfterPlayedMove(move.fenBefore, move.san);
     const after = await engine.evaluate(afterFen);
-    const report = toMoveReport(move, before, after.score, game.color);
+    const side = move.ply % 2 === playerParity ? 'player' : 'opponent';
+    const report = toMoveReport(move, before, after.score, side);
     reports.push(report);
   }
 
@@ -33,9 +33,10 @@ function toMoveReport(
   move: { san: string; fenBefore: string; ply: number; moveNumber: number },
   best: { bestMove: string; score: number },
   playedScore: number,
-  color: PlayerColor,
+  side: MoveReport['side'],
 ): MoveReport {
-  const perspective = color === 'white' ? 1 : -1;
+  const moveColor: PlayerColor = move.ply % 2 === 1 ? 'white' : 'black';
+  const perspective = moveColor === 'white' ? 1 : -1;
   const bestEval = best.score * perspective;
   const playedEval = -playedScore * perspective;
   const loss = Math.max(0, bestEval - playedEval);
@@ -47,6 +48,7 @@ function toMoveReport(
     ply: move.ply,
     moveNumber: move.moveNumber,
     san: move.san,
+    side,
     fenBefore: move.fenBefore,
     playedEval,
     bestMove: best.bestMove,
@@ -81,11 +83,12 @@ function explain(label: MoveReport['label'], theme: string, loss: number, bestMo
 }
 
 function summarizeReports(reports: MoveReport[], game: ImportedGame): GameAnalysis {
-  const critical = reports.filter((report) => report.label !== 'good');
+  const playerReports = reports.filter((report) => report.side === 'player');
+  const critical = playerReports.filter((report) => report.label !== 'good');
   const inaccuracies = critical.filter((report) => report.label === 'inaccuracy').length;
   const mistakes = critical.filter((report) => report.label === 'mistake').length;
   const blunders = critical.filter((report) => report.label === 'blunder').length;
-  const averageLoss = reports.reduce((sum, report) => sum + report.loss, 0) / Math.max(reports.length, 1);
+  const averageLoss = playerReports.reduce((sum, report) => sum + report.loss, 0) / Math.max(playerReports.length, 1);
   const weakSpots = topValues(critical.map((report) => report.theme));
   const accuracy = Math.max(0, Math.round(100 - averageLoss / 8));
 

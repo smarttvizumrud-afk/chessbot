@@ -20,6 +20,7 @@ export type MoveReport = {
   ply: number;
   moveNumber: number;
   san: string;
+  side: 'player' | 'opponent';
   fenBefore: string;
   playedEval: number;
   bestMove: string;

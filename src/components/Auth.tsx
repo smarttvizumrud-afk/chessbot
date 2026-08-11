@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { SupabaseSetupMessage } from './SupabaseSetupMessage';
-import { enableDemoMode } from '../lib/storage';
+import { enableDemoMode } from '../lib/demoStorage';
 
 export function Auth() {
   const [email, setEmail] = useState('');

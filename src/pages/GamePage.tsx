@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { AuthGate } from '../components/AuthGate';
 import { fenAfterPly, getMovesWithFens } from '../lib/pgn';
-import type { Lang } from '../lib/types';
+import type { Lang, MoveReport, PlayerColor } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
 
 export function GamePage({ id, lang }: { id: string; lang: Lang }) {
@@ -55,14 +55,26 @@ function GameContent({ id, lang }: { id: string; lang: Lang }) {
             </button>
           ))}
         </div>
-        {report && (
-          <article className="critical">
-            <b>{report.label}: {report.theme}</b>
-            <p>Your move: {report.san}. Stockfish best: {report.bestMove}.</p>
-            <p>Eval changed by {Math.round(report.loss)} cp. {report.explanation}</p>
-          </article>
-        )}
+        {report && <MoveComment report={report} playerColor={game.color} />}
       </section>
     </div>
   );
+}
+
+function MoveComment({ report, playerColor }: { report: MoveReport; playerColor: PlayerColor }) {
+  const side = report.side ?? sideFromPly(report.ply, playerColor);
+  const label = side === 'player' ? 'Your move' : 'Opponent move';
+
+  return (
+    <article className="critical">
+      <b>{label}: {report.label} · {report.theme}</b>
+      <p>Move: {report.san}. Stockfish best: {report.bestMove}.</p>
+      <p>Eval changed by {Math.round(report.loss)} cp. {report.explanation}</p>
+    </article>
+  );
+}
+
+function sideFromPly(ply: number, playerColor: PlayerColor) {
+  const playerParity = playerColor === 'white' ? 1 : 0;
+  return ply % 2 === playerParity ? 'player' : 'opponent';
 }
