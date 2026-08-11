@@ -14,7 +14,7 @@ export function GameList({ games, analyses }: Props) {
           const analysis = byGame.get(game.id);
           return (
             <Link href={`/game/${game.id}`} className="game-row" key={game.id}>
-              <span>{game.color === 'white' ? 'White' : 'Black'} vs {game.opponent}</span>
+              <span>{game.username} vs {game.opponent}</span>
               <b>{analysis ? `${analysis.accuracy}%` : 'new'}</b>
             </Link>
           );
