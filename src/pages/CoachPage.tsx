@@ -29,7 +29,9 @@ function CoachContent({ lang }: { lang: Lang }) {
     setQuestion('');
     setBusy(true);
     const answer = await askCoach(text, lang, games, analyses, nextMessages);
-    setMessages([...nextMessages, { role: 'assistant', text: answer }]);
+    const assistantMessages = messages.filter((message) => message.role === 'assistant');
+    const lastAnswer = assistantMessages[assistantMessages.length - 1]?.text;
+    setMessages(lastAnswer === answer ? nextMessages : [...nextMessages, { role: 'assistant', text: answer }]);
     setBusy(false);
   }
 
