@@ -26,6 +26,7 @@ type GameRow = {
 type AnalysisRow = {
   id: string;
   game_id: string;
+  created_at: string;
   accuracy: number;
   inaccuracies: number;
   mistakes: number;
@@ -121,6 +122,7 @@ function mapAnalysisRow(row: AnalysisRow): StoredAnalysis {
   return {
     id: row.id,
     gameId: row.game_id,
+    createdAt: row.created_at,
     accuracy: Number(row.accuracy),
     inaccuracies: row.inaccuracies,
     mistakes: row.mistakes,

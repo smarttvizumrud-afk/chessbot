@@ -17,7 +17,10 @@ export function loadDemoGames() {
 }
 
 export function loadDemoAnalyses() {
-  return readLocal<StoredAnalysis>(demoAnalysesKey);
+  return readLocal<StoredAnalysis>(demoAnalysesKey).map((analysis) => ({
+    ...analysis,
+    createdAt: analysis.createdAt ?? new Date().toISOString(),
+  }));
 }
 
 export function saveDemoGame(game: ImportedGame) {
@@ -33,7 +36,12 @@ export function saveDemoGame(game: ImportedGame) {
 
 export function saveDemoAnalysis(gameId: string, analysis: GameAnalysis) {
   const analyses = loadDemoAnalyses();
-  const stored: StoredAnalysis = { ...analysis, id: crypto.randomUUID(), gameId };
+  const stored: StoredAnalysis = {
+    ...analysis,
+    id: crypto.randomUUID(),
+    gameId,
+    createdAt: new Date().toISOString(),
+  };
   const next = analyses.filter((item) => item.gameId !== gameId);
   writeLocal(demoAnalysesKey, [stored, ...next]);
   return stored;

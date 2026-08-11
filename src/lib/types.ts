@@ -44,4 +44,4 @@ export type GameAnalysis = {
 };
 
 export type StoredGame = ImportedGame & { id: string };
-export type StoredAnalysis = GameAnalysis & { id: string; gameId: string };
+export type StoredAnalysis = GameAnalysis & { id: string; gameId: string; createdAt: string };

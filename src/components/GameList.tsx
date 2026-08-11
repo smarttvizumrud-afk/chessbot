@@ -1,26 +1,53 @@
 import { Link } from 'wouter';
+import { closeAnalysis, loadClosedAnalyses } from '../lib/closedAnalyses';
 import { t } from '../lib/i18n';
 import type { Lang, StoredAnalysis, StoredGame } from '../lib/types';
 
-type Props = { games: StoredGame[]; analyses: StoredAnalysis[]; lang: Lang };
+type Props = {
+  games: StoredGame[];
+  analyses: StoredAnalysis[];
+  lang: Lang;
+  onClose: () => void;
+};
 
-export function GameList({ games, analyses, lang }: Props) {
+export function GameList({ games, analyses, lang, onClose }: Props) {
   const byGame = new Map(analyses.map((analysis) => [analysis.gameId, analysis]));
+  const closed = new Set(loadClosedAnalyses());
+  const visibleGames = games.filter((game) => !closed.has(byGame.get(game.id)?.id ?? ''));
 
   return (
     <section className="panel">
       <h2>{t(lang, 'recentGames')}</h2>
       <div className="game-list">
-        {games.slice(0, 8).map((game) => {
+        {visibleGames.slice(0, 8).map((game) => {
           const analysis = byGame.get(game.id);
           return (
-            <Link href={`/game/${game.id}`} className="game-row" key={game.id}>
-              <span>{game.username} {t(lang, 'versus')} {game.opponent}</span>
-              <b>{analysis ? `${analysis.accuracy}%` : t(lang, 'newGame')}</b>
-            </Link>
+            <div className="game-row" key={game.id}>
+              <Link href={`/game/${game.id}`} className="game-link">
+                <span>{game.username} {t(lang, 'versus')} {game.opponent}</span>
+                <b>{analysis ? `${analysis.accuracy}%` : t(lang, 'newGame')}</b>
+              </Link>
+              {analysis && <CloseButton id={analysis.id} lang={lang} onClose={onClose} />}
+            </div>
           );
         })}
       </div>
     </section>
+  );
+}
+
+export function CloseButton({ id, lang, onClose }: { id: string; lang: Lang; onClose: () => void }) {
+  return (
+    <button
+      className="close-button"
+      type="button"
+      aria-label={t(lang, 'closeAnalysis')}
+      onClick={() => {
+        closeAnalysis(id);
+        onClose();
+      }}
+    >
+      x
+    </button>
   );
 }

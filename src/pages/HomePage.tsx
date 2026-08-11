@@ -2,10 +2,12 @@ import { AuthGate } from '../components/AuthGate';
 import { ConnectPanel } from '../components/ConnectPanel';
 import { GameList } from '../components/GameList';
 import { StatGrid } from '../components/StatGrid';
+import { WeeklyHistory } from '../components/WeeklyHistory';
 import { combinedPlan, dashboardStats } from '../lib/insights';
 import { localizeInsight, t } from '../lib/i18n';
 import type { Lang } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
+import { useState } from 'react';
 
 export function HomePage({ lang }: { lang: Lang }) {
   return (
@@ -17,8 +19,10 @@ export function HomePage({ lang }: { lang: Lang }) {
 
 function Dashboard({ lang }: { lang: Lang }) {
   const { games, analyses, loading, error, refresh } = useChessData();
+  const [, setClosedVersion] = useState(0);
   const stats = dashboardStats(games, analyses);
   const plan = combinedPlan(analyses);
+  const refreshClosed = () => setClosedVersion((version) => version + 1);
 
   return (
     <div className="page-grid">
@@ -46,7 +50,8 @@ function Dashboard({ lang }: { lang: Lang }) {
           ))}
         </ul>
       </section>
-      <GameList games={games} analyses={analyses} lang={lang} />
+      <GameList games={games} analyses={analyses} lang={lang} onClose={refreshClosed} />
+      <WeeklyHistory games={games} analyses={analyses} lang={lang} onClose={refreshClosed} />
     </div>
   );
 }
