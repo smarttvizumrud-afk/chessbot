@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { AuthGate } from '../components/AuthGate';
+import { labelText, localizeInsight, t } from '../lib/i18n';
 import { fenAfterPly, getMovesWithFens } from '../lib/pgn';
 import type { Lang, MoveReport, PlayerColor } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
 
 export function GamePage({ id, lang }: { id: string; lang: Lang }) {
   return (
-    <AuthGate>
+    <AuthGate lang={lang}>
       <GameContent id={id} lang={lang} />
     </AuthGate>
   );
@@ -21,24 +22,22 @@ function GameContent({ id, lang }: { id: string; lang: Lang }) {
   const report = analysis?.moveReports.find((item) => item.ply === ply);
   const totalPly = useMemo(() => game ? getMovesWithFens(game.pgn).length : 0, [game]);
   const fen = useMemo(() => game ? fenAfterPly(game.pgn, ply) : '', [game, ply]);
-  const title = lang === 'en' ? 'Game analysis' : lang === 'kk' ? 'Партия талдауы' : 'Анализ партии';
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
       event.preventDefault();
-      setPly((currentPly) => {
-        if (event.key === 'ArrowLeft') return Math.max(currentPly - 1, 0);
-        return Math.min(currentPly + 1, totalPly);
-      });
+      setPly((currentPly) => event.key === 'ArrowLeft'
+        ? Math.max(currentPly - 1, 0)
+        : Math.min(currentPly + 1, totalPly));
     }
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [totalPly]);
 
-  if (loading) return <section className="panel">Loading...</section>;
-  if (!game || !analysis || !fen) return <section className="panel">Game analysis not found.</section>;
+  if (loading) return <section className="panel">{t(lang, 'loading')}</section>;
+  if (!game || !analysis || !fen) return <section className="panel">{t(lang, 'notFound')}</section>;
 
   return (
     <div className="analysis-layout">
@@ -46,8 +45,8 @@ function GameContent({ id, lang }: { id: string; lang: Lang }) {
         <Chessboard position={fen} boardWidth={Math.min(window.innerWidth - 40, 520)} />
       </section>
       <section className="panel">
-        <h1>{title}</h1>
-        <p>{game.username} vs {game.opponent} · {analysis.accuracy}% accuracy</p>
+        <h1>{t(lang, 'gameAnalysis')}</h1>
+        <p>{game.username} {t(lang, 'versus')} {game.opponent} · {analysis.accuracy}% {t(lang, 'accuracy').toLowerCase()}</p>
         <div className="moves">
           {analysis.moveReports.map((item) => (
             <button className={item.label} key={item.ply} onClick={() => setPly(item.ply)}>
@@ -55,23 +54,40 @@ function GameContent({ id, lang }: { id: string; lang: Lang }) {
             </button>
           ))}
         </div>
-        {report && <MoveComment report={report} playerColor={game.color} />}
+        {report && <MoveComment report={report} playerColor={game.color} lang={lang} />}
       </section>
     </div>
   );
 }
 
-function MoveComment({ report, playerColor }: { report: MoveReport; playerColor: PlayerColor }) {
+function MoveComment({ report, playerColor, lang }: {
+  report: MoveReport;
+  playerColor: PlayerColor;
+  lang: Lang;
+}) {
   const side = report.side ?? sideFromPly(report.ply, playerColor);
-  const label = side === 'player' ? 'Your move' : 'Opponent move';
+  const sideLabel = side === 'player' ? t(lang, 'yourMove') : t(lang, 'opponentMove');
+  const theme = localizeInsight(report.theme, lang);
 
   return (
     <article className="critical">
-      <b>{label}: {report.label} · {report.theme}</b>
-      <p>Move: {report.san}. Stockfish best: {report.bestMove}.</p>
-      <p>Eval changed by {Math.round(report.loss)} cp. {report.explanation}</p>
+      <b>{sideLabel}: {labelText(lang, report.label)} · {theme}</b>
+      <p>{t(lang, 'move')}: {report.san}. {t(lang, 'best')}: {report.bestMove}.</p>
+      <p>{t(lang, 'evalChanged')} {Math.round(report.loss)} {t(lang, 'centipawns')}. {explainReport(report, lang)}</p>
     </article>
   );
+}
+
+function explainReport(report: MoveReport, lang: Lang) {
+  if (report.label === 'good') {
+    if (lang === 'en') return 'The move stayed close to the engine recommendation.';
+    if (lang === 'kk') return 'Бұл жүріс қозғалтқыш ұсынған нұсқаға жақын болды.';
+    return 'Этот ход был близок к рекомендации движка.';
+  }
+  const theme = localizeInsight(report.theme, lang);
+  if (lang === 'en') return `The main theme is ${theme}; look for forcing moves before committing.`;
+  if (lang === 'kk') return `Негізгі тақырып: ${theme}; жүріс жасамас бұрын мәжбүрлейтін нұсқаларды тексер.`;
+  return `Главная тема: ${theme}; перед ходом проверь форсированные варианты.`;
 }
 
 function sideFromPly(ply: number, playerColor: PlayerColor) {

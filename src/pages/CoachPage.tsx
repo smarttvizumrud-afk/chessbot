@@ -7,7 +7,7 @@ import { useChessData } from '../lib/useChessData';
 
 export function CoachPage({ lang }: { lang: Lang }) {
   return (
-    <AuthGate>
+    <AuthGate lang={lang}>
       <CoachContent lang={lang} />
     </AuthGate>
   );

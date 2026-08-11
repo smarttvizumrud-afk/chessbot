@@ -1,82 +1,110 @@
-import type { Lang } from './types';
+import { dictionaries } from './i18nDictionaries';
+import type { Lang, MoveReport } from './types';
 
-type Dict = Record<string, string>;
+const insightKeys = [
+  'tactical vision',
+  'opening plans',
+  'endgame technique',
+  'calculation discipline',
+  'forcing moves',
+  'tactical contact',
+  'clean play',
+] as const;
 
-const dictionaries: Record<Lang, Dict> = {
-  ru: {
-    app: 'AI-тренер по шахматам',
-    connect: 'Подключить игрока',
-    dashboard: 'Dashboard',
-    openings: 'Дебюты',
-    game: 'Партия',
-    coach: 'AI-тренер',
-    username: 'Имя игрока',
-    platform: 'Платформа',
-    import: 'Загрузить и анализировать',
-    range: 'Диапазон',
-    custom: 'Свой период',
-    week: 'Неделя',
-    month: 'Месяц',
-    quarter: '3 месяца',
-    last10: '10 партий',
-    last25: '25 партий',
-    last50: '50 партий',
-    last100: '100 партий',
-    improve: 'Что мне улучшить',
-    ask: 'Задать вопрос тренеру',
-    send: 'Спросить',
-    noData: 'Подключи игрока и запусти анализ.',
-  },
-  en: {
-    app: 'AI Chess Coach',
-    connect: 'Connect player',
-    dashboard: 'Dashboard',
-    openings: 'Openings',
-    game: 'Game',
-    coach: 'AI coach',
-    username: 'Username',
-    platform: 'Platform',
-    import: 'Load and analyse',
-    range: 'Range',
-    custom: 'Custom dates',
-    week: 'Week',
-    month: 'Month',
-    quarter: '3 months',
-    last10: '10 games',
-    last25: '25 games',
-    last50: '50 games',
-    last100: '100 games',
-    improve: 'What to improve',
-    ask: 'Ask your coach',
-    send: 'Ask',
-    noData: 'Connect a player and run analysis.',
-  },
-  kk: {
-    app: 'AI шахмат жаттықтырушысы',
-    connect: 'Ойыншыны қосу',
-    dashboard: 'Dashboard',
-    openings: 'Дебюттер',
-    game: 'Партия',
-    coach: 'AI-жаттықтырушы',
-    username: 'Ойыншы аты',
-    platform: 'Платформа',
-    import: 'Жүктеу және талдау',
-    range: 'Аралық',
-    custom: 'Өз кезеңім',
-    week: 'Апта',
-    month: 'Ай',
-    quarter: '3 ай',
-    last10: '10 партия',
-    last25: '25 партия',
-    last50: '50 партия',
-    last100: '100 партия',
-    improve: 'Нені жақсарту керек',
-    ask: 'Жаттықтырушыға сұрақ',
-    send: 'Сұрау',
-    noData: 'Ойыншыны қосып, талдауды баста.',
-  },
-};
+type InsightKey = typeof insightKeys[number];
 
 export function t(lang: Lang, key: string) {
   return dictionaries[lang][key] ?? key;
+}
+
+export function labelText(lang: Lang, label: MoveReport['label']) {
+  const values: Record<Lang, Record<MoveReport['label'], string>> = {
+    ru: { good: 'хорошо', inaccuracy: 'неточность', mistake: 'ошибка', blunder: 'зевок' },
+    en: { good: 'good', inaccuracy: 'inaccuracy', mistake: 'mistake', blunder: 'blunder' },
+    kk: { good: 'жақсы', inaccuracy: 'дәлсіздік', mistake: 'қате', blunder: 'өрескел қате' },
+  };
+  return values[lang][label];
+}
+
+export function localizeInsight(value: string, lang: Lang): string {
+  if (lang === 'en') return value;
+  const text = value.replace(/\.$/, '');
+  const map = insightMap(lang);
+  if (isInsightKey(text)) return map[text];
+  const plan = localizeTrainingPlan(text, lang);
+  if (plan) return plan;
+  return insightKeys.reduce((result, key) => result.replace(key, map[key]), text);
+}
+
+export function openingRecommendationText(
+  lang: Lang,
+  opening: string,
+  accuracy: number,
+  errors: number,
+) {
+  if (lang === 'en') return englishOpeningRecommendation(opening, accuracy, errors);
+  if (lang === 'kk') return kazakhOpeningRecommendation(opening, accuracy, errors);
+  return russianOpeningRecommendation(opening, accuracy, errors);
+}
+
+function englishOpeningRecommendation(opening: string, accuracy: number, errors: number) {
+  if (errors >= 3) return `Review the first critical moment in ${opening}.`;
+  if (accuracy && accuracy < 75) return `Learn two model games in ${opening}.`;
+  return `Keep ${opening} as a stable part of the repertoire.`;
+}
+
+function russianOpeningRecommendation(opening: string, accuracy: number, errors: number) {
+  if (errors >= 3) return `Пересмотри первый критический момент в дебюте ${opening}.`;
+  if (accuracy && accuracy < 75) return `Изучи две модельные партии в дебюте ${opening}.`;
+  return `Оставь ${opening} как стабильную часть репертуара.`;
+}
+
+function kazakhOpeningRecommendation(opening: string, accuracy: number, errors: number) {
+  if (errors >= 3) return `${opening} дебютіндегі алғашқы маңызды сәтті қайта қара.`;
+  if (accuracy && accuracy < 75) return `${opening} бойынша екі үлгі партияны үйрен.`;
+  return `${opening} дебютін репертуардағы тұрақты қару ретінде сақта.`;
+}
+
+function insightMap(lang: Lang): Record<InsightKey, string> {
+  if (lang === 'kk') {
+    return {
+      'tactical vision': 'тактикалық көру',
+      'opening plans': 'дебют жоспарлары',
+      'endgame technique': 'эндшпиль техникасы',
+      'calculation discipline': 'есептеу тәртібі',
+      'forcing moves': 'мәжбүрлейтін жүрістер',
+      'tactical contact': 'тактикалық байланыс',
+      'clean play': 'таза ойын',
+    };
+  }
+  return {
+    'tactical vision': 'тактическое зрение',
+    'opening plans': 'планы в дебюте',
+    'endgame technique': 'техника эндшпиля',
+    'calculation discipline': 'дисциплина расчёта',
+    'forcing moves': 'форсированные ходы',
+    'tactical contact': 'тактический контакт',
+    'clean play': 'аккуратная игра',
+  };
+}
+
+function localizeTrainingPlan(text: string, lang: Lang): string {
+  const openingMatch = text.match(/^Study typical plans in (.+)$/);
+  if (openingMatch) {
+    return lang === 'kk'
+      ? `${openingMatch[1]} дебютіндегі негізгі жоспарларды үйрен`
+      : `Изучи типовые планы в дебюте ${openingMatch[1]}`;
+  }
+  if (text === 'Train practical rook and pawn endgames') {
+    return lang === 'kk' ? 'Практикалық ладья және пешка эндшпильдерін жаттықтыр' : 'Тренируй практические ладейные и пешечные окончания';
+  }
+  const focus = text.match(/^Start with focused exercises on (.+)$/);
+  if (focus) return lang === 'kk' ? `Алдымен ${localizeInsight(focus[1], lang)} жаттығуларынан баста` : `Начни с упражнений на тему: ${localizeInsight(focus[1], lang)}`;
+  const extra = text.match(/^Add 15 minutes of (.+) training after each analysed game$/);
+  if (extra) return lang === 'kk' ? `Әр талданған партиядан кейін ${localizeInsight(extra[1], lang)} бойынша 15 минут жаттық` : `После каждой партии тренируй ${localizeInsight(extra[1], lang)} 15 минут`;
+  return '';
+}
+
+function isInsightKey(value: string): value is InsightKey {
+  return insightKeys.includes(value as InsightKey);
 }

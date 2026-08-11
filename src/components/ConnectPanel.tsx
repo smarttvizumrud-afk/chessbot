@@ -18,19 +18,19 @@ export function ConnectPanel({ lang, onDone }: Props) {
   async function runImport(event: React.FormEvent) {
     event.preventDefault();
     const engine = new StockfishClient();
-    setStatus('Loading games...');
+    setStatus(t(lang, 'loadingGames'));
     try {
       const games = await fetchPlatformGames(toOptions(platform, username, range));
       for (const [index, game] of games.entries()) {
-        setStatus(`Analysing ${index + 1}/${games.length}: ${game.opponent}`);
+        setStatus(`${t(lang, 'analysing')} ${index + 1}/${games.length}: ${game.opponent}`);
         const stored = await saveGame(game);
         const analysis = await analyzeGame(game, engine);
         await saveAnalysis(stored.id, analysis);
       }
       await onDone();
-      setStatus(`Ready: ${games.length} games analysed.`);
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Analysis failed.');
+      setStatus(`${t(lang, 'ready')}: ${games.length} ${t(lang, 'analysed')}.`);
+    } catch {
+      setStatus(t(lang, 'analysisFailed'));
     } finally {
       engine.stop();
     }

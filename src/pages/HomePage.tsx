@@ -3,13 +3,13 @@ import { ConnectPanel } from '../components/ConnectPanel';
 import { GameList } from '../components/GameList';
 import { StatGrid } from '../components/StatGrid';
 import { combinedPlan, dashboardStats } from '../lib/insights';
-import { t } from '../lib/i18n';
+import { localizeInsight, t } from '../lib/i18n';
 import type { Lang } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
 
 export function HomePage({ lang }: { lang: Lang }) {
   return (
-    <AuthGate>
+    <AuthGate lang={lang}>
       <Dashboard lang={lang} />
     </AuthGate>
   );
@@ -23,28 +23,30 @@ function Dashboard({ lang }: { lang: Lang }) {
   return (
     <div className="page-grid">
       <section className="hero">
-        <p>Stockfish + personal AI insights</p>
+        <p>{t(lang, 'heroKicker')}</p>
         <h1>{t(lang, 'app')}</h1>
       </section>
       <ConnectPanel lang={lang} onDone={refresh} />
-      {loading && <section className="panel">Loading...</section>}
+      {loading && <section className="panel">{t(lang, 'loading')}</section>}
       {error && <section className="panel warning">{error}</section>}
       {!loading && !games.length && <section className="panel">{t(lang, 'noData')}</section>}
       <StatGrid stats={[
-        { label: 'Rating', value: stats.rating || '-' },
-        { label: 'Games', value: stats.total },
-        { label: 'W-D-L', value: `${stats.wins}-${stats.draws}-${stats.losses}` },
-        { label: 'Accuracy', value: `${stats.accuracy}%` },
-        { label: 'Mistakes', value: stats.mistakes },
-        { label: 'Blunders', value: stats.blunders },
+        { label: t(lang, 'rating'), value: stats.rating || '-' },
+        { label: t(lang, 'games'), value: stats.total },
+        { label: t(lang, 'score'), value: `${stats.wins}-${stats.draws}-${stats.losses}` },
+        { label: t(lang, 'accuracy'), value: `${stats.accuracy}%` },
+        { label: t(lang, 'mistakes'), value: stats.mistakes },
+        { label: t(lang, 'blunders'), value: stats.blunders },
       ]} />
       <section className="panel">
         <h2>{t(lang, 'improve')}</h2>
         <ul className="chips">
-          {(plan.length ? plan : stats.weaknesses).map((item) => <li key={item}>{item}</li>)}
+          {(plan.length ? plan : stats.weaknesses).map((item) => (
+            <li key={item}>{localizeInsight(item, lang)}</li>
+          ))}
         </ul>
       </section>
-      <GameList games={games} analyses={analyses} />
+      <GameList games={games} analyses={analyses} lang={lang} />
     </div>
   );
 }
