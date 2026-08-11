@@ -25,9 +25,12 @@ function GameContent({ id, lang }: { id: string; lang: Lang }) {
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key !== 'ArrowLeft') return;
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
       event.preventDefault();
-      setPly((currentPly) => Math.min(currentPly + 1, totalPly));
+      setPly((currentPly) => {
+        if (event.key === 'ArrowLeft') return Math.max(currentPly - 1, 0);
+        return Math.min(currentPly + 1, totalPly);
+      });
     }
 
     window.addEventListener('keydown', handleKeyDown);
