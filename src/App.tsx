@@ -1,13 +1,33 @@
+import { useState } from 'react';
 import { Route, Switch } from 'wouter';
+import { Layout } from './components/Layout';
+import type { Lang } from './lib/types';
+import { CoachPage } from './pages/CoachPage';
+import { GamePage } from './pages/GamePage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { OpeningsPage } from './pages/OpeningsPage';
 
-// Здесь живут только маршруты. Сами экраны складывай в src/pages/.
 export default function App() {
+  const [lang, setLang] = useState<Lang>(() => {
+    const saved = window.localStorage.getItem('lang');
+    return saved === 'en' || saved === 'kk' ? saved : 'ru';
+  });
+
+  function changeLang(nextLang: Lang) {
+    setLang(nextLang);
+    window.localStorage.setItem('lang', nextLang);
+  }
+
   return (
-    <Switch>
-      <Route path="/" component={HomePage} />
-      <Route component={NotFoundPage} />
-    </Switch>
+    <Layout lang={lang} onLangChange={changeLang}>
+      <Switch>
+        <Route path="/">{() => <HomePage lang={lang} />}</Route>
+        <Route path="/openings">{() => <OpeningsPage lang={lang} />}</Route>
+        <Route path="/coach">{() => <CoachPage lang={lang} />}</Route>
+        <Route path="/game/:id">{(params) => <GamePage lang={lang} id={params.id} />}</Route>
+        <Route component={NotFoundPage} />
+      </Switch>
+    </Layout>
   );
 }
