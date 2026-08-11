@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { AuthGate } from '../components/AuthGate';
-import { fenAfterPly } from '../lib/pgn';
+import { fenAfterPly, getMovesWithFens } from '../lib/pgn';
 import type { Lang } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
 
@@ -19,8 +19,20 @@ function GameContent({ id, lang }: { id: string; lang: Lang }) {
   const analysis = analyses.find((item) => item.gameId === id);
   const [ply, setPly] = useState(0);
   const report = analysis?.moveReports.find((item) => item.ply === ply);
+  const totalPly = useMemo(() => game ? getMovesWithFens(game.pgn).length : 0, [game]);
   const fen = useMemo(() => game ? fenAfterPly(game.pgn, ply) : '', [game, ply]);
   const title = lang === 'en' ? 'Game analysis' : lang === 'kk' ? 'Партия талдауы' : 'Анализ партии';
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'ArrowLeft') return;
+      event.preventDefault();
+      setPly((currentPly) => Math.min(currentPly + 1, totalPly));
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [totalPly]);
 
   if (loading) return <section className="panel">Loading...</section>;
   if (!game || !analysis || !fen) return <section className="panel">Game analysis not found.</section>;
