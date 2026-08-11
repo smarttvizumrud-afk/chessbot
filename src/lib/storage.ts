@@ -6,6 +6,7 @@ import {
   saveDemoAnalysis,
   saveDemoGame,
 } from './demoStorage';
+import { normalizeOpening } from './pgn';
 import type { GameAnalysis, ImportedGame, StoredAnalysis, StoredGame } from './types';
 
 type GameRow = {
@@ -110,7 +111,7 @@ function mapGameRow(row: GameRow): StoredGame {
     playedAt: row.played_at,
     result: row.result,
     color: row.color,
-    opening: row.opening,
+    opening: normalizeOpening(row.opening, row.pgn),
     pgn: row.pgn,
     timeControl: row.time_control,
   };

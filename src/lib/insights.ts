@@ -1,4 +1,5 @@
 import type { StoredAnalysis, StoredGame } from './types';
+import { normalizeOpening } from './pgn';
 
 export function dashboardStats(games: StoredGame[], analyses: StoredAnalysis[]) {
   const analysedIds = new Set(analyses.map((analysis) => analysis.gameId));
@@ -24,14 +25,15 @@ export function openingStats(games: StoredGame[], analyses: StoredAnalysis[]) {
   const groups = new Map<string, { games: StoredGame[]; accuracies: number[]; errors: number }>();
 
   games.forEach((game) => {
-    const group = groups.get(game.opening) ?? { games: [], accuracies: [], errors: 0 };
+    const opening = normalizeOpening(game.opening, game.pgn);
+    const group = groups.get(opening) ?? { games: [], accuracies: [], errors: 0 };
     const analysis = byGame.get(game.id);
     group.games.push(game);
     if (analysis) {
       group.accuracies.push(analysis.accuracy);
       group.errors += analysis.mistakes + analysis.blunders;
     }
-    groups.set(game.opening, group);
+    groups.set(opening, group);
   });
 
   return [...groups.entries()].map(([opening, group]) => ({

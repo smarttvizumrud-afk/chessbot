@@ -7,7 +7,21 @@ export function getPgnHeader(pgn: string, name: string) {
 }
 
 export function getOpening(pgn: string) {
-  return getPgnHeader(pgn, 'Opening') || getPgnHeader(pgn, 'ECO') || 'Unknown opening';
+  const opening = cleanOpening(getPgnHeader(pgn, 'Opening'));
+  if (opening) return opening;
+
+  const ecoUrlOpening = openingFromEcoUrl(getPgnHeader(pgn, 'ECOUrl'));
+  if (ecoUrlOpening) return ecoUrlOpening;
+
+  const eco = getPgnHeader(pgn, 'ECO');
+  return eco ? `ECO ${eco}` : 'Unknown opening';
+}
+
+export function normalizeOpening(opening: string, pgn = '') {
+  if (!opening || opening === 'Unknown opening' || /^ECO\s?[A-E]\d\d$/i.test(opening)) {
+    return getOpening(pgn);
+  }
+  return cleanOpening(opening) || getOpening(pgn);
 }
 
 export function getMovesWithFens(pgn: string) {
@@ -41,4 +55,32 @@ export function phaseForPly(ply: number) {
   if (ply <= 16) return 'opening';
   if (ply <= 60) return 'middlegame';
   return 'endgame';
+}
+
+function openingFromEcoUrl(url: string) {
+  if (!url) return '';
+  const slug = decodeURIComponent(url)
+    .split('/openings/')[1]
+    ?.split(/[?#]/)[0]
+    ?.replace(/\/$/, '');
+  if (!slug) return '';
+
+  const words = slug
+    .split('-')
+    .filter((word) => !isMoveToken(word))
+    .map((word) => word.replace(/\+/g, ' '));
+
+  return cleanOpening(words.join(' '));
+}
+
+function cleanOpening(value: string) {
+  return value
+    .replace(/\s+/g, ' ')
+    .replace(/\bDefence\b/g, 'Defense')
+    .replace(/\b[A-E]\d\d\b$/, '')
+    .trim();
+}
+
+function isMoveToken(word: string) {
+  return /^\d+$/.test(word) || /^[a-h][1-8]$/i.test(word) || /^[nbrqk]?[a-h]?[1-8]?x?[a-h][1-8][+#]?$/i.test(word);
 }

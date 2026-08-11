@@ -14,12 +14,13 @@ export function OpeningsPage({ lang }: { lang: Lang }) {
 function OpeningsContent({ lang }: { lang: Lang }) {
   const { games, analyses, loading } = useChessData();
   const openings = openingStats(games, analyses);
-  const title = lang === 'en' ? 'Opening report' : lang === 'kk' ? 'Дебют есебі' : 'Отчёт по дебютам';
+  const text = pageText(lang);
 
   return (
     <section className="panel">
-      <h1>{title}</h1>
+      <h1>{text.title}</h1>
       {loading && <p>Loading...</p>}
+      {!loading && !openings.length && <p>{text.empty}</p>}
       <div className="table">
         {openings.map((item) => (
           <article className="table-row" key={item.opening}>
@@ -27,12 +28,18 @@ function OpeningsContent({ lang }: { lang: Lang }) {
               <strong>{item.opening}</strong>
               <p>{item.recommendation}</p>
             </div>
-            <span>{item.games} games</span>
+            <span>{item.games} {text.games}</span>
             <span>{item.score || '-'}%</span>
-            <span>{item.errors} errors</span>
+            <span>{item.errors} {text.errors}</span>
           </article>
         ))}
       </div>
     </section>
   );
+}
+
+function pageText(lang: Lang) {
+  if (lang === 'en') return { title: 'Opening report', empty: 'No openings yet.', games: 'games', errors: 'errors' };
+  if (lang === 'kk') return { title: 'Дебют есебі', empty: 'Әзірге дебюттер жоқ.', games: 'партия', errors: 'қате' };
+  return { title: 'Отчёт по дебютам', empty: 'Пока нет дебютов.', games: 'партий', errors: 'ошибок' };
 }
