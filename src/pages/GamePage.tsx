@@ -47,7 +47,7 @@ function GameContent({ id, lang }: { id: string; lang: Lang }) {
       </section>
       <section className="panel">
         <h1>{title}</h1>
-        <p>{game.color} vs {game.opponent} · {analysis.accuracy}% accuracy</p>
+        <p>{game.username} vs {game.opponent} · {analysis.accuracy}% accuracy</p>
         <div className="moves">
           {analysis.moveReports.map((item) => (
             <button className={item.label} key={item.ply} onClick={() => setPly(item.ply)}>
