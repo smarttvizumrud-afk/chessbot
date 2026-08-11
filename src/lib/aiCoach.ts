@@ -2,6 +2,11 @@ import { supabase } from './supabase';
 import type { Lang, StoredAnalysis, StoredGame } from './types';
 import { combinedPlan, dashboardStats, openingStats } from './insights';
 
+export type CoachMessage = {
+  role: 'user' | 'assistant';
+  text: string;
+};
+
 const languageName: Record<Lang, string> = {
   ru: 'Russian',
   en: 'English',
@@ -13,14 +18,22 @@ export async function askCoach(
   lang: Lang,
   games: StoredGame[],
   analyses: StoredAnalysis[],
+  history: CoachMessage[] = [],
 ) {
   const context = buildContext(games, analyses);
-  const system = `You are a personal chess coach. Answer in ${languageName[lang]}. Use only the supplied player data. Be concrete, kind, and concise.`;
-  const prompt = `${context}\n\nQuestion: ${question}`;
+  const system = `You are a personal chess coach powered by Gemini. Answer in ${languageName[lang]}. Use only the supplied player data, Stockfish results, openings, weaknesses, and chat history. Be concrete, kind, and concise.`;
+  const prompt = `${context}\n\nChat history:\n${formatHistory(history)}\n\nUser question: ${question}`;
   const { data, error } = await supabase.functions.invoke('ai', { body: { prompt, system } });
   if (error) return fallbackAnswer(lang, analyses);
   const text = readText(data);
   return text || fallbackAnswer(lang, analyses);
+}
+
+function formatHistory(history: CoachMessage[]) {
+  return history
+    .slice(-8)
+    .map((message) => `${message.role}: ${message.text}`)
+    .join('\n');
 }
 
 export async function coachSummary(lang: Lang, games: StoredGame[], analyses: StoredAnalysis[]) {

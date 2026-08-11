@@ -10,6 +10,8 @@ export const dictionaries: Record<Lang, Dict> = {
     openings: 'Дебюты',
     game: 'Партия',
     coach: 'AI-тренер',
+    you: 'Ты',
+    coachTyping: 'Gemini думает над ответом...',
     username: 'Имя игрока',
     import: 'Загрузить и анализировать',
     week: 'Неделя',
@@ -68,7 +70,8 @@ export const dictionaries: Record<Lang, Dict> = {
   },
   en: {
     app: 'AI Chess Coach', connect: 'Connect player', dashboard: 'Dashboard', openings: 'Openings',
-    game: 'Game', coach: 'AI coach', username: 'Username', import: 'Load and analyse',
+    game: 'Game', coach: 'AI coach', you: 'You', coachTyping: 'Gemini is thinking...',
+    username: 'Username', import: 'Load and analyse',
     week: 'Week', month: 'Month', quarter: '3 months', last10: '10 games',
     last25: '25 games', last50: '50 games', last100: '100 games',
     improve: 'What to improve', ask: 'Ask your coach', send: 'Ask',
@@ -93,7 +96,8 @@ export const dictionaries: Record<Lang, Dict> = {
   },
   kk: {
     app: 'AI шахмат жаттықтырушысы', connect: 'Ойыншыны қосу', dashboard: 'Басты бет',
-    openings: 'Дебюттер', game: 'Партия', coach: 'AI-жаттықтырушы', username: 'Ойыншы аты',
+    openings: 'Дебюттер', game: 'Партия', coach: 'AI-жаттықтырушы',
+    you: 'Сен', coachTyping: 'Gemini жауап дайындап жатыр...', username: 'Ойыншы аты',
     import: 'Жүктеу және талдау', week: 'Апта', month: 'Ай', quarter: '3 ай',
     last10: '10 партия', last25: '25 партия', last50: '50 партия', last100: '100 партия',
     improve: 'Нені жақсарту керек', ask: 'Жаттықтырушыға сұрақ қой', send: 'Сұрау',
