@@ -1,21 +1,21 @@
 import { Link } from 'wouter';
 import { useState } from 'react';
 import { CloseButton } from './GameList';
-import { loadClosedAnalyses } from '../lib/closedAnalyses';
 import { t } from '../lib/i18n';
 import type { Lang, StoredAnalysis, StoredGame } from '../lib/types';
 
 type Props = {
   games: StoredGame[];
   analyses: StoredAnalysis[];
+  closedAnalyses: string[];
   lang: Lang;
-  onClose: () => void;
+  onClose: (id: string) => void;
 };
 
-export function WeeklyHistory({ games, analyses, lang, onClose }: Props) {
+export function WeeklyHistory({ games, analyses, closedAnalyses, lang, onClose }: Props) {
   const [query, setQuery] = useState('');
   const byGame = new Map(games.map((game) => [game.id, game]));
-  const closed = new Set(loadClosedAnalyses());
+  const closed = new Set(closedAnalyses);
   const weekAgo = Date.now() - 7 * 86_400_000;
   const normalizedQuery = query.trim().toLowerCase();
   const rows = analyses

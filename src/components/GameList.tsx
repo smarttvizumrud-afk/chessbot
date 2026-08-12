@@ -1,18 +1,18 @@
 import { Link } from 'wouter';
-import { closeAnalysis, loadClosedAnalyses } from '../lib/closedAnalyses';
 import { t } from '../lib/i18n';
 import type { Lang, StoredAnalysis, StoredGame } from '../lib/types';
 
 type Props = {
   games: StoredGame[];
   analyses: StoredAnalysis[];
+  closedAnalyses: string[];
   lang: Lang;
-  onClose: () => void;
+  onClose: (id: string) => void;
 };
 
-export function GameList({ games, analyses, lang, onClose }: Props) {
+export function GameList({ games, analyses, closedAnalyses, lang, onClose }: Props) {
   const byGame = new Map(analyses.map((analysis) => [analysis.gameId, analysis]));
-  const closed = new Set(loadClosedAnalyses());
+  const closed = new Set(closedAnalyses);
   const visibleGames = games.filter((game) => !closed.has(byGame.get(game.id)?.id ?? ''));
 
   return (
@@ -36,16 +36,13 @@ export function GameList({ games, analyses, lang, onClose }: Props) {
   );
 }
 
-export function CloseButton({ id, lang, onClose }: { id: string; lang: Lang; onClose: () => void }) {
+export function CloseButton({ id, lang, onClose }: { id: string; lang: Lang; onClose: (id: string) => void }) {
   return (
     <button
       className="close-button"
       type="button"
       aria-label={t(lang, 'closeAnalysis')}
-      onClick={() => {
-        closeAnalysis(id);
-        onClose();
-      }}
+      onClick={() => onClose(id)}
     >
       x
     </button>

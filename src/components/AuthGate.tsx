@@ -11,22 +11,8 @@ type Props = { children: React.ReactNode; lang: Lang };
 export function AuthGate({ children, lang }: Props) {
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
-  const [demo, setDemo] = useState(() => window.localStorage.getItem('chess-demo-mode') === '1');
 
   useEffect(() => {
-    const onDemo = () => {
-      setDemo(true);
-      setReady(true);
-    };
-    window.addEventListener('chess-demo-mode', onDemo);
-    return () => window.removeEventListener('chess-demo-mode', onDemo);
-  }, []);
-
-  useEffect(() => {
-    if (demo) {
-      setReady(true);
-      return;
-    }
     if (!isSupabaseConfigured) return;
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
@@ -37,10 +23,10 @@ export function AuthGate({ children, lang }: Props) {
       setReady(true);
     });
     return () => data.subscription.unsubscribe();
-  }, [demo]);
+  }, []);
 
   if (!isSupabaseConfigured) return <SupabaseSetupMessage />;
   if (!ready) return <section className="panel">{t(lang, 'loading')}</section>;
-  if (!session && !demo) return <Auth lang={lang} />;
+  if (!session) return <Auth lang={lang} />;
   return <>{children}</>;
 }

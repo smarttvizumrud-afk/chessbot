@@ -10,11 +10,10 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { OpeningsPage } from './pages/OpeningsPage';
 
 export default function App() {
-  const [lang, setLang] = useState<Lang>(getSavedLang);
+  const [lang, setLang] = useState<Lang>('ru');
 
   function changeLang(nextLang: Lang) {
     setLang(nextLang);
-    window.localStorage.setItem('lang', nextLang);
   }
 
   return (
@@ -29,9 +28,4 @@ export default function App() {
       </Switch>
     </Layout>
   );
-}
-
-function getSavedLang(): Lang {
-  const saved = window.localStorage.getItem('lang');
-  return saved === 'en' || saved === 'kk' ? saved : 'ru';
 }

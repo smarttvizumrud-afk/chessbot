@@ -10,4 +10,10 @@ export const isSupabaseConfigured = Boolean(url && anonKey);
 export const supabase = createClient(
   url ?? 'https://not-configured.supabase.co',
   anonKey ?? 'not-configured',
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  },
 );

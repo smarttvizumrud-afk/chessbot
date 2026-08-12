@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { SupabaseSetupMessage } from './SupabaseSetupMessage';
-import { enableDemoMode } from '../lib/demoStorage';
 import { t } from '../lib/i18n';
 import type { Lang } from '../lib/types';
 
@@ -56,9 +55,6 @@ export function Auth({ lang }: { lang: Lang }) {
       {message && <p className="message">{message}</p>}
       <button className="ghost" onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}>
         {mode === 'signin' ? t(lang, 'createAccount') : t(lang, 'haveAccount')}
-      </button>
-      <button className="ghost" onClick={enableDemoMode}>
-        {t(lang, 'demoMode')}
       </button>
     </section>
   );

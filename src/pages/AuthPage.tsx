@@ -29,7 +29,6 @@ export function AuthPage({ lang }: { lang: Lang }) {
   async function signOut() {
     setBusy(true);
     await supabase.auth.signOut();
-    window.localStorage.removeItem('chess-demo-mode');
     setBusy(false);
     navigate('/');
   }

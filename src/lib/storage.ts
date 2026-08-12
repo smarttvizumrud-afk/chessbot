@@ -1,11 +1,4 @@
 import { supabase } from './supabase';
-import {
-  isDemoMode,
-  loadDemoAnalyses,
-  loadDemoGames,
-  saveDemoAnalysis,
-  saveDemoGame,
-} from './demoStorage';
 import { normalizeOpening } from './pgn';
 import type { GameAnalysis, ImportedGame, StoredAnalysis, StoredGame } from './types';
 
@@ -39,7 +32,6 @@ type AnalysisRow = {
 };
 
 export async function loadGames() {
-  if (isDemoMode()) return loadDemoGames();
   const { data, error } = await supabase
     .from('chess_games')
     .select('*')
@@ -49,14 +41,12 @@ export async function loadGames() {
 }
 
 export async function loadAnalyses() {
-  if (isDemoMode()) return loadDemoAnalyses();
   const { data, error } = await supabase.from('chess_analyses').select('*');
   if (error) throw error;
   return (data as AnalysisRow[]).map(mapAnalysisRow);
 }
 
 export async function saveGame(game: ImportedGame) {
-  if (isDemoMode()) return saveDemoGame(game);
   const { data, error } = await supabase
     .from('chess_games')
     .upsert(toGameRow(game), { onConflict: 'user_id,platform,platform_game_id' })
@@ -67,7 +57,6 @@ export async function saveGame(game: ImportedGame) {
 }
 
 export async function saveAnalysis(gameId: string, analysis: GameAnalysis) {
-  if (isDemoMode()) return saveDemoAnalysis(gameId, analysis);
   const row = {
     game_id: gameId,
     accuracy: analysis.accuracy,

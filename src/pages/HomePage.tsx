@@ -19,10 +19,10 @@ export function HomePage({ lang }: { lang: Lang }) {
 
 function Dashboard({ lang }: { lang: Lang }) {
   const { games, analyses, loading, error, refresh } = useChessData();
-  const [, setClosedVersion] = useState(0);
+  const [closedAnalyses, setClosedAnalyses] = useState<string[]>([]);
   const stats = dashboardStats(games, analyses);
   const plan = combinedPlan(analyses);
-  const refreshClosed = () => setClosedVersion((version) => version + 1);
+  const closeAnalysis = (id: string) => setClosedAnalyses((ids) => [...new Set([...ids, id])]);
 
   return (
     <div className="page-grid">
@@ -50,8 +50,8 @@ function Dashboard({ lang }: { lang: Lang }) {
           ))}
         </ul>
       </section>
-      <GameList games={games} analyses={analyses} lang={lang} onClose={refreshClosed} />
-      <WeeklyHistory games={games} analyses={analyses} lang={lang} onClose={refreshClosed} />
+      <GameList games={games} analyses={analyses} closedAnalyses={closedAnalyses} lang={lang} onClose={closeAnalysis} />
+      <WeeklyHistory games={games} analyses={analyses} closedAnalyses={closedAnalyses} lang={lang} onClose={closeAnalysis} />
     </div>
   );
 }
