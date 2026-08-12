@@ -18,9 +18,10 @@ export function HomePage({ lang }: { lang: Lang }) {
 }
 
 function Dashboard({ lang }: { lang: Lang }) {
-  const { games, analyses, loading, error, refresh } = useChessData();
+  const { games, analyses, profiles, loading, error, refresh } = useChessData();
   const [closedAnalyses, setClosedAnalyses] = useState<string[]>([]);
   const stats = dashboardStats(games, analyses);
+  const profile = profiles[0];
   const plan = combinedPlan(analyses);
   const closeAnalysis = (id: string) => setClosedAnalyses((ids) => [...new Set([...ids, id])]);
 
@@ -35,7 +36,9 @@ function Dashboard({ lang }: { lang: Lang }) {
       {error && <section className="panel warning">{error}</section>}
       {!loading && !games.length && <section className="panel">{t(lang, 'noData')}</section>}
       <StatGrid stats={[
-        { label: t(lang, 'rating'), value: stats.rating || '-' },
+        { label: 'Classical', value: profile?.classical ?? '-' },
+        { label: 'Rapid', value: profile?.rapid ?? '-' },
+        { label: 'Blitz', value: profile?.blitz ?? '-' },
         { label: t(lang, 'games'), value: stats.total },
         { label: t(lang, 'score'), value: `${stats.wins}-${stats.draws}-${stats.losses}` },
         { label: t(lang, 'accuracy'), value: `${stats.accuracy}%` },

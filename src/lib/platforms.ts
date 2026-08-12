@@ -1,4 +1,4 @@
-import type { ImportedGame, Platform } from './types';
+import type { ImportedGame, Platform, PlayerRatings } from './types';
 import { getOpening } from './pgn';
 
 type ChessComGame = {
@@ -23,6 +23,20 @@ type LichessGame = {
   opening?: { name?: string };
 };
 
+type ChessComStats = {
+  chess_daily?: { last?: { rating?: number } };
+  chess_rapid?: { last?: { rating?: number } };
+  chess_blitz?: { last?: { rating?: number } };
+};
+
+type LichessProfile = {
+  perfs?: {
+    classical?: { rating?: number };
+    rapid?: { rating?: number };
+    blitz?: { rating?: number };
+  };
+};
+
 export type ImportOptions = {
   platform: Platform;
   username: string;
@@ -35,6 +49,34 @@ export async function fetchPlatformGames(options: ImportOptions) {
   return options.platform === 'chesscom'
     ? fetchChessComGames(options)
     : fetchLichessGames(options);
+}
+
+export async function fetchPlatformRatings(platform: Platform, username: string): Promise<PlayerRatings> {
+  return platform === 'chesscom'
+    ? fetchChessComRatings(username)
+    : fetchLichessRatings(username);
+}
+
+async function fetchChessComRatings(username: string): Promise<PlayerRatings> {
+  const stats = await fetchJson<ChessComStats>(`https://api.chess.com/pub/player/${username}/stats`);
+  return {
+    platform: 'chesscom',
+    username,
+    classical: stats.chess_daily?.last?.rating,
+    rapid: stats.chess_rapid?.last?.rating,
+    blitz: stats.chess_blitz?.last?.rating,
+  };
+}
+
+async function fetchLichessRatings(username: string): Promise<PlayerRatings> {
+  const profile = await fetchJson<LichessProfile>(`https://lichess.org/api/user/${username}`);
+  return {
+    platform: 'lichess',
+    username,
+    classical: profile.perfs?.classical?.rating,
+    rapid: profile.perfs?.rapid?.rating,
+    blitz: profile.perfs?.blitz?.rating,
+  };
 }
 
 async function fetchChessComGames(options: ImportOptions) {

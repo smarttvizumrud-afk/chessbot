@@ -17,6 +17,14 @@ export type ImportedGame = {
   timeControl: string;
 };
 
+export type PlayerRatings = {
+  platform: Platform;
+  username: string;
+  classical?: number;
+  rapid?: number;
+  blitz?: number;
+};
+
 export type MoveReport = {
   ply: number;
   moveNumber: number;
@@ -45,4 +53,5 @@ export type GameAnalysis = {
 };
 
 export type StoredGame = ImportedGame & { id: string };
+export type StoredProfile = PlayerRatings & { id: string; connectedAt: string };
 export type StoredAnalysis = GameAnalysis & { id: string; gameId: string; createdAt: string };

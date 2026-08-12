@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { analyzeGame } from '../lib/analyzer';
-import { fetchPlatformGames } from '../lib/platforms';
-import { saveAnalysis, saveGame } from '../lib/storage';
+import { fetchPlatformGames, fetchPlatformRatings } from '../lib/platforms';
+import { saveAnalysis, saveGame, saveProfile } from '../lib/storage';
 import { StockfishClient } from '../lib/stockfish';
 import type { Lang, Platform } from '../lib/types';
 import { t } from '../lib/i18n';
@@ -20,6 +20,8 @@ export function ConnectPanel({ lang, onDone }: Props) {
     const engine = new StockfishClient();
     setStatus(t(lang, 'loadingGames'));
     try {
+      const ratings = await fetchPlatformRatings(platform, username);
+      await saveProfile(ratings);
       const games = await fetchPlatformGames(toOptions(platform, username, range));
       for (const [index, game] of games.entries()) {
         setStatus(`${t(lang, 'analysing')} ${index + 1}/${games.length}: ${game.opponent}`);

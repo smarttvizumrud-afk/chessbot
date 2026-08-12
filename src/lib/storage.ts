@@ -1,6 +1,13 @@
 import { supabase } from './supabase';
 import { normalizeOpening } from './pgn';
-import type { GameAnalysis, ImportedGame, StoredAnalysis, StoredGame } from './types';
+import type {
+  GameAnalysis,
+  ImportedGame,
+  PlayerRatings,
+  StoredAnalysis,
+  StoredGame,
+  StoredProfile,
+} from './types';
 
 type GameRow = {
   id: string;
@@ -15,6 +22,17 @@ type GameRow = {
   opening: string;
   pgn: string;
   time_control: string;
+};
+
+type ProfileRow = {
+  id: string;
+  platform: 'chesscom' | 'lichess';
+  username: string;
+  rating: number | null;
+  classical_rating: number | null;
+  rapid_rating: number | null;
+  blitz_rating: number | null;
+  connected_at: string;
 };
 
 type AnalysisRow = {
@@ -44,6 +62,34 @@ export async function loadAnalyses() {
   const { data, error } = await supabase.from('chess_analyses').select('*');
   if (error) throw error;
   return (data as AnalysisRow[]).map(mapAnalysisRow);
+}
+
+export async function loadProfiles() {
+  const { data, error } = await supabase
+    .from('chess_profiles')
+    .select('*')
+    .order('connected_at', { ascending: false });
+  if (error) throw error;
+  return (data as ProfileRow[]).map(mapProfileRow);
+}
+
+export async function saveProfile(ratings: PlayerRatings) {
+  const row = {
+    platform: ratings.platform,
+    username: ratings.username,
+    rating: ratings.rapid ?? ratings.blitz ?? ratings.classical ?? null,
+    classical_rating: ratings.classical ?? null,
+    rapid_rating: ratings.rapid ?? null,
+    blitz_rating: ratings.blitz ?? null,
+    connected_at: new Date().toISOString(),
+  };
+  const { data, error } = await supabase
+    .from('chess_profiles')
+    .upsert(row, { onConflict: 'user_id,platform,username' })
+    .select('*')
+    .single();
+  if (error) throw error;
+  return mapProfileRow(data as ProfileRow);
 }
 
 export async function saveGame(game: ImportedGame) {
@@ -107,6 +153,18 @@ function mapGameRow(row: GameRow): StoredGame {
     opening: normalizeOpening(row.opening, row.pgn),
     pgn: row.pgn,
     timeControl: row.time_control,
+  };
+}
+
+function mapProfileRow(row: ProfileRow): StoredProfile {
+  return {
+    id: row.id,
+    platform: row.platform,
+    username: row.username,
+    classical: row.classical_rating ?? undefined,
+    rapid: row.rapid_rating ?? undefined,
+    blitz: row.blitz_rating ?? undefined,
+    connectedAt: row.connected_at,
   };
 }
 

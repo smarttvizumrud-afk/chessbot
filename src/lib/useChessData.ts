@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { StoredAnalysis, StoredGame } from './types';
-import { loadAnalyses, loadGames } from './storage';
+import type { StoredAnalysis, StoredGame, StoredProfile } from './types';
+import { loadAnalyses, loadGames, loadProfiles } from './storage';
 
 export function useChessData() {
   const [games, setGames] = useState<StoredGame[]>([]);
   const [analyses, setAnalyses] = useState<StoredAnalysis[]>([]);
+  const [profiles, setProfiles] = useState<StoredProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -12,9 +13,14 @@ export function useChessData() {
     setLoading(true);
     setError('');
     try {
-      const [nextGames, nextAnalyses] = await Promise.all([loadGames(), loadAnalyses()]);
+      const [nextGames, nextAnalyses, nextProfiles] = await Promise.all([
+        loadGames(),
+        loadAnalyses(),
+        loadProfiles(),
+      ]);
       setGames(nextGames);
       setAnalyses(nextAnalyses);
+      setProfiles(nextProfiles);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load chess data.');
     } finally {
@@ -26,5 +32,5 @@ export function useChessData() {
     void refresh();
   }, [refresh]);
 
-  return { games, analyses, loading, error, refresh };
+  return { games, analyses, profiles, loading, error, refresh };
 }
