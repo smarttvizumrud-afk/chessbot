@@ -81,9 +81,10 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .auth-heading { margin-top: 18px; font-size: 22px; }
 .coach-form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
 .coach-form input { grid-column: span 2; min-width: 0; }
-.google-button { display: flex; width: 100%; align-items: center; justify-content: center; gap: 10px; margin-top: 18px; background: #f8fafc; color: #111827; }
+.oauth-buttons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+.google-button { display: flex; width: 100%; align-items: center; justify-content: center; gap: 10px; background: #f8fafc; color: #111827; }
 .google-button span { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 999px; background: #fff; color: #4285f4; font-weight: 900; }
-.lichess-button { display: flex; width: 100%; align-items: center; justify-content: center; gap: 10px; margin-top: 16px; background: #9bc53d; color: #11170b; }
+.lichess-button { display: flex; width: 100%; align-items: center; justify-content: center; gap: 10px; background: #9bc53d; color: #11170b; }
 .lichess-button span { font-size: 24px; line-height: 1; }
 .auth-divider { display: flex; align-items: center; gap: 12px; margin-top: 16px; color: var(--muted); font-size: 13px; }
 .auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
@@ -128,6 +129,6 @@ input, select { background: #0d131d; padding: 12px 14px; }
   .topbar, .game-row { align-items: flex-start; flex-direction: column; }
   .profile-popover { left: 0; right: auto; width: min(334px, calc(100vw - 40px)); }
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .coach-form, .chat-form, .analysis-layout, .table-row { grid-template-columns: 1fr; }
+  .coach-form, .chat-form, .analysis-layout, .table-row, .oauth-buttons { grid-template-columns: 1fr; }
   .coach-form input { grid-column: span 1; }
 }
