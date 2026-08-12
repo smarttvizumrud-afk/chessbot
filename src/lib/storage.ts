@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { normalizeOpening } from './pgn';
+import { isGuestMode } from './guestSession';
 import type {
   GameAnalysis,
   ImportedGame,
@@ -50,6 +51,7 @@ type AnalysisRow = {
 };
 
 export async function loadGames() {
+  if (isGuestMode()) return [];
   const { data, error } = await supabase
     .from('chess_games')
     .select('*')
@@ -59,12 +61,14 @@ export async function loadGames() {
 }
 
 export async function loadAnalyses() {
+  if (isGuestMode()) return [];
   const { data, error } = await supabase.from('chess_analyses').select('*');
   if (error) throw error;
   return (data as AnalysisRow[]).map(mapAnalysisRow);
 }
 
 export async function loadProfiles() {
+  if (isGuestMode()) return [];
   const { data, error } = await supabase
     .from('chess_profiles')
     .select('*')
@@ -74,6 +78,11 @@ export async function loadProfiles() {
 }
 
 export async function saveProfile(ratings: PlayerRatings) {
+  if (isGuestMode()) return {
+    id: crypto.randomUUID(),
+    ...ratings,
+    connectedAt: new Date().toISOString(),
+  };
   const row = {
     platform: ratings.platform,
     username: ratings.username,
@@ -93,6 +102,7 @@ export async function saveProfile(ratings: PlayerRatings) {
 }
 
 export async function saveGame(game: ImportedGame) {
+  if (isGuestMode()) return { ...game, id: crypto.randomUUID() };
   const { data, error } = await supabase
     .from('chess_games')
     .upsert(toGameRow(game), { onConflict: 'user_id,platform,platform_game_id' })
@@ -103,6 +113,12 @@ export async function saveGame(game: ImportedGame) {
 }
 
 export async function saveAnalysis(gameId: string, analysis: GameAnalysis) {
+  if (isGuestMode()) return {
+    ...analysis,
+    id: crypto.randomUUID(),
+    gameId,
+    createdAt: new Date().toISOString(),
+  };
   const row = {
     game_id: gameId,
     accuracy: analysis.accuracy,

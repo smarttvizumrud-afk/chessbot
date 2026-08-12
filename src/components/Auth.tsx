@@ -3,6 +3,7 @@ import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { SupabaseSetupMessage } from './SupabaseSetupMessage';
 import { t } from '../lib/i18n';
 import type { Lang } from '../lib/types';
+import { enableGuestMode } from '../lib/guestSession';
 
 export function Auth({ lang }: { lang: Lang }) {
   const [email, setEmail] = useState('');
@@ -79,6 +80,9 @@ export function Auth({ lang }: { lang: Lang }) {
       <button className="ghost" onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}>
         {mode === 'signin' ? t(lang, 'createAccount') : t(lang, 'haveAccount')}
       </button>
+      <button className="ghost guest-button" onClick={enableGuestMode}>
+        {guestButtonText[lang]}
+      </button>
     </section>
   );
 }
@@ -105,6 +109,12 @@ const emailDividerText: Record<Lang, string> = {
   ru: '\u0438\u043b\u0438 \u0447\u0435\u0440\u0435\u0437 email',
   en: 'or email',
   kk: '\u043d\u0435\u043c\u0435\u0441\u0435 email',
+};
+
+const guestButtonText: Record<Lang, string> = {
+  ru: '\u041f\u0440\u043e\u0434\u043e\u043b\u0436\u0438\u0442\u044c \u0431\u0435\u0437 \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u0438',
+  en: 'Continue without registration',
+  kk: '\u0422\u0456\u0440\u043a\u0435\u043b\u0443\u0441\u0456\u0437 \u0436\u0430\u043b\u0493\u0430\u0441\u0442\u044b\u0440\u0443',
 };
 
 function authCallbackUrl() {

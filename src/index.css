@@ -35,6 +35,7 @@ button {
 button:disabled { opacity: 0.65; cursor: default; }
 input, select { background: #0d131d; padding: 12px 14px; }
 .ghost { background: transparent; color: var(--muted); margin-top: 10px; }
+.guest-button { display: block; width: 100%; }
 
 .shell { width: min(1180px, 100%); margin: 0 auto; padding: 20px; }
 .topbar { display: flex; align-items: center; gap: 18px; justify-content: space-between; margin-bottom: 22px; }
