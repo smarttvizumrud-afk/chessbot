@@ -26,10 +26,28 @@ export function Auth({ lang }: { lang: Lang }) {
     setMessage(error ? error.message : mode === 'signup' ? t(lang, 'checkEmail') : '');
   }
 
+  async function handleGoogleSignIn() {
+    setBusy(true);
+    setMessage('');
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    });
+    if (error) {
+      setBusy(false);
+      setMessage(error.message);
+    }
+  }
+
   return (
     <section className="auth-card">
       <h1>{t(lang, 'authTitle')}</h1>
       <p>{t(lang, 'authText')}</p>
+      <button className="google-button" type="button" onClick={handleGoogleSignIn} disabled={busy}>
+        <span>G</span>
+        {googleButtonText[lang]}
+      </button>
+      <div className="auth-divider">{emailDividerText[lang]}</div>
       <form onSubmit={handleSubmit} className="coach-form">
         <input type="email" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <input type="password" placeholder={t(lang, 'password')} value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} required />
@@ -45,3 +63,15 @@ export function Auth({ lang }: { lang: Lang }) {
     </section>
   );
 }
+
+const googleButtonText: Record<Lang, string> = {
+  ru: '\u0412\u043e\u0439\u0442\u0438 \u0447\u0435\u0440\u0435\u0437 Google',
+  en: 'Continue with Google',
+  kk: 'Google \u0430\u0440\u049b\u044b\u043b\u044b \u043a\u0456\u0440\u0443',
+};
+
+const emailDividerText: Record<Lang, string> = {
+  ru: '\u0438\u043b\u0438 \u0447\u0435\u0440\u0435\u0437 email',
+  en: 'or email',
+  kk: '\u043d\u0435\u043c\u0435\u0441\u0435 email',
+};

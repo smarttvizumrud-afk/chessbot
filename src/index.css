@@ -57,6 +57,10 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .page-grid { display: grid; gap: 18px; }
 .coach-form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
 .coach-form input { grid-column: span 2; min-width: 0; }
+.google-button { display: flex; width: 100%; align-items: center; justify-content: center; gap: 10px; margin-top: 18px; background: #f8fafc; color: #111827; }
+.google-button span { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 999px; background: #fff; color: #4285f4; font-weight: 900; }
+.auth-divider { display: flex; align-items: center; gap: 12px; margin-top: 16px; color: var(--muted); font-size: 13px; }
+.auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 .message { color: var(--gold); margin-top: 12px; }
 .warning { border-color: var(--red); }
 
