@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Chessboard } from 'react-chessboard';
 import { AuthGate } from '../components/AuthGate';
+import { AnalysisBoard } from '../components/AnalysisBoard';
 import { labelText, localizeInsight, t } from '../lib/i18n';
 import { fenAfterPly, getMovesWithFens } from '../lib/pgn';
 import type { Lang, MoveReport, PlayerColor } from '../lib/types';
@@ -42,7 +42,7 @@ function GameContent({ id, lang }: { id: string; lang: Lang }) {
   return (
     <div className="analysis-layout">
       <section className="board-panel">
-        <Chessboard position={fen} boardWidth={Math.min(window.innerWidth - 40, 520)} />
+        <AnalysisBoard fen={fen} />
       </section>
       <section className="panel">
         <h1>{t(lang, 'gameAnalysis')}</h1>
