@@ -43,6 +43,7 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .nav { display: flex; gap: 8px; flex-wrap: wrap; }
 .nav a { color: var(--muted); padding: 9px 12px; border-radius: 8px; }
 .nav a.active { background: var(--panel-2); color: var(--ink); }
+.account-link { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; background: var(--gold); color: #17120a; font-weight: 800; white-space: nowrap; }
 
 .hero, .panel, .auth-card, .board-panel {
   background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015)), var(--panel);

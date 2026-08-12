@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Route, Switch } from 'wouter';
 import { Layout } from './components/Layout';
 import type { Lang } from './lib/types';
@@ -9,18 +8,10 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { OpeningsPage } from './pages/OpeningsPage';
 
 export default function App() {
-  const [lang, setLang] = useState<Lang>(() => {
-    const saved = window.localStorage.getItem('lang');
-    return saved === 'en' || saved === 'kk' ? saved : 'ru';
-  });
-
-  function changeLang(nextLang: Lang) {
-    setLang(nextLang);
-    window.localStorage.setItem('lang', nextLang);
-  }
+  const lang = getSavedLang();
 
   return (
-    <Layout lang={lang} onLangChange={changeLang}>
+    <Layout lang={lang}>
       <Switch>
         <Route path="/">{() => <HomePage lang={lang} />}</Route>
         <Route path="/openings">{() => <OpeningsPage lang={lang} />}</Route>
@@ -30,4 +21,9 @@ export default function App() {
       </Switch>
     </Layout>
   );
+}
+
+function getSavedLang(): Lang {
+  const saved = window.localStorage.getItem('lang');
+  return saved === 'en' || saved === 'kk' ? saved : 'ru';
 }
