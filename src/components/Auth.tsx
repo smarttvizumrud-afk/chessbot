@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation } from 'wouter';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { SupabaseSetupMessage } from './SupabaseSetupMessage';
 import { t } from '../lib/i18n';
@@ -6,6 +7,7 @@ import type { Lang } from '../lib/types';
 import { enableGuestMode } from '../lib/guestSession';
 
 export function Auth({ lang }: { lang: Lang }) {
+  const [, navigate] = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
@@ -55,6 +57,11 @@ export function Auth({ lang }: { lang: Lang }) {
     }
   }
 
+  function handleGuestContinue() {
+    enableGuestMode();
+    navigate('/');
+  }
+
   return (
     <section className="auth-card">
       <h1>{t(lang, 'authTitle')}</h1>
@@ -80,7 +87,7 @@ export function Auth({ lang }: { lang: Lang }) {
       <button className="ghost" onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}>
         {mode === 'signin' ? t(lang, 'createAccount') : t(lang, 'haveAccount')}
       </button>
-      <button className="ghost guest-button" onClick={enableGuestMode}>
+      <button className="ghost guest-button" onClick={handleGuestContinue}>
         {guestButtonText[lang]}
       </button>
     </section>
