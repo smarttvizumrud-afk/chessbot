@@ -43,6 +43,8 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .nav { display: flex; gap: 8px; flex-wrap: wrap; }
 .nav a { color: var(--muted); padding: 9px 12px; border-radius: 8px; }
 .nav a.active { background: var(--panel-2); color: var(--ink); }
+.account-menu { display: flex; align-items: center; gap: 10px; }
+.lang-select { height: 42px; padding: 0 10px; background: var(--panel-2); color: var(--ink); font-weight: 800; }
 .account-link { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; background: var(--gold); color: #17120a; font-weight: 800; white-space: nowrap; }
 .account-link.secondary { display: inline-block; background: transparent; color: var(--muted); }
 .profile-link { display: grid; place-items: center; width: 42px; height: 42px; padding: 0; overflow: hidden; border-radius: 999px; background: var(--panel-2); color: var(--ink); }

@@ -7,6 +7,7 @@ import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
 type Props = {
   lang: Lang;
+  onLangChange: (lang: Lang) => void;
   children: React.ReactNode;
 };
 
@@ -22,7 +23,7 @@ const authLinkText: Record<Lang, string> = {
   kk: '\u041a\u0456\u0440\u0443 / \u0442\u0456\u0440\u043a\u0435\u043b\u0443',
 };
 
-export function Layout({ lang, children }: Props) {
+export function Layout({ lang, onLangChange, children }: Props) {
   const [location] = useLocation();
   const [session, setSession] = useState<Session | null>(null);
 
@@ -53,11 +54,18 @@ export function Layout({ lang, children }: Props) {
             </Link>
           ))}
         </nav>
-        <Link href="/auth" className={session ? 'account-link profile-link' : 'account-link'}>
-          {session ? (
-            avatarUrl ? <img src={avatarUrl} alt="" /> : <span>{accountInitial}</span>
-          ) : authLinkText[lang]}
-        </Link>
+        <div className="account-menu">
+          <select className="lang-select" value={lang} onChange={(event) => onLangChange(event.target.value as Lang)}>
+            <option value="ru">RU</option>
+            <option value="en">EN</option>
+            <option value="kk">KK</option>
+          </select>
+          <Link href="/auth" className={session ? 'account-link profile-link' : 'account-link'}>
+            {session ? (
+              avatarUrl ? <img src={avatarUrl} alt="" /> : <span>{accountInitial}</span>
+            ) : authLinkText[lang]}
+          </Link>
+        </div>
       </header>
       {children}
     </main>
