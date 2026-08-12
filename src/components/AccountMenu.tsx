@@ -60,12 +60,13 @@ export function AccountMenu({ lang, onLangChange }: Props) {
 
   const avatarUrl = getMetadataString(session.user.user_metadata, 'avatar_url')
     ?? getMetadataString(session.user.user_metadata, 'picture');
+  const displayName = getDisplayName(session);
 
   return (
     <div className="account-menu">
       <div className="profile-menu-wrap">
         <Link href="/auth" className="account-link profile-link">
-          {avatarUrl ? <img src={avatarUrl} alt="" /> : <span>{getAccountInitial(session.user.email)}</span>}
+          {avatarUrl ? <img src={avatarUrl} alt="" /> : <span>{getAccountInitial(displayName)}</span>}
         </Link>
         <AccountHoverMenu lang={lang} onLangChange={onLangChange} />
       </div>
@@ -120,6 +121,15 @@ function getMetadataString(metadata: unknown, key: string): string | null {
   return typeof value === 'string' && value ? value : null;
 }
 
-function getAccountInitial(email?: string): string {
-  return email?.trim().charAt(0).toUpperCase() || 'A';
+function getDisplayName(session: Session): string {
+  return getMetadataString(session.user.user_metadata, 'username')
+    ?? getMetadataString(session.user.user_metadata, 'preferred_username')
+    ?? getMetadataString(session.user.user_metadata, 'name')
+    ?? getMetadataString(session.user.user_metadata, 'full_name')
+    ?? session.user.email
+    ?? session.user.id;
+}
+
+function getAccountInitial(name?: string): string {
+  return name?.trim().charAt(0).toUpperCase() || 'A';
 }

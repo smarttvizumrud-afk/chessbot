@@ -40,7 +40,7 @@ export function AuthPage({ lang }: { lang: Lang }) {
   return (
     <section className="auth-card">
       <h1>{accountTitle[lang]}</h1>
-      <p>{session.user.email ?? accountText[lang]}</p>
+      <p>{getDisplayName(session) ?? accountText[lang]}</p>
       <div className="account-actions">
         <Link href="/" className="account-link secondary">
           {homeText[lang]}
@@ -76,3 +76,18 @@ const signOutText: Record<Lang, string> = {
   en: 'Sign out',
   kk: '\u0428\u044b\u0493\u0443',
 };
+
+function getDisplayName(session: Session): string | null {
+  return getMetadataString(session.user.user_metadata, 'username')
+    ?? getMetadataString(session.user.user_metadata, 'preferred_username')
+    ?? getMetadataString(session.user.user_metadata, 'name')
+    ?? getMetadataString(session.user.user_metadata, 'full_name')
+    ?? session.user.email
+    ?? null;
+}
+
+function getMetadataString(metadata: unknown, key: string): string | null {
+  if (!metadata || typeof metadata !== 'object') return null;
+  const value = (metadata as Record<string, unknown>)[key];
+  return typeof value === 'string' && value ? value : null;
+}

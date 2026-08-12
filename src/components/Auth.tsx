@@ -18,7 +18,7 @@ export function Auth({ lang }: { lang: Lang }) {
     setBusy(true);
     setMessage('');
     const action = mode === 'signup'
-      ? supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } })
+      ? supabase.auth.signUp({ email, password, options: { emailRedirectTo: authCallbackUrl() } })
       : supabase.auth.signInWithPassword({ email, password });
     const { error } = await action;
     setBusy(false);
@@ -30,7 +30,7 @@ export function Auth({ lang }: { lang: Lang }) {
     setMessage('');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: authCallbackUrl() },
     });
     if (error) {
       setBusy(false);
@@ -44,7 +44,7 @@ export function Auth({ lang }: { lang: Lang }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'custom:lichess',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: authCallbackUrl(),
         scopes: 'preference:read',
       },
     });
@@ -111,3 +111,7 @@ const lichessButtonText: Record<Lang, string> = {
   en: 'Continue with Lichess',
   kk: 'Lichess \u0430\u0440\u049b\u044b\u043b\u044b \u043a\u0456\u0440\u0443',
 };
+
+function authCallbackUrl() {
+  return `${window.location.origin}/auth/callback`;
+}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Route, Switch } from 'wouter';
 import { Layout } from './components/Layout';
 import type { Lang } from './lib/types';
+import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { AuthPage } from './pages/AuthPage';
 import { CoachPage } from './pages/CoachPage';
 import { GamePage } from './pages/GamePage';
@@ -21,6 +22,7 @@ export default function App() {
       <Switch>
         <Route path="/">{() => <HomePage lang={lang} />}</Route>
         <Route path="/auth">{() => <AuthPage lang={lang} />}</Route>
+        <Route path="/auth/callback">{() => <AuthCallbackPage lang={lang} />}</Route>
         <Route path="/openings">{() => <OpeningsPage lang={lang} />}</Route>
         <Route path="/coach">{() => <CoachPage lang={lang} />}</Route>
         <Route path="/game/:id">{(params) => <GamePage lang={lang} id={params.id} />}</Route>
