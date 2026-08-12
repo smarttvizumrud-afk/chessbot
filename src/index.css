@@ -44,6 +44,8 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .nav a { color: var(--muted); padding: 9px 12px; border-radius: 8px; }
 .nav a.active { background: var(--panel-2); color: var(--ink); }
 .account-link { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; background: var(--gold); color: #17120a; font-weight: 800; white-space: nowrap; }
+.account-link.secondary { display: inline-block; background: transparent; color: var(--muted); }
+.account-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 
 .hero, .panel, .auth-card, .board-panel {
   background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015)), var(--panel);

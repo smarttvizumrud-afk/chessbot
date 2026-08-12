@@ -1,6 +1,7 @@
 import { Route, Switch } from 'wouter';
 import { Layout } from './components/Layout';
 import type { Lang } from './lib/types';
+import { AuthPage } from './pages/AuthPage';
 import { CoachPage } from './pages/CoachPage';
 import { GamePage } from './pages/GamePage';
 import { HomePage } from './pages/HomePage';
@@ -14,6 +15,7 @@ export default function App() {
     <Layout lang={lang}>
       <Switch>
         <Route path="/">{() => <HomePage lang={lang} />}</Route>
+        <Route path="/auth">{() => <AuthPage lang={lang} />}</Route>
         <Route path="/openings">{() => <OpeningsPage lang={lang} />}</Route>
         <Route path="/coach">{() => <CoachPage lang={lang} />}</Route>
         <Route path="/game/:id">{(params) => <GamePage lang={lang} id={params.id} />}</Route>

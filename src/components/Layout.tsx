@@ -36,7 +36,7 @@ export function Layout({ lang, children }: Props) {
             </Link>
           ))}
         </nav>
-        <Link href="/" className="account-link">
+        <Link href="/auth" className="account-link">
           {authLinkText[lang]}
         </Link>
       </header>
