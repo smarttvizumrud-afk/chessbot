@@ -11,6 +11,7 @@ export type ImportedGame = {
   playedAt: string;
   result: GameResult;
   color: PlayerColor;
+  playerRating?: number;
   opening: string;
   pgn: string;
   timeControl: string;

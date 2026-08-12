@@ -18,6 +18,7 @@ type GameRow = {
   played_at: string;
   result: 'win' | 'loss' | 'draw';
   color: 'white' | 'black';
+  player_rating: number | null;
   opening: string;
   pgn: string;
   time_control: string;
@@ -96,6 +97,7 @@ function toGameRow(game: ImportedGame) {
     played_at: game.playedAt,
     result: game.result,
     color: game.color,
+    player_rating: game.playerRating ?? null,
     opening: game.opening,
     pgn: game.pgn,
     time_control: game.timeControl,
@@ -112,6 +114,7 @@ function mapGameRow(row: GameRow): StoredGame {
     playedAt: row.played_at,
     result: row.result,
     color: row.color,
+    playerRating: row.player_rating ?? undefined,
     opening: normalizeOpening(row.opening, row.pgn),
     pgn: row.pgn,
     timeControl: row.time_control,

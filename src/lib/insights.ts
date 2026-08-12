@@ -8,7 +8,7 @@ export function dashboardStats(games: StoredGame[], analyses: StoredAnalysis[]) 
   const weaknesses = topStrings(analyses.flatMap((analysis) => analysis.weakSpots));
 
   return {
-    rating: estimateRating(accuracy, analysedGames.length),
+    rating: latestRating(analysedGames),
     total: analysedGames.length,
     wins: analysedGames.filter((game) => game.result === 'win').length,
     losses: analysedGames.filter((game) => game.result === 'loss').length,
@@ -70,7 +70,6 @@ function sum(values: number[]) {
   return values.reduce((total, value) => total + value, 0);
 }
 
-function estimateRating(accuracy: number, games: number) {
-  if (!games) return 0;
-  return Math.round(600 + accuracy * 16);
+function latestRating(games: StoredGame[]) {
+  return games.find((game) => typeof game.playerRating === 'number')?.playerRating ?? 0;
 }

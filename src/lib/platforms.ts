@@ -82,6 +82,7 @@ function mapChessComGame(game: ChessComGame, username: string): ImportedGame {
     playedAt: new Date(game.end_time * 1000).toISOString(),
     result: resultFrom(player.result),
     color: isWhite ? 'white' : 'black',
+    playerRating: player.rating,
     opening: getOpening(game.pgn ?? ''),
     pgn: game.pgn ?? '',
     timeControl: game.time_control ?? 'unknown',
@@ -92,6 +93,7 @@ function mapLichessGame(game: LichessGame, username: string): ImportedGame {
   const whiteName = game.players.white?.user?.name ?? 'Anonymous';
   const isWhite = whiteName.toLowerCase() === username.toLowerCase();
   const winner = game.winner;
+  const player = isWhite ? game.players.white : game.players.black;
   return {
     platform: 'lichess',
     platformGameId: game.id,
@@ -100,6 +102,7 @@ function mapLichessGame(game: LichessGame, username: string): ImportedGame {
     playedAt: new Date(game.createdAt).toISOString(),
     result: !winner ? 'draw' : winner === (isWhite ? 'white' : 'black') ? 'win' : 'loss',
     color: isWhite ? 'white' : 'black',
+    playerRating: player?.rating,
     opening: game.opening?.name ?? getOpening(game.pgn ?? ''),
     pgn: game.pgn ?? '',
     timeControl: game.speed ?? 'unknown',
