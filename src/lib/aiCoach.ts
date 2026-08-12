@@ -23,7 +23,7 @@ export async function askCoach(
 ) {
   const context = buildContext(games, analyses);
   const system = `You are a personal chess coach powered by Gemini. Answer in ${languageName[lang]}. Use only the supplied player data, Stockfish results, openings, weaknesses, and chat history. Be concrete, kind, and concise.`;
-  const prompt = `${context}\n\nChat history:\n${formatHistory(history)}\n\nUser question: ${question}`;
+  const prompt = trimPrompt(`${context}\n\nChat history:\n${formatHistory(history)}\n\nUser question: ${question}`);
   const { data, error } = await supabase.functions.invoke('ai', { body: { prompt, system } });
   if (error) return fallbackAnswer(lang, games, analyses);
   return readText(data) || fallbackAnswer(lang, games, analyses);
@@ -37,14 +37,37 @@ function buildContext(games: StoredGame[], analyses: StoredAnalysis[]) {
   const stats = dashboardStats(games, analyses);
   const openings = openingStats(games, analyses).slice(0, 5);
   const plan = combinedPlan(analyses).slice(0, 5);
-  return JSON.stringify({ stats, openings, plan, games: games.slice(0, 10) });
+  const recentGames = games.slice(0, 10).map((game) => ({
+    platform: game.platform,
+    username: game.username,
+    opponent: game.opponent,
+    result: game.result,
+    color: game.color,
+    rating: game.playerRating,
+    opening: game.opening,
+    playedAt: game.playedAt,
+    timeControl: game.timeControl,
+  }));
+  const recentAnalyses = analyses.slice(0, 10).map((analysis) => ({
+    accuracy: analysis.accuracy,
+    mistakes: analysis.mistakes,
+    blunders: analysis.blunders,
+    weakSpots: analysis.weakSpots.slice(0, 3),
+    trainingPlan: analysis.trainingPlan.slice(0, 3),
+  }));
+
+  return JSON.stringify({ stats, openings, plan, recentGames, recentAnalyses });
 }
 
 function formatHistory(history: CoachMessage[]) {
   return history
-    .slice(-8)
+    .slice(-4)
     .map((message) => `${message.role}: ${message.text}`)
     .join('\n');
+}
+
+function trimPrompt(prompt: string) {
+  return prompt.length > 9_500 ? prompt.slice(-9_500) : prompt;
 }
 
 function readText(data: unknown) {
