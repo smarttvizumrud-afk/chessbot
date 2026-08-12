@@ -1,6 +1,9 @@
+import { useEffect, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import { Link, useLocation } from 'wouter';
 import type { Lang } from '../lib/types';
 import { t } from '../lib/i18n';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
 type Props = {
   lang: Lang;
@@ -21,6 +24,20 @@ const authLinkText: Record<Lang, string> = {
 
 export function Layout({ lang, children }: Props) {
   const [location] = useLocation();
+  const [session, setSession] = useState<Session | null>(null);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
+
+  const avatarUrl = getMetadataString(session?.user.user_metadata, 'avatar_url')
+    ?? getMetadataString(session?.user.user_metadata, 'picture');
+  const accountInitial = getAccountInitial(session?.user.email);
 
   return (
     <main className="shell">
@@ -36,11 +53,23 @@ export function Layout({ lang, children }: Props) {
             </Link>
           ))}
         </nav>
-        <Link href="/auth" className="account-link">
-          {authLinkText[lang]}
+        <Link href="/auth" className={session ? 'account-link profile-link' : 'account-link'}>
+          {session ? (
+            avatarUrl ? <img src={avatarUrl} alt="" /> : <span>{accountInitial}</span>
+          ) : authLinkText[lang]}
         </Link>
       </header>
       {children}
     </main>
   );
+}
+
+function getMetadataString(metadata: unknown, key: string): string | null {
+  if (!metadata || typeof metadata !== 'object') return null;
+  const value = (metadata as Record<string, unknown>)[key];
+  return typeof value === 'string' && value ? value : null;
+}
+
+function getAccountInitial(email?: string): string {
+  return email?.trim().charAt(0).toUpperCase() || 'A';
 }
