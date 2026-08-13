@@ -89,10 +89,16 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .signal-bars i:nth-child(4) { height: 28px; }
 .account-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 .lichess-profile { display: grid; grid-template-columns: 260px 1fr; gap: 18px; align-items: stretch; }
-.profile-side { display: grid; align-content: start; gap: 14px; padding: 22px 14px; border-right: 1px solid var(--line); color: var(--muted); }
-.rating-mode { display: grid; grid-template-columns: 54px 1fr; gap: 12px; align-items: center; min-height: 74px; }
-.mode-mark { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #3a3f45, #15191f); opacity: 0.82; }
-.rating-mode strong { display: block; font-size: 18px; font-weight: 700; letter-spacing: 0; }
+.profile-side { display: grid; align-content: start; gap: 12px; padding: 22px 14px; border-right: 1px solid var(--line); color: var(--muted); }
+.rating-mode { display: grid; grid-template-columns: 48px 1fr; gap: 12px; align-items: center; min-height: 66px; }
+.mode-mark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #343941, #171c22); color: #8f98a3; font-size: 22px; font-weight: 900; opacity: 0.92; }
+.mode-mark::before { content: "?"; }
+.mode-bullet::before { content: "\2022"; font-size: 34px; }
+.mode-blitz::before { content: "\26a1"; }
+.mode-rapid::before { content: "\265e"; }
+.mode-classic::before { content: "\265c"; }
+.mode-puzzles::before { content: "\25ce"; }
+.rating-mode strong { display: block; color: #8f98a3; font-size: 18px; font-weight: 700; letter-spacing: 0; }
 .rating-mode p { margin-top: 4px; color: #b7c0ca; }
 .profile-side-line { height: 1px; margin: 8px 12px; background: var(--line); }
 .profile-main { overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #211f1d; }
