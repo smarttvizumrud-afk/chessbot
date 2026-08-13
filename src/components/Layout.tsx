@@ -1,13 +1,15 @@
 import { Link, useLocation } from 'wouter';
-import type { AppTheme, Lang } from '../lib/types';
+import type { AppTheme, Lang, PieceStyle } from '../lib/types';
 import { t } from '../lib/i18n';
 import { AccountMenu } from './AccountMenu';
 
 type Props = {
   lang: Lang;
   theme: AppTheme;
+  pieceStyle: PieceStyle;
   onLangChange: (lang: Lang) => void;
   onThemeChange: (theme: AppTheme) => void;
+  onPieceStyleChange: (pieceStyle: PieceStyle) => void;
   children: React.ReactNode;
 };
 
@@ -17,7 +19,15 @@ const nav = [
   ['/coach', 'coach'],
 ] as const;
 
-export function Layout({ lang, theme, onLangChange, onThemeChange, children }: Props) {
+export function Layout({
+  lang,
+  theme,
+  pieceStyle,
+  onLangChange,
+  onThemeChange,
+  onPieceStyleChange,
+  children,
+}: Props) {
   const [location] = useLocation();
 
   return (
@@ -34,7 +44,14 @@ export function Layout({ lang, theme, onLangChange, onThemeChange, children }: P
             </Link>
           ))}
         </nav>
-        <AccountMenu lang={lang} theme={theme} onLangChange={onLangChange} onThemeChange={onThemeChange} />
+        <AccountMenu
+          lang={lang}
+          theme={theme}
+          pieceStyle={pieceStyle}
+          onLangChange={onLangChange}
+          onThemeChange={onThemeChange}
+          onPieceStyleChange={onPieceStyleChange}
+        />
       </header>
       {children}
     </main>

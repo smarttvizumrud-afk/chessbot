@@ -1,6 +1,7 @@
 export type Platform = 'chesscom' | 'lichess';
 export type Lang = 'ru' | 'en' | 'kk';
 export type AppTheme = 'dark' | 'green' | 'light';
+export type PieceStyle = 'classic' | 'alpha' | 'neo';
 export type GameResult = 'win' | 'loss' | 'draw';
 export type PlayerColor = 'white' | 'black';
 

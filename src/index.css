@@ -76,8 +76,9 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .settings-row.active { background: #4f961a; color: #fff; font-weight: 800; }
 .settings-chevron { color: #6eb648; font-size: 24px; font-weight: 900; line-height: 1; }
 .settings-row.active .settings-chevron { color: #fff; }
-.menu-lang-select, .menu-theme-select { width: 76px; height: 34px; padding: 0 8px; background: #0d131d; color: var(--ink); font-size: 14px; font-weight: 800; border-color: var(--line); }
+.menu-lang-select, .menu-theme-select, .menu-piece-select { width: 76px; height: 34px; padding: 0 8px; background: #0d131d; color: var(--ink); font-size: 14px; font-weight: 800; border-color: var(--line); }
 .menu-theme-select { width: 92px; }
+.menu-piece-select { width: 98px; }
 .connection-stats { position: relative; border-top: 1px solid var(--line); padding: 12px 72px 14px 16px; color: var(--muted); font-size: 17px; line-height: 1.3; }
 .signal-bars { position: absolute; right: 18px; bottom: 18px; display: flex; align-items: end; gap: 3px; height: 28px; }
 .signal-bars i { display: block; width: 8px; background: #5fb316; }
@@ -130,6 +131,13 @@ input, select { background: #0d131d; padding: 12px 14px; }
 
 .analysis-layout { display: grid; grid-template-columns: minmax(280px, 540px) 1fr; gap: 18px; align-items: start; }
 .board-panel { overflow: hidden; }
+.piece-symbol { display: grid; place-items: center; line-height: 1; user-select: none; }
+.piece-alpha { font-family: Georgia, "Times New Roman", serif; font-weight: 900; text-shadow: 0 2px 2px rgba(0,0,0,0.32); }
+.piece-neo { font-family: Inter, "Segoe UI Symbol", sans-serif; font-weight: 900; filter: drop-shadow(0 3px 2px rgba(0,0,0,0.34)); }
+.piece-white.piece-alpha { color: #fff5d5; -webkit-text-stroke: 1px #7b5f20; }
+.piece-black.piece-alpha { color: #1d2430; -webkit-text-stroke: 1px #f1d98a; }
+.piece-white.piece-neo { color: #f8fff7; -webkit-text-stroke: 1px #3d7b2c; }
+.piece-black.piece-neo { color: #111814; -webkit-text-stroke: 1px #9bcf69; }
 .move-table { overflow: hidden; border: 1px solid var(--line); border-radius: 8px; margin: 16px 0; background: #1a1d22; }
 .move-table-head { display: grid; grid-template-columns: 70px 1fr; align-items: center; gap: 12px; padding: 10px 14px; background: #242628; color: var(--muted); }
 .move-table-head strong { color: var(--ink); font-size: 28px; }

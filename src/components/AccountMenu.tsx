@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Link } from 'wouter';
-import type { AppTheme, Lang } from '../lib/types';
+import type { AppTheme, Lang, PieceStyle } from '../lib/types';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import { LanguageSelect, PieceStyleSelect, ThemeSelect } from './MenuSelects';
 
 type Props = {
   lang: Lang;
   theme: AppTheme;
+  pieceStyle: PieceStyle;
   onLangChange: (lang: Lang) => void;
   onThemeChange: (theme: AppTheme) => void;
+  onPieceStyleChange: (pieceStyle: PieceStyle) => void;
 };
 
 const authLinkText: Record<Lang, string> = {
@@ -41,7 +44,14 @@ const menuLabels: Record<Lang, {
   },
 };
 
-export function AccountMenu({ lang, theme, onLangChange, onThemeChange }: Props) {
+export function AccountMenu({
+  lang,
+  theme,
+  pieceStyle,
+  onLangChange,
+  onThemeChange,
+  onPieceStyleChange,
+}: Props) {
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
@@ -70,13 +80,27 @@ export function AccountMenu({ lang, theme, onLangChange, onThemeChange }: Props)
         <Link href="/auth" className="account-link profile-link">
           {avatarUrl ? <img src={avatarUrl} alt="" /> : <span>{getAccountInitial(displayName)}</span>}
         </Link>
-        <AccountHoverMenu lang={lang} theme={theme} onLangChange={onLangChange} onThemeChange={onThemeChange} />
+        <AccountHoverMenu
+          lang={lang}
+          theme={theme}
+          pieceStyle={pieceStyle}
+          onLangChange={onLangChange}
+          onThemeChange={onThemeChange}
+          onPieceStyleChange={onPieceStyleChange}
+        />
       </div>
     </div>
   );
 }
 
-function AccountHoverMenu({ lang, theme, onLangChange, onThemeChange }: Props) {
+function AccountHoverMenu({
+  lang,
+  theme,
+  pieceStyle,
+  onLangChange,
+  onThemeChange,
+  onPieceStyleChange,
+}: Props) {
   const labels = menuLabels[lang];
 
   return (
@@ -91,7 +115,10 @@ function AccountHoverMenu({ lang, theme, onLangChange, onThemeChange }: Props) {
         <ThemeSelect theme={theme} onThemeChange={onThemeChange} />
       </label>
       <SettingsRow label={labels.board} />
-      <SettingsRow label={labels.pieces} />
+      <label className="settings-row">
+        <span>{labels.pieces}</span>
+        <PieceStyleSelect pieceStyle={pieceStyle} onPieceStyleChange={onPieceStyleChange} />
+      </label>
       <div className="connection-stats">
         <div>PING 139 ms</div>
         <div>SERVER ? ms</div>
@@ -107,33 +134,6 @@ function SettingsRow({ label, active = false }: { label: string; active?: boolea
       <span>{label}</span>
       <span className="settings-chevron">&gt;</span>
     </div>
-  );
-}
-
-function LanguageSelect({
-  lang,
-  onLangChange,
-  className,
-}: Pick<Props, 'lang' | 'onLangChange'> & { className: string }) {
-  return (
-    <select className={className} value={lang} onChange={(event) => onLangChange(event.target.value as Lang)}>
-      <option value="ru">RU</option>
-      <option value="en">EN</option>
-      <option value="kk">KK</option>
-    </select>
-  );
-}
-
-function ThemeSelect({
-  theme,
-  onThemeChange,
-}: Pick<Props, 'theme' | 'onThemeChange'>) {
-  return (
-    <select className="menu-theme-select" value={theme} onChange={(event) => onThemeChange(event.target.value as AppTheme)}>
-      <option value="dark">Dark</option>
-      <option value="green">Green</option>
-      <option value="light">Light</option>
-    </select>
   );
 }
 
