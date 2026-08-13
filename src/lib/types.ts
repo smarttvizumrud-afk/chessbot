@@ -58,3 +58,4 @@ export type GameAnalysis = {
 export type StoredGame = ImportedGame & { id: string };
 export type StoredProfile = PlayerRatings & { id: string; connectedAt: string };
 export type StoredAnalysis = GameAnalysis & { id: string; gameId: string; createdAt: string };
+export type StoredPinnedOpening = { id: string; opening: string; createdAt: string };

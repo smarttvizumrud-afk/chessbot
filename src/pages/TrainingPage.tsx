@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { Link } from 'wouter';
 import { AuthGate } from '../components/AuthGate';
+import { GeneratedTasks } from '../components/GeneratedTasks';
 import type { Lang } from '../lib/types';
+import { useChessData } from '../lib/useChessData';
 
 type TrainingText = {
   title: string;
@@ -55,6 +58,8 @@ export function TrainingPage({ lang }: { lang: Lang }) {
 }
 
 function TrainingContent({ lang }: { lang: Lang }) {
+  const { games, analyses, loading } = useChessData();
+  const [showTasks, setShowTasks] = useState(false);
   const labels = text[lang];
 
   return (
@@ -64,9 +69,14 @@ function TrainingContent({ lang }: { lang: Lang }) {
         <p>{labels.subtitle}</p>
       </section>
       <section className="training-grid">
-        <TrainingCard title={labels.puzzles} text={labels.puzzlesText} action={labels.startPuzzles} href="/coach" />
+        <TrainingCard title={labels.puzzles} text={labels.puzzlesText} action={labels.startPuzzles} onClick={() => setShowTasks(true)} />
         <TrainingCard title={labels.openings} text={labels.openingsText} action={labels.studyOpenings} href="/openings" />
       </section>
+      {showTasks && (
+        loading
+          ? <section className="panel"><p>Loading...</p></section>
+          : <GeneratedTasks games={games} analyses={analyses} lang={lang} />
+      )}
     </div>
   );
 }
@@ -76,17 +86,21 @@ function TrainingCard({
   text,
   action,
   href,
+  onClick,
 }: {
   title: string;
   text: string;
   action: string;
-  href: string;
+  href?: string;
+  onClick?: () => void;
 }) {
   return (
     <article className="training-card">
       <h2>{title}</h2>
       <p>{text}</p>
-      <Link href={href} className="account-link">{action}</Link>
+      {href
+        ? <Link href={href} className="account-link">{action}</Link>
+        : <button type="button" onClick={onClick}>{action}</button>}
     </article>
   );
 }
