@@ -38,6 +38,24 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .guest-button { display: block; width: 100%; }
 
 .shell { width: min(1180px, 100%); margin: 0 auto; padding: 20px; }
+.theme-green {
+  --bg: #08100c;
+  --panel: #101d17;
+  --panel-2: #17291f;
+  --ink: #f4fff8;
+  --muted: #9fb7aa;
+  --gold: #8fd05a;
+  --line: #284132;
+}
+.theme-light {
+  --bg: #eef3f0;
+  --panel: #ffffff;
+  --panel-2: #e7eee9;
+  --ink: #142018;
+  --muted: #627066;
+  --gold: #4f961a;
+  --line: #cdd9d1;
+}
 .topbar { display: flex; align-items: center; gap: 18px; justify-content: space-between; margin-bottom: 22px; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 900; }
 .brand-mark { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px; background: var(--gold); color: #111; }
@@ -58,7 +76,8 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .settings-row.active { background: #4f961a; color: #fff; font-weight: 800; }
 .settings-chevron { color: #6eb648; font-size: 24px; font-weight: 900; line-height: 1; }
 .settings-row.active .settings-chevron { color: #fff; }
-.menu-lang-select { width: 76px; height: 34px; padding: 0 8px; background: #0d131d; color: var(--ink); font-size: 14px; font-weight: 800; border-color: var(--line); }
+.menu-lang-select, .menu-theme-select { width: 76px; height: 34px; padding: 0 8px; background: #0d131d; color: var(--ink); font-size: 14px; font-weight: 800; border-color: var(--line); }
+.menu-theme-select { width: 92px; }
 .connection-stats { position: relative; border-top: 1px solid var(--line); padding: 12px 72px 14px 16px; color: var(--muted); font-size: 17px; line-height: 1.3; }
 .signal-bars { position: absolute; right: 18px; bottom: 18px; display: flex; align-items: end; gap: 3px; height: 28px; }
 .signal-bars i { display: block; width: 8px; background: #5fb316; }

@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Link } from 'wouter';
-import type { Lang } from '../lib/types';
+import type { AppTheme, Lang } from '../lib/types';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
 type Props = {
   lang: Lang;
+  theme: AppTheme;
   onLangChange: (lang: Lang) => void;
+  onThemeChange: (theme: AppTheme) => void;
 };
 
 const authLinkText: Record<Lang, string> = {
@@ -39,7 +41,7 @@ const menuLabels: Record<Lang, {
   },
 };
 
-export function AccountMenu({ lang, onLangChange }: Props) {
+export function AccountMenu({ lang, theme, onLangChange, onThemeChange }: Props) {
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
@@ -68,13 +70,13 @@ export function AccountMenu({ lang, onLangChange }: Props) {
         <Link href="/auth" className="account-link profile-link">
           {avatarUrl ? <img src={avatarUrl} alt="" /> : <span>{getAccountInitial(displayName)}</span>}
         </Link>
-        <AccountHoverMenu lang={lang} onLangChange={onLangChange} />
+        <AccountHoverMenu lang={lang} theme={theme} onLangChange={onLangChange} onThemeChange={onThemeChange} />
       </div>
     </div>
   );
 }
 
-function AccountHoverMenu({ lang, onLangChange }: Props) {
+function AccountHoverMenu({ lang, theme, onLangChange, onThemeChange }: Props) {
   const labels = menuLabels[lang];
 
   return (
@@ -84,7 +86,10 @@ function AccountHoverMenu({ lang, onLangChange }: Props) {
         <LanguageSelect lang={lang} onLangChange={onLangChange} className="menu-lang-select" />
       </label>
       <SettingsRow label={labels.sound} />
-      <SettingsRow label={labels.theme} active />
+      <label className="settings-row active">
+        <span>{labels.theme}</span>
+        <ThemeSelect theme={theme} onThemeChange={onThemeChange} />
+      </label>
       <SettingsRow label={labels.board} />
       <SettingsRow label={labels.pieces} />
       <div className="connection-stats">
@@ -105,12 +110,29 @@ function SettingsRow({ label, active = false }: { label: string; active?: boolea
   );
 }
 
-function LanguageSelect({ lang, onLangChange, className }: Props & { className: string }) {
+function LanguageSelect({
+  lang,
+  onLangChange,
+  className,
+}: Pick<Props, 'lang' | 'onLangChange'> & { className: string }) {
   return (
     <select className={className} value={lang} onChange={(event) => onLangChange(event.target.value as Lang)}>
       <option value="ru">RU</option>
       <option value="en">EN</option>
       <option value="kk">KK</option>
+    </select>
+  );
+}
+
+function ThemeSelect({
+  theme,
+  onThemeChange,
+}: Pick<Props, 'theme' | 'onThemeChange'>) {
+  return (
+    <select className="menu-theme-select" value={theme} onChange={(event) => onThemeChange(event.target.value as AppTheme)}>
+      <option value="dark">Dark</option>
+      <option value="green">Green</option>
+      <option value="light">Light</option>
     </select>
   );
 }

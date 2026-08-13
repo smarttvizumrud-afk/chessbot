@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Route, Switch } from 'wouter';
 import { Layout } from './components/Layout';
-import type { Lang } from './lib/types';
+import type { AppTheme, Lang } from './lib/types';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { AuthPage } from './pages/AuthPage';
 import { CoachPage } from './pages/CoachPage';
@@ -12,13 +12,14 @@ import { OpeningsPage } from './pages/OpeningsPage';
 
 export default function App() {
   const [lang, setLang] = useState<Lang>('ru');
+  const [theme, setTheme] = useState<AppTheme>('dark');
 
   function changeLang(nextLang: Lang) {
     setLang(nextLang);
   }
 
   return (
-    <Layout lang={lang} onLangChange={changeLang}>
+    <Layout lang={lang} theme={theme} onLangChange={changeLang} onThemeChange={setTheme}>
       <Switch>
         <Route path="/">{() => <HomePage lang={lang} />}</Route>
         <Route path="/auth">{() => <AuthPage lang={lang} />}</Route>
