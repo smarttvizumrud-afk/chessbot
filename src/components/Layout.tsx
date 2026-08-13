@@ -18,6 +18,7 @@ type Props = {
 const nav = [
   ['/', 'dashboard'],
   ['/openings', 'openings'],
+  ['/training', 'training'],
   ['/coach', 'coach'],
 ] as const;
 
