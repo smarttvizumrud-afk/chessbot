@@ -139,6 +139,15 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .training-card { display: grid; gap: 12px; align-content: start; min-height: 190px; border: 1px solid var(--line); border-radius: 8px; padding: 22px; background: var(--panel); }
 .training-card p { color: var(--muted); line-height: 1.55; }
 .training-card .account-link { justify-self: start; margin-top: 12px; }
+.puzzle-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+.puzzle-card { display: grid; gap: 8px; align-content: start; border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 8px; padding: 16px; background: #0d131d; }
+.puzzle-card.blunder { border-left-color: #ff6767; }
+.puzzle-card.mistake { border-left-color: var(--gold); }
+.puzzle-card.inaccuracy { border-left-color: #58b9ff; }
+.puzzle-card p { color: var(--muted); }
+.puzzle-card small { color: var(--green); }
+.puzzle-card .account-link { justify-self: start; margin-top: 6px; }
+.puzzle-badge { justify-self: start; border: 1px solid var(--line); border-radius: 999px; padding: 5px 9px; color: var(--ink); font-size: 13px; font-weight: 800; }
 .auth-heading { margin-top: 18px; font-size: 22px; }
 .coach-form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
 .coach-form input { grid-column: span 2; min-width: 0; }
@@ -209,7 +218,7 @@ input, select { background: #0d131d; padding: 12px 14px; }
   .profile-popover { left: 0; right: auto; width: min(340px, calc(100vw - 40px)); }
   .settings-row { font-size: 17px; }
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .coach-form, .chat-form, .analysis-layout, .table-row, .oauth-buttons, .lichess-profile, .profile-content-grid, .training-grid { grid-template-columns: 1fr; }
+  .coach-form, .chat-form, .analysis-layout, .table-row, .oauth-buttons, .lichess-profile, .profile-content-grid, .training-grid, .puzzle-grid { grid-template-columns: 1fr; }
   .profile-side, .profile-chart { border-right: 0; }
   .profile-actions-bar { justify-content: flex-start; }
   .coach-form input { grid-column: span 1; }
