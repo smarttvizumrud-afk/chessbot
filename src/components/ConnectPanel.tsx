@@ -14,27 +14,45 @@ export function ConnectPanel({ lang, onDone }: Props) {
   const [username, setUsername] = useState('');
   const [range, setRange] = useState<Range>('10');
   const [status, setStatus] = useState('');
+  const [busy, setBusy] = useState(false);
 
   async function runImport(event: React.FormEvent) {
     event.preventDefault();
+    if (busy) return;
+    setBusy(true);
     const engine = new StockfishClient();
     setStatus(t(lang, 'loadingGames'));
     try {
       const ratings = await fetchPlatformRatings(platform, username);
       await saveProfile(ratings);
       const games = await fetchPlatformGames(toOptions(platform, username, range));
+      if (!games.length) {
+        setStatus(t(lang, 'noData'));
+        return;
+      }
+
+      let analysedCount = 0;
+      let skippedCount = 0;
       for (const [index, game] of games.entries()) {
         setStatus(`${t(lang, 'analysing')} ${index + 1}/${games.length}: ${game.opponent}`);
-        const stored = await saveGame(game);
-        const analysis = await analyzeGame(game, engine);
-        await saveAnalysis(stored.id, analysis);
+        try {
+          const stored = await saveGame(game);
+          const analysis = await analyzeGame(game, engine);
+          await saveAnalysis(stored.id, analysis);
+          analysedCount += 1;
+        } catch {
+          skippedCount += 1;
+        }
       }
       await onDone();
-      setStatus(`${t(lang, 'ready')}: ${games.length} ${t(lang, 'analysed')}.`);
-    } catch {
-      setStatus(t(lang, 'analysisFailed'));
+      const skippedText = skippedCount ? `, ${skippedCount} skipped` : '';
+      setStatus(`${t(lang, 'ready')}: ${analysedCount} ${t(lang, 'analysed')}${skippedText}.`);
+    } catch (error) {
+      const details = error instanceof Error ? ` ${error.message}` : '';
+      setStatus(`${t(lang, 'analysisFailed')}${details}`);
     } finally {
       engine.stop();
+      setBusy(false);
     }
   }
 
@@ -56,7 +74,7 @@ export function ConnectPanel({ lang, onDone }: Props) {
           <option value="month">{t(lang, 'month')}</option>
           <option value="quarter">{t(lang, 'quarter')}</option>
         </select>
-        <button type="submit">{t(lang, 'import')}</button>
+        <button type="submit" disabled={busy}>{busy ? '...' : t(lang, 'import')}</button>
       </form>
       {status && <p className="message">{status}</p>}
     </section>
@@ -68,7 +86,14 @@ function toOptions(platform: Platform, username: string, range: Range) {
   return {
     platform,
     username,
-    limit: days ? 100 : Number(range),
+    limit: importLimit(range),
     since: days ? new Date(Date.now() - days * 86_400_000).toISOString() : undefined,
   };
+}
+
+function importLimit(range: Range) {
+  if (range === 'week') return 25;
+  if (range === 'month') return 30;
+  if (range === 'quarter') return 30;
+  return Number(range);
 }
