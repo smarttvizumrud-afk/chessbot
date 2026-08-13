@@ -140,6 +140,10 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .training-card p { color: var(--muted); line-height: 1.55; }
 .training-card .account-link { justify-self: start; margin-top: 12px; }
 .puzzle-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+.theme-puzzle-list { display: grid; gap: 16px; margin-top: 14px; }
+.theme-puzzle-group { border: 1px solid var(--line); border-radius: 8px; padding: 14px; background: rgba(255,255,255,0.02); }
+.theme-puzzle-group header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.theme-puzzle-group header span { color: var(--muted); font-size: 14px; }
 .puzzle-card { display: grid; gap: 8px; align-content: start; border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 8px; padding: 16px; background: #0d131d; }
 .puzzle-card.blunder { border-left-color: #ff6767; }
 .puzzle-card.mistake { border-left-color: var(--gold); }
