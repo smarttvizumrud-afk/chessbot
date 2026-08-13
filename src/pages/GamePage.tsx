@@ -4,18 +4,38 @@ import { AnalysisBoard } from '../components/AnalysisBoard';
 import { MoveTable } from '../components/MoveTable';
 import { labelText, localizeInsight, t } from '../lib/i18n';
 import { fenAfterPly, getMovesWithFens } from '../lib/pgn';
-import type { Lang, MoveReport, PieceStyle, PlayerColor } from '../lib/types';
+import type { BoardStyle, Lang, MoveReport, PieceStyle, PlayerColor } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
 
-export function GamePage({ id, lang, pieceStyle }: { id: string; lang: Lang; pieceStyle: PieceStyle }) {
+export function GamePage({
+  id,
+  lang,
+  boardStyle,
+  pieceStyle,
+}: {
+  id: string;
+  lang: Lang;
+  boardStyle: BoardStyle;
+  pieceStyle: PieceStyle;
+}) {
   return (
     <AuthGate lang={lang}>
-      <GameContent id={id} lang={lang} pieceStyle={pieceStyle} />
+      <GameContent id={id} lang={lang} boardStyle={boardStyle} pieceStyle={pieceStyle} />
     </AuthGate>
   );
 }
 
-function GameContent({ id, lang, pieceStyle }: { id: string; lang: Lang; pieceStyle: PieceStyle }) {
+function GameContent({
+  id,
+  lang,
+  boardStyle,
+  pieceStyle,
+}: {
+  id: string;
+  lang: Lang;
+  boardStyle: BoardStyle;
+  pieceStyle: PieceStyle;
+}) {
   const { games, analyses, loading } = useChessData();
   const game = games.find((item) => item.id === id);
   const analysis = analyses.find((item) => item.gameId === id);
@@ -43,7 +63,7 @@ function GameContent({ id, lang, pieceStyle }: { id: string; lang: Lang; pieceSt
   return (
     <div className="analysis-layout">
       <section className="board-panel">
-        <AnalysisBoard fen={fen} pieceStyle={pieceStyle} />
+        <AnalysisBoard fen={fen} boardStyle={boardStyle} pieceStyle={pieceStyle} />
       </section>
       <section className="panel">
         <h1>{t(lang, 'gameAnalysis')}</h1>

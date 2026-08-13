@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import type { CustomPieces, Piece } from 'react-chessboard/dist/chessboard/types';
-import type { PieceStyle } from '../lib/types';
+import type { BoardStyle, PieceStyle } from '../lib/types';
 
 type Props = {
   fen: string;
+  boardStyle: BoardStyle;
   pieceStyle: PieceStyle;
 };
 
@@ -26,9 +27,10 @@ const glyphs: Record<Piece, string> = {
   bK: '\u265a',
 };
 
-export function AnalysisBoard({ fen, pieceStyle }: Props) {
+export function AnalysisBoard({ fen, boardStyle, pieceStyle }: Props) {
   const [boardFen, setBoardFen] = useState(fen);
   const customPieces = useMemo(() => getCustomPieces(pieceStyle), [pieceStyle]);
+  const boardColors = boardStyles[boardStyle];
 
   useEffect(() => {
     setBoardFen(fen);
@@ -51,10 +53,18 @@ export function AnalysisBoard({ fen, pieceStyle }: Props) {
       position={boardFen}
       boardWidth={Math.min(window.innerWidth - 40, 520)}
       customPieces={customPieces}
+      customLightSquareStyle={{ backgroundColor: boardColors.light }}
+      customDarkSquareStyle={{ backgroundColor: boardColors.dark }}
       onPieceDrop={dropPiece}
     />
   );
 }
+
+const boardStyles: Record<BoardStyle, { light: string; dark: string }> = {
+  classic: { light: '#f0d9b5', dark: '#b58863' },
+  blue: { light: '#d7e6f6', dark: '#6f93b8' },
+  green: { light: '#e5efd4', dark: '#79a65a' },
+};
 
 function getCustomPieces(pieceStyle: PieceStyle): CustomPieces | undefined {
   if (pieceStyle === 'classic') return undefined;

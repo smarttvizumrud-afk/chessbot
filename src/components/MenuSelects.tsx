@@ -1,4 +1,4 @@
-import type { AppTheme, Lang, PieceStyle } from '../lib/types';
+import type { AppTheme, BoardStyle, Lang, PieceStyle } from '../lib/types';
 
 export function LanguageSelect({
   lang,
@@ -50,6 +50,26 @@ export function PieceStyleSelect({
       <option value="classic">Classic</option>
       <option value="alpha">Alpha</option>
       <option value="neo">Neo</option>
+    </select>
+  );
+}
+
+export function BoardStyleSelect({
+  boardStyle,
+  onBoardStyleChange,
+}: {
+  boardStyle: BoardStyle;
+  onBoardStyleChange: (boardStyle: BoardStyle) => void;
+}) {
+  return (
+    <select
+      className="menu-board-select"
+      value={boardStyle}
+      onChange={(event) => onBoardStyleChange(event.target.value as BoardStyle)}
+    >
+      <option value="classic">Classic</option>
+      <option value="blue">Blue</option>
+      <option value="green">Green</option>
     </select>
   );
 }

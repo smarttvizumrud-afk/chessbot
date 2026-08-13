@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Route, Switch } from 'wouter';
 import { Layout } from './components/Layout';
-import type { AppTheme, Lang, PieceStyle } from './lib/types';
+import type { AppTheme, BoardStyle, Lang, PieceStyle } from './lib/types';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { AuthPage } from './pages/AuthPage';
 import { CoachPage } from './pages/CoachPage';
@@ -13,6 +13,7 @@ import { OpeningsPage } from './pages/OpeningsPage';
 export default function App() {
   const [lang, setLang] = useState<Lang>('ru');
   const [theme, setTheme] = useState<AppTheme>('dark');
+  const [boardStyle, setBoardStyle] = useState<BoardStyle>('classic');
   const [pieceStyle, setPieceStyle] = useState<PieceStyle>('classic');
 
   function changeLang(nextLang: Lang) {
@@ -23,9 +24,11 @@ export default function App() {
     <Layout
       lang={lang}
       theme={theme}
+      boardStyle={boardStyle}
       pieceStyle={pieceStyle}
       onLangChange={changeLang}
       onThemeChange={setTheme}
+      onBoardStyleChange={setBoardStyle}
       onPieceStyleChange={setPieceStyle}
     >
       <Switch>
@@ -34,7 +37,9 @@ export default function App() {
         <Route path="/auth/callback">{() => <AuthCallbackPage lang={lang} />}</Route>
         <Route path="/openings">{() => <OpeningsPage lang={lang} />}</Route>
         <Route path="/coach">{() => <CoachPage lang={lang} />}</Route>
-        <Route path="/game/:id">{(params) => <GamePage lang={lang} id={params.id} pieceStyle={pieceStyle} />}</Route>
+        <Route path="/game/:id">
+          {(params) => <GamePage lang={lang} id={params.id} boardStyle={boardStyle} pieceStyle={pieceStyle} />}
+        </Route>
         <Route component={NotFoundPage} />
       </Switch>
     </Layout>

@@ -1,14 +1,16 @@
 import { Link, useLocation } from 'wouter';
-import type { AppTheme, Lang, PieceStyle } from '../lib/types';
+import type { AppTheme, BoardStyle, Lang, PieceStyle } from '../lib/types';
 import { t } from '../lib/i18n';
 import { AccountMenu } from './AccountMenu';
 
 type Props = {
   lang: Lang;
   theme: AppTheme;
+  boardStyle: BoardStyle;
   pieceStyle: PieceStyle;
   onLangChange: (lang: Lang) => void;
   onThemeChange: (theme: AppTheme) => void;
+  onBoardStyleChange: (boardStyle: BoardStyle) => void;
   onPieceStyleChange: (pieceStyle: PieceStyle) => void;
   children: React.ReactNode;
 };
@@ -22,9 +24,11 @@ const nav = [
 export function Layout({
   lang,
   theme,
+  boardStyle,
   pieceStyle,
   onLangChange,
   onThemeChange,
+  onBoardStyleChange,
   onPieceStyleChange,
   children,
 }: Props) {
@@ -47,9 +51,11 @@ export function Layout({
         <AccountMenu
           lang={lang}
           theme={theme}
+          boardStyle={boardStyle}
           pieceStyle={pieceStyle}
           onLangChange={onLangChange}
           onThemeChange={onThemeChange}
+          onBoardStyleChange={onBoardStyleChange}
           onPieceStyleChange={onPieceStyleChange}
         />
       </header>

@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Link } from 'wouter';
-import type { AppTheme, Lang, PieceStyle } from '../lib/types';
+import type { AppTheme, BoardStyle, Lang, PieceStyle } from '../lib/types';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
-import { LanguageSelect, PieceStyleSelect, ThemeSelect } from './MenuSelects';
+import { BoardStyleSelect, LanguageSelect, PieceStyleSelect, ThemeSelect } from './MenuSelects';
 
 type Props = {
   lang: Lang;
   theme: AppTheme;
+  boardStyle: BoardStyle;
   pieceStyle: PieceStyle;
   onLangChange: (lang: Lang) => void;
   onThemeChange: (theme: AppTheme) => void;
+  onBoardStyleChange: (boardStyle: BoardStyle) => void;
   onPieceStyleChange: (pieceStyle: PieceStyle) => void;
 };
 
@@ -47,9 +49,11 @@ const menuLabels: Record<Lang, {
 export function AccountMenu({
   lang,
   theme,
+  boardStyle,
   pieceStyle,
   onLangChange,
   onThemeChange,
+  onBoardStyleChange,
   onPieceStyleChange,
 }: Props) {
   const [session, setSession] = useState<Session | null>(null);
@@ -83,9 +87,11 @@ export function AccountMenu({
         <AccountHoverMenu
           lang={lang}
           theme={theme}
+          boardStyle={boardStyle}
           pieceStyle={pieceStyle}
           onLangChange={onLangChange}
           onThemeChange={onThemeChange}
+          onBoardStyleChange={onBoardStyleChange}
           onPieceStyleChange={onPieceStyleChange}
         />
       </div>
@@ -96,9 +102,11 @@ export function AccountMenu({
 function AccountHoverMenu({
   lang,
   theme,
+  boardStyle,
   pieceStyle,
   onLangChange,
   onThemeChange,
+  onBoardStyleChange,
   onPieceStyleChange,
 }: Props) {
   const labels = menuLabels[lang];
@@ -114,7 +122,10 @@ function AccountHoverMenu({
         <span>{labels.theme}</span>
         <ThemeSelect theme={theme} onThemeChange={onThemeChange} />
       </label>
-      <SettingsRow label={labels.board} />
+      <label className="settings-row">
+        <span>{labels.board}</span>
+        <BoardStyleSelect boardStyle={boardStyle} onBoardStyleChange={onBoardStyleChange} />
+      </label>
       <label className="settings-row">
         <span>{labels.pieces}</span>
         <PieceStyleSelect pieceStyle={pieceStyle} onPieceStyleChange={onPieceStyleChange} />
