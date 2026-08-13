@@ -73,13 +73,12 @@ function MoveComment({ report, playerColor, lang }: {
     <article className="critical">
       <b>{sideLabel}: {labelText(lang, report.label)} · {theme}</b>
       <p>{t(lang, 'move')}: {report.san}. {t(lang, 'best')}: {report.bestMove}.</p>
-      <p>{commentText(report, lang)}</p>
+      {report.label !== 'good' && <p>{commentText(report, lang)}</p>}
     </article>
   );
 }
 
 function commentText(report: MoveReport, lang: Lang) {
-  if (report.label === 'good') return explainReport(report, lang);
   return `${t(lang, 'evalChanged')} ${Math.round(report.loss)} ${t(lang, 'centipawns')}. ${explainReport(report, lang)}`;
 }
 
