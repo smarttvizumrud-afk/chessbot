@@ -94,6 +94,6 @@ function toOptions(platform: Platform, username: string, range: Range) {
 function importLimit(range: Range) {
   if (range === 'week') return 25;
   if (range === 'month') return 30;
-  if (range === 'quarter') return 30;
+  if (range === 'quarter') return 100;
   return Number(range);
 }
