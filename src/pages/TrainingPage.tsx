@@ -1,8 +1,6 @@
 import { Link } from 'wouter';
 import { AuthGate } from '../components/AuthGate';
-import { TrainingPuzzles } from '../components/TrainingPuzzles';
 import type { Lang } from '../lib/types';
-import { useChessData } from '../lib/useChessData';
 
 type TrainingText = {
   title: string;
@@ -57,7 +55,6 @@ export function TrainingPage({ lang }: { lang: Lang }) {
 }
 
 function TrainingContent({ lang }: { lang: Lang }) {
-  const { games, analyses, loading } = useChessData();
   const labels = text[lang];
 
   return (
@@ -67,10 +64,9 @@ function TrainingContent({ lang }: { lang: Lang }) {
         <p>{labels.subtitle}</p>
       </section>
       <section className="training-grid">
-        <TrainingCard title={labels.puzzles} text={labels.puzzlesText} action={labels.startPuzzles} onClick={scrollToPuzzles} />
+        <TrainingCard title={labels.puzzles} text={labels.puzzlesText} action={labels.startPuzzles} href="/coach" />
         <TrainingCard title={labels.openings} text={labels.openingsText} action={labels.studyOpenings} href="/openings" />
       </section>
-      {loading ? <section className="panel"><p>Loading...</p></section> : <TrainingPuzzles games={games} analyses={analyses} lang={lang} />}
     </div>
   );
 }
@@ -80,25 +76,17 @@ function TrainingCard({
   text,
   action,
   href,
-  onClick,
 }: {
   title: string;
   text: string;
   action: string;
-  href?: string;
-  onClick?: () => void;
+  href: string;
 }) {
   return (
     <article className="training-card">
       <h2>{title}</h2>
       <p>{text}</p>
-      {href
-        ? <Link href={href} className="account-link">{action}</Link>
-        : <button type="button" onClick={onClick}>{action}</button>}
+      <Link href={href} className="account-link">{action}</Link>
     </article>
   );
-}
-
-function scrollToPuzzles() {
-  document.getElementById('puzzles')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
