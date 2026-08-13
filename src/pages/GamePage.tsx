@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AuthGate } from '../components/AuthGate';
 import { AnalysisBoard } from '../components/AnalysisBoard';
+import { MoveTable } from '../components/MoveTable';
 import { labelText, localizeInsight, t } from '../lib/i18n';
 import { fenAfterPly, getMovesWithFens } from '../lib/pgn';
 import type { Lang, MoveReport, PlayerColor } from '../lib/types';
@@ -47,13 +48,7 @@ function GameContent({ id, lang }: { id: string; lang: Lang }) {
       <section className="panel">
         <h1>{t(lang, 'gameAnalysis')}</h1>
         <p>{game.username} {t(lang, 'versus')} {game.opponent} · {analysis.accuracy}% {t(lang, 'accuracy').toLowerCase()}</p>
-        <div className="moves">
-          {analysis.moveReports.map((item) => (
-            <button className={item.label} key={item.ply} onClick={() => setPly(item.ply)}>
-              {item.moveNumber}. {item.san}
-            </button>
-          ))}
-        </div>
+        <MoveTable reports={analysis.moveReports} selectedPly={ply} lang={lang} onSelect={setPly} />
         {report && <MoveComment report={report} playerColor={game.color} lang={lang} />}
       </section>
     </div>

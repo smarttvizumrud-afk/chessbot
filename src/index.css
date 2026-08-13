@@ -111,11 +111,22 @@ input, select { background: #0d131d; padding: 12px 14px; }
 
 .analysis-layout { display: grid; grid-template-columns: minmax(280px, 540px) 1fr; gap: 18px; align-items: start; }
 .board-panel { overflow: hidden; }
-.moves { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
-.moves button { background: var(--panel-2); color: var(--ink); padding: 8px 10px; }
-.moves .mistake { border-color: var(--gold); }
-.moves .blunder { border-color: var(--red); color: #ffd6d3; }
-.moves .inaccuracy { border-color: #77a4d8; }
+.move-table { overflow: hidden; border: 1px solid var(--line); border-radius: 8px; margin: 16px 0; background: #1a1d22; }
+.move-table-head { display: grid; grid-template-columns: 70px 1fr; align-items: center; gap: 12px; padding: 10px 14px; background: #242628; color: var(--muted); }
+.move-table-head strong { color: var(--ink); font-size: 28px; }
+.move-pair { display: grid; grid-template-columns: 42px minmax(0, 1fr) 60px minmax(0, 1fr) 60px; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); }
+.move-number { color: #777f8a; text-align: center; }
+.move-cell { width: 100%; min-height: 40px; border: 0; border-radius: 0; background: transparent; color: #d7dce4; padding: 8px 12px; text-align: left; font-size: 22px; font-weight: 700; }
+.move-cell:hover, .move-cell.selected { background: #29313d; color: #fff; }
+.move-cell.inaccuracy { color: #58b9ff; }
+.move-cell.mistake { color: var(--gold); }
+.move-cell.blunder { color: #ff6767; }
+.move-eval { color: #9299a3; text-align: right; padding-right: 14px; font-size: 16px; }
+.move-empty { color: #777f8a; padding: 8px 12px; font-size: 22px; }
+.move-note { grid-column: 1 / -1; width: 100%; border: 0; border-radius: 0; border-top: 1px solid rgba(255,255,255,0.08); background: #2b2a27; color: #d7dce4; padding: 9px 14px; text-align: left; font-size: 18px; font-weight: 700; }
+.move-note.inaccuracy { color: #58b9ff; }
+.move-note.mistake { color: var(--gold); }
+.move-note.blunder { color: #ff6767; }
 .critical { border-left: 3px solid var(--gold); padding-left: 14px; }
 .coach-panel { min-height: 520px; display: grid; gap: 16px; }
 .chat-window { display: grid; gap: 12px; max-height: 56vh; overflow: auto; padding-right: 4px; }
