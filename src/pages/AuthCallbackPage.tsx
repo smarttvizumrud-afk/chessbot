@@ -11,17 +11,35 @@ export function AuthCallbackPage({ lang }: { lang: Lang }) {
   useEffect(() => {
     async function finishSignIn() {
       const params = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
       const code = params.get('code');
+      const error = params.get('error') ?? hashParams.get('error');
+      const errorDescription = params.get('error_description') ?? hashParams.get('error_description');
+
+      if (error) {
+        setMessage(errorDescription ?? error);
+        return;
+      }
 
       if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-          setMessage(error.message);
+        const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+        if (exchangeError) {
+          setMessage(exchangeError.message);
+          return;
+        }
+        if (data.session) {
+          navigate('/');
           return;
         }
       }
 
-      navigate('/');
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate('/');
+        return;
+      }
+
+      setMessage(callbackErrorText[lang]);
     }
 
     void finishSignIn();
@@ -29,3 +47,9 @@ export function AuthCallbackPage({ lang }: { lang: Lang }) {
 
   return <section className="panel">{message}</section>;
 }
+
+const callbackErrorText: Record<Lang, string> = {
+  ru: 'Вход не завершился: Supabase не вернул сессию. Проверь настройки Lichess OAuth и Redirect URLs.',
+  en: 'Sign-in did not finish: Supabase did not return a session. Check the Lichess OAuth and Redirect URL settings.',
+  kk: 'Кіру аяқталмады: Supabase сессия қайтармады. Lichess OAuth және Redirect URL баптауларын тексер.',
+};
