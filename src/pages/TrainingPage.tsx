@@ -1,5 +1,6 @@
 import { Link } from 'wouter';
 import { AuthGate } from '../components/AuthGate';
+import { AiGeneratedTasks } from '../components/AiGeneratedTasks';
 import { GeneratedTasks } from '../components/GeneratedTasks';
 import type { Lang } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
@@ -72,7 +73,12 @@ function TrainingContent({ lang }: { lang: Lang }) {
       </section>
       {loading
         ? <section className="panel"><p>Loading...</p></section>
-        : <GeneratedTasks games={games} analyses={analyses} lang={lang} />}
+        : (
+          <>
+            <GeneratedTasks games={games} analyses={analyses} lang={lang} />
+            <AiGeneratedTasks games={games} analyses={analyses} lang={lang} />
+          </>
+        )}
     </div>
   );
 }
