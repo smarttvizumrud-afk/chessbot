@@ -57,6 +57,19 @@ export function Auth({ lang }: { lang: Lang }) {
     }
   }
 
+  async function handleChessComSignIn() {
+    setBusy(true);
+    setMessage('');
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'custom:chesscom',
+      options: { redirectTo: authCallbackUrl() },
+    });
+    if (error) {
+      setBusy(false);
+      setMessage(chessComSetupText[lang]);
+    }
+  }
+
   function handleGuestContinue() {
     enableGuestMode();
     navigate('/');
@@ -75,6 +88,10 @@ export function Auth({ lang }: { lang: Lang }) {
         <button className="lichess-button" type="button" onClick={handleLichessSignIn} disabled={busy}>
           <span>{'\u265e'}</span>
           {lichessButtonText[lang]}
+        </button>
+        <button className="chesscom-button" type="button" onClick={handleChessComSignIn} disabled={busy}>
+          <span>{'\u265f'}</span>
+          {chessComButtonText[lang]}
         </button>
       </div>
       <div className="auth-divider">{emailDividerText[lang]}</div>
@@ -110,6 +127,18 @@ const lichessButtonText: Record<Lang, string> = {
   ru: '\u0412\u043e\u0439\u0442\u0438 \u0447\u0435\u0440\u0435\u0437 Lichess',
   en: 'Continue with Lichess',
   kk: 'Lichess \u0430\u0440\u049b\u044b\u043b\u044b \u043a\u0456\u0440\u0443',
+};
+
+const chessComButtonText: Record<Lang, string> = {
+  ru: '\u0412\u043e\u0439\u0442\u0438 \u0447\u0435\u0440\u0435\u0437 Chess.com',
+  en: 'Continue with Chess.com',
+  kk: 'Chess.com \u0430\u0440\u049b\u044b\u043b\u044b \u043a\u0456\u0440\u0443',
+};
+
+const chessComSetupText: Record<Lang, string> = {
+  ru: 'Chess.com OAuth \u0435\u0449\u0451 \u043d\u0443\u0436\u043d\u043e \u043d\u0430\u0441\u0442\u0440\u043e\u0438\u0442\u044c \u0432 Supabase: custom provider chesscom.',
+  en: 'Chess.com OAuth still needs to be configured in Supabase: custom provider chesscom.',
+  kk: 'Chess.com OAuth Supabase \u0456\u0448\u0456\u043d\u0434\u0435 \u04d9\u043b\u0456 \u0431\u0430\u043f\u0442\u0430\u043b\u0443\u044b \u043a\u0435\u0440\u0435\u043a: custom provider chesscom.',
 };
 
 const emailDividerText: Record<Lang, string> = {
