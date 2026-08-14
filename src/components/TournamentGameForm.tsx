@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Chess } from 'chess.js';
 import { analyzeGame } from '../lib/analyzer';
-import { getOpening, getPgnHeader } from '../lib/pgn';
+import { getOpening } from '../lib/pgn';
 import { generatePuzzlesForGame } from '../lib/puzzleGenerator';
 import { saveGeneratedPuzzles } from '../lib/puzzles';
 import { saveAnalysis, saveGame } from '../lib/storage';
@@ -9,6 +9,7 @@ import { StockfishClient } from '../lib/stockfish';
 import type { GameResult, ImportedGame, Lang, PlayerColor } from '../lib/types';
 
 type Props = { lang: Lang; onDone: () => Promise<void> };
+type MoveRow = { white: string; black: string };
 
 const text: Record<Lang, {
   title: string;
@@ -16,7 +17,9 @@ const text: Record<Lang, {
   username: string;
   opponent: string;
   rating: string;
-  pgn: string;
+  white: string;
+  black: string;
+  addMove: string;
   save: string;
   saved: string;
   invalid: string;
@@ -27,10 +30,12 @@ const text: Record<Lang, {
     username: 'Your name',
     opponent: 'Opponent',
     rating: 'Your rating',
-    pgn: 'Paste PGN',
+    white: 'White move',
+    black: 'Black move',
+    addMove: 'Add move',
     save: 'Save and analyse',
     saved: 'Tournament game saved, analysed, and converted into puzzles.',
-    invalid: 'PGN is invalid. Check the moves and try again.',
+    invalid: 'Moves are invalid. Check the notation and try again.',
   },
   en: {
     title: 'Record tournament game',
@@ -38,10 +43,12 @@ const text: Record<Lang, {
     username: 'Your name',
     opponent: 'Opponent',
     rating: 'Your rating',
-    pgn: 'Paste PGN',
+    white: 'White move',
+    black: 'Black move',
+    addMove: 'Add move',
     save: 'Save and analyse',
     saved: 'Tournament game saved, analysed, and converted into puzzles.',
-    invalid: 'PGN is invalid. Check the moves and try again.',
+    invalid: 'Moves are invalid. Check the notation and try again.',
   },
   kk: {
     title: 'Record tournament game',
@@ -49,10 +56,12 @@ const text: Record<Lang, {
     username: 'Your name',
     opponent: 'Opponent',
     rating: 'Your rating',
-    pgn: 'Paste PGN',
+    white: 'White move',
+    black: 'Black move',
+    addMove: 'Add move',
     save: 'Save and analyse',
     saved: 'Tournament game saved, analysed, and converted into puzzles.',
-    invalid: 'PGN is invalid. Check the moves and try again.',
+    invalid: 'Moves are invalid. Check the notation and try again.',
   },
 };
 
@@ -64,7 +73,7 @@ export function TournamentGameForm({ lang, onDone }: Props) {
   const [rating, setRating] = useState('');
   const [color, setColor] = useState<PlayerColor>('white');
   const [result, setResult] = useState<GameResult>('win');
-  const [pgn, setPgn] = useState('');
+  const [moveRows, setMoveRows] = useState<MoveRow[]>(initialRows);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -74,7 +83,8 @@ export function TournamentGameForm({ lang, onDone }: Props) {
     setMessage('');
     const engine = new StockfishClient();
     try {
-      const game = toImportedGame({ username, opponent, rating, color, result, pgn });
+      const moves = moveRowsToText(moveRows);
+      const game = toImportedGame({ username, opponent, rating, color, result, moves });
       const stored = await saveGame(game);
       const analysis = await analyzeGame(game, engine);
       const storedAnalysis = await saveAnalysis(stored.id, analysis);
@@ -109,13 +119,46 @@ export function TournamentGameForm({ lang, onDone }: Props) {
             <option value="draw">Draw</option>
             <option value="loss">Loss</option>
           </select>
-          <textarea value={pgn} onChange={(event) => setPgn(event.target.value)} placeholder={labels.pgn} required />
+          <div className="move-sheet">
+            <div className="move-sheet-head">
+              <span>#</span>
+              <span>{labels.white}</span>
+              <span>{labels.black}</span>
+            </div>
+            {moveRows.map((row, index) => (
+              <div className="move-row" key={index}>
+                <span>{index + 1}.</span>
+                <input value={row.white} onChange={(event) => updateMove(index, 'white', event.target.value)} placeholder={labels.white} />
+                <input value={row.black} onChange={(event) => updateMove(index, 'black', event.target.value)} placeholder={labels.black} />
+              </div>
+            ))}
+            <button className="ghost" type="button" onClick={addMoveRow}>{labels.addMove}</button>
+          </div>
           <button type="submit" disabled={busy}>{busy ? '...' : labels.save}</button>
         </form>
       )}
       {message && <p className="message">{message}</p>}
     </section>
   );
+
+  function updateMove(index: number, side: keyof MoveRow, value: string) {
+    setMoveRows((rows) => rows.map((row, rowIndex) => (
+      rowIndex === index ? { ...row, [side]: value } : row
+    )));
+  }
+
+  function addMoveRow() {
+    setMoveRows((rows) => [...rows, { white: '', black: '' }]);
+  }
+}
+
+const initialRows: MoveRow[] = Array.from({ length: 12 }, () => ({ white: '', black: '' }));
+
+function moveRowsToText(rows: MoveRow[]) {
+  return rows
+    .flatMap((row) => [row.white.trim(), row.black.trim()])
+    .filter(Boolean)
+    .join(' ');
 }
 
 function toImportedGame(values: {
@@ -124,28 +167,93 @@ function toImportedGame(values: {
   rating: string;
   color: PlayerColor;
   result: GameResult;
-  pgn: string;
+  moves: string;
 }): ImportedGame {
-  const chess = new Chess();
-  chess.loadPgn(values.pgn, { strict: false });
-  if (!chess.history().length) throw new Error('PGN has no moves.');
+  const pgn = recreatePgn(values.moves, values);
 
   return {
     platform: 'lichess',
     platformGameId: `tournament-${crypto.randomUUID()}`,
     username: values.username.trim(),
-    opponent: values.opponent.trim() || opponentFromPgn(values.pgn, values.color),
+    opponent: values.opponent.trim(),
     playedAt: new Date().toISOString(),
     result: values.result,
     color: values.color,
     playerRating: Number(values.rating) || undefined,
-    opening: getOpening(values.pgn),
-    pgn: values.pgn.trim(),
+    opening: getOpening(pgn),
+    pgn,
     timeControl: 'tournament',
   };
 }
 
-function opponentFromPgn(pgn: string, color: PlayerColor) {
-  const header = color === 'white' ? 'Black' : 'White';
-  return getPgnHeader(pgn, header) || 'Tournament opponent';
+function recreatePgn(
+  input: string,
+  values: { username: string; opponent: string; color: PlayerColor; result: GameResult },
+) {
+  const trimmed = input.trim();
+  const parsedPgn = tryLoadPgn(trimmed);
+  if (parsedPgn) return parsedPgn;
+
+  const chess = new Chess();
+  moveTokens(trimmed).forEach((token) => {
+    const move = uciMove(token);
+    const played = move
+      ? chess.move({ from: move.from, to: move.to, promotion: move.promotion })
+      : chess.move(token);
+    if (!played) throw new Error(`Invalid move: ${token}`);
+  });
+
+  if (!chess.history().length) throw new Error('No moves.');
+  return withHeaders(chess.pgn(), values);
+}
+
+function tryLoadPgn(input: string) {
+  try {
+    const chess = new Chess();
+    chess.loadPgn(input, { strict: false });
+    return chess.history().length ? input : '';
+  } catch {
+    return '';
+  }
+}
+
+function moveTokens(input: string) {
+  return input
+    .replace(/\{[^}]*\}/g, ' ')
+    .replace(/\([^)]*\)/g, ' ')
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter(Boolean)
+    .filter((token) => !/^\d+\.(\.\.)?$/.test(token))
+    .filter((token) => !/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token))
+    .map((token) => token.replace(/^\d+\.\.\./, '').replace(/^\d+\./, ''))
+    .filter(Boolean);
+}
+
+function uciMove(token: string) {
+  const match = token.match(/^([a-h][1-8])([a-h][1-8])([nbrq])?$/i);
+  if (!match) return null;
+  return { from: match[1], to: match[2], promotion: match[3]?.toLowerCase() ?? 'q' };
+}
+
+function withHeaders(pgn: string, values: { username: string; opponent: string; color: PlayerColor; result: GameResult }) {
+  const white = values.color === 'white' ? values.username : values.opponent;
+  const black = values.color === 'black' ? values.username : values.opponent;
+  const result = resultTag(values.result, values.color);
+  return [
+    '[Event "Tournament game"]',
+    '[Site "Manual entry"]',
+    `[Date "${new Date().toISOString().slice(0, 10).replace(/-/g, '.')}"]`,
+    `[White "${white.trim() || 'White'}"]`,
+    `[Black "${black.trim() || 'Black'}"]`,
+    `[Result "${result}"]`,
+    '',
+    `${pgn} ${result}`,
+  ].join('\n');
+}
+
+function resultTag(result: GameResult, color: PlayerColor) {
+  if (result === 'draw') return '1/2-1/2';
+  if (result === 'win') return color === 'white' ? '1-0' : '0-1';
+  return color === 'white' ? '0-1' : '1-0';
 }

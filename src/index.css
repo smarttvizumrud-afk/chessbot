@@ -161,6 +161,11 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .coach-form textarea { grid-column: 1 / -1; min-height: 150px; resize: vertical; }
 .manual-game { margin-top: 14px; }
 .tournament-form button[type="submit"] { justify-self: start; }
+.move-sheet { grid-column: 1 / -1; display: grid; gap: 8px; }
+.move-sheet-head, .move-row { display: grid; grid-template-columns: 44px 1fr 1fr; gap: 8px; align-items: center; }
+.move-sheet-head { color: var(--muted); font-size: 13px; font-weight: 800; }
+.move-row span { color: var(--muted); font-weight: 800; }
+.move-row input { grid-column: span 1; }
 .oauth-buttons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
 .google-button { display: flex; width: 100%; align-items: center; justify-content: center; gap: 10px; background: #f8fafc; color: #111827; }
 .google-button span { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 999px; background: #fff; color: #4285f4; font-weight: 900; }
@@ -234,6 +239,7 @@ input, select { background: #0d131d; padding: 12px 14px; }
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .coach-form, .chat-form, .analysis-layout, .table-row, .oauth-buttons, .lichess-profile, .profile-content-grid, .training-grid, .generated-task-grid { grid-template-columns: 1fr; }
   .task-header { flex-direction: column; }
+  .move-sheet-head, .move-row { grid-template-columns: 36px 1fr 1fr; }
   .profile-side, .profile-chart { border-right: 0; }
   .profile-actions-bar { justify-content: flex-start; }
   .coach-form input { grid-column: span 1; }
