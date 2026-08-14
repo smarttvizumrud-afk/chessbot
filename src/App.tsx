@@ -9,6 +9,8 @@ import { GamePage } from './pages/GamePage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { OpeningsPage } from './pages/OpeningsPage';
+import { PuzzlePage } from './pages/PuzzlePage';
+import { PuzzlesPage } from './pages/PuzzlesPage';
 import { TrainingPage } from './pages/TrainingPage';
 
 export default function App() {
@@ -37,10 +39,14 @@ export default function App() {
         <Route path="/auth">{() => <AuthPage lang={lang} />}</Route>
         <Route path="/auth/callback">{() => <AuthCallbackPage lang={lang} />}</Route>
         <Route path="/openings">{() => <OpeningsPage lang={lang} />}</Route>
+        <Route path="/puzzles">{() => <PuzzlesPage lang={lang} />}</Route>
         <Route path="/training">{() => <TrainingPage lang={lang} />}</Route>
         <Route path="/coach">{() => <CoachPage lang={lang} />}</Route>
         <Route path="/game/:id">
           {(params) => <GamePage lang={lang} id={params.id} boardStyle={boardStyle} pieceStyle={pieceStyle} />}
+        </Route>
+        <Route path="/puzzle/:id">
+          {(params) => <PuzzlePage lang={lang} id={params.id} boardStyle={boardStyle} pieceStyle={pieceStyle} />}
         </Route>
         <Route component={NotFoundPage} />
       </Switch>

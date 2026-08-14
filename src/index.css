@@ -152,6 +152,9 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .generated-task span { justify-self: start; max-width: 100%; overflow-wrap: anywhere; border: 1px solid var(--line); border-radius: 999px; padding: 5px 9px; font-size: 13px; font-weight: 800; }
 .generated-task p { color: var(--muted); }
 .generated-task .account-link { justify-self: start; margin-top: 6px; }
+.puzzle-panel { align-content: start; }
+.puzzle-panel p { overflow-wrap: anywhere; }
+.puzzle-badge { justify-self: start; border: 1px solid var(--line); border-radius: 999px; padding: 5px 9px; color: var(--gold); font-weight: 800; }
 .auth-heading { margin-top: 18px; font-size: 22px; }
 .coach-form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
 .coach-form input { grid-column: span 2; min-width: 0; }

@@ -68,7 +68,7 @@ function TrainingContent({ lang }: { lang: Lang }) {
         <p>{labels.subtitle}</p>
       </section>
       <section className="training-grid">
-        <TrainingCard title={labels.puzzles} text={labels.puzzlesText} action={labels.startPuzzles} />
+        <TrainingCard title={labels.puzzles} text={labels.puzzlesText} action={labels.startPuzzles} href="/puzzles" />
         <TrainingCard title={labels.openings} text={labels.openingsText} action={labels.studyOpenings} href="/openings" />
       </section>
       {loading
