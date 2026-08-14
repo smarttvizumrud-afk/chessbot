@@ -24,6 +24,14 @@ export function generatePuzzlesForGame(
     .slice(0, MAX_PUZZLES_PER_GAME);
 }
 
+export function generatePuzzlesFromAnalyses(games: StoredGame[], analyses: StoredAnalysis[]) {
+  const byGame = new Map(games.map((game) => [game.id, game]));
+  return analyses.flatMap((analysis) => {
+    const game = byGame.get(analysis.gameId);
+    return game ? generatePuzzlesForGame(game, analysis) : [];
+  });
+}
+
 function isUsefulPlayerPosition(report: MoveReport) {
   return report.side === 'player'
     && report.label !== 'good'
