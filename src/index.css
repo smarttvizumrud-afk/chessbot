@@ -141,11 +141,12 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .training-card .account-link { justify-self: start; margin-top: 12px; }
 .training-card button { justify-self: start; margin-top: 12px; }
 .generated-tasks h2 { margin-bottom: 14px; }
+.task-section + .task-section { margin-top: 22px; }
 .generated-task-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .generated-task { display: grid; gap: 8px; align-content: start; border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 8px; padding: 16px; background: #0d131d; }
 .generated-task.blunder { border-left-color: #ff6767; }
 .generated-task.inaccuracy { border-left-color: #58b9ff; }
-.generated-task span { justify-self: start; border: 1px solid var(--line); border-radius: 999px; padding: 5px 9px; font-size: 13px; font-weight: 800; }
+.generated-task span { justify-self: start; max-width: 100%; overflow-wrap: anywhere; border: 1px solid var(--line); border-radius: 999px; padding: 5px 9px; font-size: 13px; font-weight: 800; }
 .generated-task p { color: var(--muted); }
 .generated-task .account-link { justify-self: start; margin-top: 6px; }
 .auth-heading { margin-top: 18px; font-size: 22px; }
