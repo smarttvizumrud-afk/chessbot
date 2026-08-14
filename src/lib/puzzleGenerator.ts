@@ -44,6 +44,7 @@ function toPuzzle(game: StoredGame, analysis: StoredAnalysis, report: MoveReport
     sideToMove: sideToMove(report.fenBefore),
     theme: puzzleTheme(report),
     difficulty: difficultyFor(game.playerRating, report.loss, report.label),
+    rating: ratingFor(game.playerRating, report.loss, report.label),
     sourcePly: report.ply,
     sourceMove: report.san,
     explanation: report.explanation,
@@ -82,4 +83,11 @@ function difficultyFor(rating = 1200, loss: number, label: MoveReport['label']) 
   const lossLevel = loss >= 500 ? 2 : loss >= 250 ? 1 : 0;
   const labelLevel = label === 'blunder' ? 1 : 0;
   return Math.min(5, Math.max(1, 1 + ratingLevel + lossLevel + labelLevel));
+}
+
+function ratingFor(playerRating = 1200, loss: number, label: MoveReport['label']) {
+  const lossBonus = Math.min(500, Math.round(loss / 2));
+  const labelBonus = label === 'blunder' ? 150 : label === 'mistake' ? 80 : 0;
+  const base = Math.max(700, playerRating - 250);
+  return Math.min(2600, Math.max(600, Math.round((base + lossBonus + labelBonus) / 50) * 50));
 }

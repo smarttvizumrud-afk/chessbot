@@ -13,6 +13,7 @@ type PuzzleRow = {
   side_to_move: 'white' | 'black';
   theme: string;
   difficulty: number;
+  rating: number;
   source_ply: number;
   source_move: string;
   explanation: string;
@@ -49,6 +50,7 @@ function toPuzzleRow(puzzle: PuzzleCandidate) {
     side_to_move: puzzle.sideToMove,
     theme: puzzle.theme,
     difficulty: puzzle.difficulty,
+    rating: puzzle.rating,
     source_ply: puzzle.sourcePly,
     source_move: puzzle.sourceMove,
     explanation: puzzle.explanation,
@@ -66,6 +68,7 @@ function mapPuzzleRow(row: PuzzleRow): StoredPuzzle {
     sideToMove: row.side_to_move,
     theme: row.theme,
     difficulty: row.difficulty,
+    rating: row.rating,
     sourcePly: row.source_ply,
     sourceMove: row.source_move,
     explanation: row.explanation,

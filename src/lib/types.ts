@@ -69,6 +69,7 @@ export type StoredPuzzle = {
   sideToMove: PlayerColor;
   theme: string;
   difficulty: number;
+  rating: number;
   sourcePly: number;
   sourceMove: string;
   explanation: string;

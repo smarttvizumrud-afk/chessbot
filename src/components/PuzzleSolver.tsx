@@ -10,10 +10,10 @@ type Props = {
   lang: Lang;
 };
 
-const text: Record<Lang, { wrong: string; solved: string; retry: string; solution: string; difficulty: string }> = {
-  ru: { wrong: 'Неверный ход. Попробуй ещё раз.', solved: 'Верно!', retry: 'Попробовать снова', solution: 'Решение', difficulty: 'Сложность' },
-  en: { wrong: 'Wrong move. Try again.', solved: 'Correct!', retry: 'Try again', solution: 'Solution', difficulty: 'Difficulty' },
-  kk: { wrong: 'Қате жүріс. Қайта көр.', solved: 'Дұрыс!', retry: 'Қайта көру', solution: 'Шешімі', difficulty: 'Қиындық' },
+const text: Record<Lang, { wrong: string; solved: string; retry: string; solution: string; difficulty: string; rating: string }> = {
+  ru: { wrong: 'Wrong move. Try again.', solved: 'Correct!', retry: 'Try again', solution: 'Solution', difficulty: 'Difficulty', rating: 'Rating' },
+  en: { wrong: 'Wrong move. Try again.', solved: 'Correct!', retry: 'Try again', solution: 'Solution', difficulty: 'Difficulty', rating: 'Rating' },
+  kk: { wrong: 'Wrong move. Try again.', solved: 'Correct!', retry: 'Try again', solution: 'Solution', difficulty: 'Difficulty', rating: 'Rating' },
 };
 
 const boardStyles: Record<BoardStyle, { light: string; dark: string }> = {
@@ -28,7 +28,6 @@ export function PuzzleSolver({ puzzle, boardStyle, pieceStyle, lang }: Props) {
   const [message, setMessage] = useState('');
   const [solved, setSolved] = useState(false);
   const colors = boardStyles[boardStyle];
-  const boardOrientation = puzzle.sideToMove;
   void pieceStyle;
 
   useEffect(() => {
@@ -39,9 +38,8 @@ export function PuzzleSolver({ puzzle, boardStyle, pieceStyle, lang }: Props) {
 
   function dropPiece(sourceSquare: string, targetSquare: string) {
     if (solved) return false;
-    const played = `${sourceSquare}${targetSquare}`;
     const expected = puzzle.solution[0] ?? puzzle.bestMove;
-    if (played !== expected.slice(0, 4)) {
+    if (`${sourceSquare}${targetSquare}` !== expected.slice(0, 4)) {
       setMessage(labels.wrong);
       return false;
     }
@@ -67,7 +65,7 @@ export function PuzzleSolver({ puzzle, boardStyle, pieceStyle, lang }: Props) {
         <Chessboard
           position={fen}
           boardWidth={Math.min(window.innerWidth - 40, 520)}
-          boardOrientation={boardOrientation}
+          boardOrientation={puzzle.sideToMove}
           customLightSquareStyle={{ backgroundColor: colors.light }}
           customDarkSquareStyle={{ backgroundColor: colors.dark }}
           onPieceDrop={dropPiece}
@@ -75,7 +73,8 @@ export function PuzzleSolver({ puzzle, boardStyle, pieceStyle, lang }: Props) {
       </div>
       <article className="panel puzzle-panel">
         <span className="puzzle-badge">{puzzle.theme}</span>
-        <h1>{labels.difficulty}: {puzzle.difficulty}/5</h1>
+        <h1>{labels.rating}: {puzzle.rating}</h1>
+        <p>{labels.difficulty}: {puzzle.difficulty}/5</p>
         <p>FEN: {puzzle.fen}</p>
         <p>{puzzle.explanation}</p>
         {message && <p className="message">{message}</p>}

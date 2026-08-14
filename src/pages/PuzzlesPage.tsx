@@ -5,10 +5,28 @@ import { loadPuzzles } from '../lib/puzzles';
 import { t } from '../lib/i18n';
 import type { Lang, StoredPuzzle } from '../lib/types';
 
-const text: Record<Lang, { title: string; empty: string; solve: string; source: string }> = {
-  ru: { title: 'Шахматные задачи', empty: 'Пока нет задач. Импортируй и проанализируй партии.', solve: 'Решать', source: 'Источник' },
-  en: { title: 'Chess puzzles', empty: 'No puzzles yet. Import and analyse games first.', solve: 'Solve', source: 'Source' },
-  kk: { title: 'Шахмат есептері', empty: 'Әзірге есеп жоқ. Алдымен партияларды талда.', solve: 'Шешу', source: 'Дереккөз' },
+const text: Record<Lang, { title: string; empty: string; solve: string; source: string; rating: string }> = {
+  ru: {
+    title: 'Chess puzzles',
+    empty: 'No puzzles yet. Import and analyse games first.',
+    solve: 'Solve',
+    source: 'Source',
+    rating: 'Rating',
+  },
+  en: {
+    title: 'Chess puzzles',
+    empty: 'No puzzles yet. Import and analyse games first.',
+    solve: 'Solve',
+    source: 'Source',
+    rating: 'Rating',
+  },
+  kk: {
+    title: 'Chess puzzles',
+    empty: 'No puzzles yet. Import and analyse games first.',
+    solve: 'Solve',
+    source: 'Source',
+    rating: 'Rating',
+  },
 };
 
 export function PuzzlesPage({ lang }: { lang: Lang }) {
@@ -44,7 +62,7 @@ function PuzzlesContent({ lang }: { lang: Lang }) {
               <strong>{puzzle.theme}</strong>
               <p>{labels.source}: {puzzle.sourceMove} · {puzzle.sideToMove}</p>
             </div>
-            <span>{puzzle.difficulty}/5</span>
+            <span>{labels.rating}: {puzzle.rating}</span>
             <Link href={`/puzzle/${puzzle.id}`} className="account-link">{labels.solve}</Link>
           </article>
         ))}
