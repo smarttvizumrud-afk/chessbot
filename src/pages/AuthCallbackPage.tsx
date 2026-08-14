@@ -39,7 +39,11 @@ export function AuthCallbackPage({ lang }: { lang: Lang }) {
         return;
       }
 
-      setMessage(callbackErrorText[lang]);
+      setMessage(
+        code
+          ? `${callbackErrorText[lang]} OAuth code was received, but no session was created.`
+          : `${callbackErrorText[lang]} The callback URL has no OAuth code.`,
+      );
     }
 
     void finishSignIn();

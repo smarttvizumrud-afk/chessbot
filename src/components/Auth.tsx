@@ -48,7 +48,7 @@ export function Auth({ lang }: { lang: Lang }) {
       provider: 'custom:lichess',
       options: {
         redirectTo: authCallbackUrl(),
-        scopes: 'preference:read',
+        scopes: 'preference:read email:read',
       },
     });
     if (error) {
