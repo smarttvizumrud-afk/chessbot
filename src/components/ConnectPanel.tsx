@@ -7,6 +7,7 @@ import { saveAnalysis, saveGame, saveProfile } from '../lib/storage';
 import { StockfishClient } from '../lib/stockfish';
 import type { Lang, Platform } from '../lib/types';
 import { t } from '../lib/i18n';
+import { TournamentGameForm } from './TournamentGameForm';
 
 type Props = { lang: Lang; onDone: () => Promise<void> };
 type Range = '10' | '25' | '50' | '100' | 'week' | 'month' | 'quarter';
@@ -82,6 +83,7 @@ export function ConnectPanel({ lang, onDone }: Props) {
         </select>
         <button type="submit" disabled={busy}>{busy ? '...' : t(lang, 'import')}</button>
       </form>
+      <TournamentGameForm lang={lang} onDone={onDone} />
       {status && <p className="message">{status}</p>}
     </section>
   );
