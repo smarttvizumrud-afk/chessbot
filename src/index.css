@@ -155,6 +155,7 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .puzzle-panel { align-content: start; }
 .puzzle-panel p { overflow-wrap: anywhere; }
 .puzzle-badge { justify-self: start; border: 1px solid var(--line); border-radius: 999px; padding: 5px 9px; color: var(--gold); font-weight: 800; }
+.puzzle-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .auth-heading { margin-top: 18px; font-size: 22px; }
 .coach-form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
 .coach-form input { grid-column: span 2; min-width: 0; }
@@ -199,6 +200,7 @@ input, select { background: #0d131d; padding: 12px 14px; }
 
 .analysis-layout { display: grid; grid-template-columns: minmax(280px, 540px) 1fr; gap: 18px; align-items: start; }
 .board-panel { overflow: hidden; }
+.board-wrap { width: 100%; max-width: 520px; margin: 0 auto; overflow: hidden; }
 .piece-symbol { display: grid; place-items: center; line-height: 1; user-select: none; }
 .piece-alpha { font-family: Georgia, "Times New Roman", serif; font-weight: 900; text-shadow: 0 2px 2px rgba(0,0,0,0.32); }
 .piece-neo { font-family: Inter, "Segoe UI Symbol", sans-serif; font-weight: 900; filter: drop-shadow(0 3px 2px rgba(0,0,0,0.34)); }
