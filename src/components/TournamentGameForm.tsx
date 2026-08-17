@@ -121,13 +121,13 @@ export function TournamentGameForm({ lang, onDone }: Props) {
           <input value={whiteRating} onChange={(event) => setWhiteRating(event.target.value)} placeholder={labels.whiteRating} inputMode="numeric" />
           <input value={blackRating} onChange={(event) => setBlackRating(event.target.value)} placeholder={labels.blackRating} inputMode="numeric" />
           <select value={color} onChange={(event) => setColor(event.target.value as PlayerColor)}>
-            <option value="white">White</option>
-            <option value="black">Black</option>
+            <option value="white">{colorText(lang, 'white')}</option>
+            <option value="black">{colorText(lang, 'black')}</option>
           </select>
           <select value={result} onChange={(event) => setResult(event.target.value as GameResult)}>
-            <option value="win">Win</option>
-            <option value="draw">Draw</option>
-            <option value="loss">Loss</option>
+            <option value="win">{resultText(lang, 'win')}</option>
+            <option value="draw">{resultText(lang, 'draw')}</option>
+            <option value="loss">{resultText(lang, 'loss')}</option>
           </select>
           <div className="move-sheet">
             <div className="move-sheet-head">
@@ -248,4 +248,26 @@ function resultTag(result: GameResult, color: PlayerColor) {
   if (result === 'draw') return '1/2-1/2';
   if (result === 'win') return color === 'white' ? '1-0' : '0-1';
   return color === 'white' ? '0-1' : '1-0';
+}
+
+function colorText(lang: Lang, color: PlayerColor) {
+  if (lang === 'ru') return color === 'white' ? 'Белыми' : 'Чёрными';
+  if (lang === 'kk') return color === 'white' ? 'Ақтар' : 'Қаралар';
+  return color === 'white' ? 'White' : 'Black';
+}
+
+function resultText(lang: Lang, result: GameResult) {
+  if (lang === 'ru') {
+    if (result === 'win') return 'Победа';
+    if (result === 'draw') return 'Ничья';
+    return 'Поражение';
+  }
+  if (lang === 'kk') {
+    if (result === 'win') return 'Жеңіс';
+    if (result === 'draw') return 'Тең ойын';
+    return 'Жеңіліс';
+  }
+  if (result === 'win') return 'Win';
+  if (result === 'draw') return 'Draw';
+  return 'Loss';
 }
