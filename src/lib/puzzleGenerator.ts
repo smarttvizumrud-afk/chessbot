@@ -1,7 +1,7 @@
 import { Chess } from 'chess.js';
 import type { MoveReport, StoredAnalysis, StoredGame, StoredPuzzle } from './types';
 
-export type PuzzleCandidate = Omit<StoredPuzzle, 'id' | 'createdAt'>;
+export type PuzzleCandidate = Omit<StoredPuzzle, 'id' | 'createdAt' | 'solvedAt' | 'earnedRating'>;
 export type PuzzleEngine = 'stockfish' | 'caissa';
 
 const MIN_PUZZLE_LOSS = 120;

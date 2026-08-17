@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Link } from 'wouter';
+import { loadPuzzles } from '../lib/puzzles';
 import type { Lang, StoredGame, StoredProfile } from '../lib/types';
 
 type Props = {
@@ -41,6 +43,13 @@ export function AccountProfile({ session, profiles, games, busy, lang, onSignOut
   const profile = profiles[0];
   const username = profile?.username || getDisplayName(session);
   const counts = getModeCounts(games);
+  const [solvedPuzzles, setSolvedPuzzles] = useState(0);
+
+  useEffect(() => {
+    loadPuzzles()
+      .then((items) => setSolvedPuzzles(items.filter((item) => item.solvedAt).length))
+      .catch((error) => console.warn('Could not load puzzle progress.', error));
+  }, []);
 
   return (
     <section className="lichess-profile">
@@ -50,7 +59,7 @@ export function AccountProfile({ session, profiles, games, busy, lang, onSignOut
         <RatingMode icon="rapid" label={text.rapid} value={profile?.rapid} count={counts.rapid} unit={text.games} />
         <RatingMode icon="classic" label={text.classic} value={profile?.classical} count={counts.classical} unit={text.games} />
         <div className="profile-side-line" />
-        <RatingMode icon="puzzles" label={text.puzzles} value="?" count={0} unit={text.puzzleUnit} />
+        <RatingMode icon="puzzles" label={text.puzzles} value={profile?.puzzleRating ?? 1500} count={solvedPuzzles} unit={text.puzzleUnit} />
       </aside>
 
       <div className="profile-main">

@@ -26,6 +26,7 @@ export type PlayerRatings = {
   classical?: number;
   rapid?: number;
   blitz?: number;
+  puzzleRating?: number;
 };
 
 export type MoveReport = {
@@ -73,5 +74,7 @@ export type StoredPuzzle = {
   sourcePly: number;
   sourceMove: string;
   explanation: string;
+  solvedAt?: string;
+  earnedRating: number;
   createdAt: string;
 };

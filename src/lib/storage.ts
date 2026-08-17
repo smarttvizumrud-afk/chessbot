@@ -33,6 +33,7 @@ type ProfileRow = {
   classical_rating: number | null;
   rapid_rating: number | null;
   blitz_rating: number | null;
+  puzzle_rating: number;
   connected_at: string;
 };
 
@@ -180,6 +181,7 @@ function mapProfileRow(row: ProfileRow): StoredProfile {
     classical: row.classical_rating ?? undefined,
     rapid: row.rapid_rating ?? undefined,
     blitz: row.blitz_rating ?? undefined,
+    puzzleRating: row.puzzle_rating,
     connectedAt: row.connected_at,
   };
 }

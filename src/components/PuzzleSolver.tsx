@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
+import { awardPuzzleRating } from '../lib/puzzles';
 import type { BoardStyle, Lang, PieceStyle, StoredPuzzle } from '../lib/types';
 import { useResponsiveBoardWidth } from '../lib/useResponsiveBoardWidth';
 
@@ -28,6 +29,8 @@ type Copy = {
   task: string;
   fromGame: string;
   ratingMode: string;
+  awarded: string;
+  alreadyAwarded: string;
 };
 
 const text: Record<Lang, Copy> = {
@@ -48,6 +51,8 @@ const text: Record<Lang, Copy> = {
     task: 'Задача',
     fromGame: 'Из партии',
     ratingMode: 'Рейтинговая',
+    awarded: 'Рейтинг за задачу',
+    alreadyAwarded: 'Рейтинг за эту задачу уже начислен.',
   },
   en: {
     wrong: 'Wrong move. Try again.',
@@ -66,6 +71,8 @@ const text: Record<Lang, Copy> = {
     task: 'Puzzle',
     fromGame: 'From game',
     ratingMode: 'Rated',
+    awarded: 'Puzzle rating',
+    alreadyAwarded: 'Rating for this puzzle was already awarded.',
   },
   kk: {
     wrong: 'Қате жүріс. Қайта көр.',
@@ -84,6 +91,8 @@ const text: Record<Lang, Copy> = {
     task: 'Тапсырма',
     fromGame: 'Партиядан',
     ratingMode: 'Рейтингтік',
+    awarded: 'Тапсырма рейтингі',
+    alreadyAwarded: 'Бұл тапсырма үшін рейтинг бұрын берілген.',
   },
 };
 
@@ -100,6 +109,7 @@ export function PuzzleSolver({ puzzle, boardStyle, pieceStyle, lang }: Props) {
   const [solved, setSolved] = useState(false);
   const [hintLevel, setHintLevel] = useState(0);
   const [showSolution, setShowSolution] = useState(false);
+  const [awardNotice, setAwardNotice] = useState('');
   const colors = boardStyles[boardStyle];
   const { boardWrapRef, boardWidth } = useResponsiveBoardWidth();
   const expectedMove = puzzle.solution[0] ?? puzzle.bestMove;
@@ -111,6 +121,7 @@ export function PuzzleSolver({ puzzle, boardStyle, pieceStyle, lang }: Props) {
     setSolved(false);
     setHintLevel(0);
     setShowSolution(false);
+    setAwardNotice('');
   }, [puzzle]);
 
   function dropPiece(sourceSquare: string, targetSquare: string) {
@@ -126,6 +137,13 @@ export function PuzzleSolver({ puzzle, boardStyle, pieceStyle, lang }: Props) {
     setFen(chess.fen());
     setSolved(true);
     setMessage(labels.solved);
+    void awardPuzzleRating(puzzle)
+      .then(({ ratingGain }) => {
+        setAwardNotice(ratingGain > 0 ? `${labels.awarded}: +${ratingGain}` : labels.alreadyAwarded);
+      })
+      .catch((error) => {
+        console.warn('Could not award puzzle rating.', error);
+      });
     return true;
   }
 
@@ -135,6 +153,7 @@ export function PuzzleSolver({ puzzle, boardStyle, pieceStyle, lang }: Props) {
     setSolved(false);
     setHintLevel(0);
     setShowSolution(false);
+    setAwardNotice('');
   }
 
   const sideText = puzzle.sideToMove === 'white' ? sideLabel(lang, 'white') : sideLabel(lang, 'black');
@@ -193,6 +212,7 @@ export function PuzzleSolver({ puzzle, boardStyle, pieceStyle, lang }: Props) {
         <p>{explanationText(puzzle.explanation, puzzle.bestMove, puzzle.theme, lang)}</p>
         {hintLevel > 0 && <p className="message">{hintText(puzzle, hintLevel, lang)}</p>}
         {message && <p className="message">{message}</p>}
+        {awardNotice && <p className="message">{awardNotice}</p>}
         {(solved || showSolution) && <p><strong>{labels.solution}:</strong> {puzzle.solution.join(' ')}</p>}
 
         <div className="puzzle-action-links">
