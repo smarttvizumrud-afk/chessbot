@@ -263,7 +263,7 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .history-search { width: 100%; margin: 14px 0 4px; }
 .close-button { width: 28px; height: 28px; padding: 0; border-radius: 6px; background: transparent; color: var(--muted); }
 .close-button:hover { background: var(--panel-2); color: var(--ink); }
-.table-row { display: grid; grid-template-columns: 1fr auto auto auto auto; }
+.table-row { display: grid; grid-template-columns: 1fr auto auto auto auto auto; }
 .table-row button { padding: 9px 12px; }
 .pinned-opening { border-color: var(--gold); background: #151923; }
 .opening-trainer { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(300px, 520px) minmax(220px, 1fr); gap: 18px; margin-top: 18px; align-items: start; }

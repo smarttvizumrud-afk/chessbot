@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AuthGate } from '../components/AuthGate';
 import { OpeningVariantTrainer } from '../components/OpeningVariantTrainer';
 import { openingRecommendationText, t } from '../lib/i18n';
@@ -22,13 +22,15 @@ function OpeningsContent({ lang, boardStyle, pieceStyle }: { lang: Lang; boardSt
   const [pinned, setPinned] = useState<string[]>([]);
   const [progress, setProgress] = useState<OpeningProgress[]>([]);
   const [selectedOpening, setSelectedOpening] = useState('');
+  const [trainerOpen, setTrainerOpen] = useState(false);
   const [busyOpening, setBusyOpening] = useState('');
   const [pinError, setPinError] = useState('');
+  const trainerRef = useRef<HTMLDivElement>(null);
   const pinnedSet = useMemo(() => new Set(pinned), [pinned]);
   const openings = useMemo(() => {
     return openingStats(games, analyses).sort((a, b) => Number(pinnedSet.has(b.opening)) - Number(pinnedSet.has(a.opening)));
   }, [analyses, games, pinnedSet]);
-  const selectedVariant = selectedOpening ? variantForOpening(selectedOpening) : null;
+  const selectedVariant = trainerOpen && selectedOpening ? variantForOpening(selectedOpening) : null;
   const selectedProgress = selectedVariant
     ? progress.find((item) => item.opening === selectedVariant.opening && item.variant === selectedVariant.variant)
     : undefined;
@@ -64,12 +66,35 @@ function OpeningsContent({ lang, boardStyle, pieceStyle }: { lang: Lang; boardSt
     }
   }
 
+  function trainOpening(opening: string) {
+    setSelectedOpening(opening);
+    setTrainerOpen(true);
+    window.setTimeout(() => trainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
+  }
+
   return (
     <section className="panel">
       <h1>{t(lang, 'openingReport')}</h1>
       {loading && <p>{t(lang, 'loading')}</p>}
       {pinError && <p className="message">{pinError}</p>}
       {!loading && !openings.length && <p>{t(lang, 'noOpenings')}</p>}
+      {selectedVariant && (
+        <div ref={trainerRef}>
+          <OpeningVariantTrainer
+            variant={selectedVariant}
+            progress={selectedProgress}
+            boardStyle={boardStyle}
+            pieceStyle={pieceStyle}
+            lang={lang}
+            onProgress={(nextProgress) => {
+              setProgress((items) => [
+                nextProgress,
+                ...items.filter((item) => item.id !== nextProgress.id),
+              ]);
+            }}
+          />
+        </div>
+      )}
       <div className="table">
         {openings.map((item) => (
           <article className={pinnedSet.has(item.opening) ? 'table-row pinned-opening' : 'table-row'} key={item.opening}>
@@ -80,7 +105,7 @@ function OpeningsContent({ lang, boardStyle, pieceStyle }: { lang: Lang; boardSt
             <span>{item.games} {t(lang, 'games').toLowerCase()}</span>
             <span>{item.score || '-'}%</span>
             <span>{item.errors} {t(lang, 'errors')}</span>
-            <button type="button" onClick={() => setSelectedOpening(item.opening)}>
+            <button type="button" onClick={() => trainOpening(item.opening)}>
               {trainText[lang]}
             </button>
             <button type="button" onClick={() => togglePinned(item.opening)} disabled={busyOpening === item.opening}>
@@ -89,21 +114,6 @@ function OpeningsContent({ lang, boardStyle, pieceStyle }: { lang: Lang; boardSt
           </article>
         ))}
       </div>
-      {selectedVariant && (
-        <OpeningVariantTrainer
-          variant={selectedVariant}
-          progress={selectedProgress}
-          boardStyle={boardStyle}
-          pieceStyle={pieceStyle}
-          lang={lang}
-          onProgress={(nextProgress) => {
-            setProgress((items) => [
-              nextProgress,
-              ...items.filter((item) => item.id !== nextProgress.id),
-            ]);
-          }}
-        />
-      )}
     </section>
   );
 }
