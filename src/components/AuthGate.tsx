@@ -6,6 +6,8 @@ import { SupabaseSetupMessage } from './SupabaseSetupMessage';
 import { t } from '../lib/i18n';
 import type { Lang } from '../lib/types';
 import { isGuestMode } from '../lib/guestSession';
+import { isOnboardingComplete } from '../lib/userOnboarding';
+import { OnboardingForm } from './OnboardingForm';
 
 type Props = { children: React.ReactNode; lang: Lang };
 
@@ -40,8 +42,16 @@ export function AuthGate({ children, lang }: Props) {
     return () => data.subscription.unsubscribe();
   }, [guest]);
 
+  async function refreshSession() {
+    const { data } = await supabase.auth.getSession();
+    setSession(data.session);
+  }
+
   if (!isSupabaseConfigured) return <SupabaseSetupMessage />;
   if (!ready) return <section className="panel">{t(lang, 'loading')}</section>;
   if (!session && !guest) return <Auth lang={lang} />;
+  if (session && !isOnboardingComplete(session.user.user_metadata)) {
+    return <OnboardingForm lang={lang} metadata={session.user.user_metadata} onComplete={refreshSession} />;
+  }
   return <>{children}</>;
 }

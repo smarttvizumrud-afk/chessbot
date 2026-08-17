@@ -8,6 +8,8 @@ import { SupabaseSetupMessage } from '../components/SupabaseSetupMessage';
 import { t } from '../lib/i18n';
 import type { Lang } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
+import { isOnboardingComplete } from '../lib/userOnboarding';
+import { OnboardingForm } from '../components/OnboardingForm';
 
 export function AuthPage({ lang }: { lang: Lang }) {
   const [, navigate] = useLocation();
@@ -36,9 +38,17 @@ export function AuthPage({ lang }: { lang: Lang }) {
     navigate('/');
   }
 
+  async function refreshSession() {
+    const { data } = await supabase.auth.getSession();
+    setSession(data.session);
+  }
+
   if (!isSupabaseConfigured) return <SupabaseSetupMessage />;
   if (!ready) return <section className="panel">{t(lang, 'loading')}</section>;
   if (!session) return <Auth lang={lang} />;
+  if (!isOnboardingComplete(session.user.user_metadata)) {
+    return <OnboardingForm lang={lang} metadata={session.user.user_metadata} onComplete={refreshSession} />;
+  }
 
   return (
     <AccountProfile
