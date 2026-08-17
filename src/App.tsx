@@ -52,7 +52,7 @@ export default function App() {
         <Route path="/">{() => <HomePage lang={lang} onLangChange={setLang} />}</Route>
         <Route path="/auth">{() => <AuthPage lang={lang} onLangChange={setLang} />}</Route>
         <Route path="/auth/callback">{() => <AuthCallbackPage lang={lang} />}</Route>
-        <Route path="/openings">{() => <OpeningsPage lang={lang} />}</Route>
+        <Route path="/openings">{() => <OpeningsPage lang={lang} boardStyle={boardStyle} pieceStyle={pieceStyle} />}</Route>
         <Route path="/puzzles">{() => <PuzzlesPage lang={lang} />}</Route>
         <Route path="/training">{() => <TrainingPage lang={lang} />}</Route>
         <Route path="/coach">{() => <CoachPage lang={lang} />}</Route>

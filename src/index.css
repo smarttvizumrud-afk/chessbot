@@ -266,6 +266,13 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .table-row { display: grid; grid-template-columns: 1fr auto auto auto auto; }
 .table-row button { padding: 9px 12px; }
 .pinned-opening { border-color: var(--gold); background: #151923; }
+.opening-trainer { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(300px, 520px) minmax(220px, 1fr); gap: 18px; margin-top: 18px; align-items: start; }
+.opening-study-card, .opening-board-panel { background: #151b25; border: 1px solid var(--line); border-radius: 8px; padding: 18px; }
+.opening-study-card h2 { margin-bottom: 6px; }
+.opening-study-card h3 { color: var(--gold); margin-bottom: 12px; }
+.opening-study-card p { color: var(--muted); overflow-wrap: anywhere; }
+.opening-result { display: grid; gap: 8px; }
+.opening-result strong { font-size: 20px; }
 
 .analysis-layout { display: grid; grid-template-columns: minmax(280px, 540px) 1fr; gap: 18px; align-items: start; }
 .board-panel { overflow: hidden; }
@@ -311,7 +318,7 @@ input, select { background: #0d131d; padding: 12px 14px; }
   .profile-popover { left: 0; right: auto; width: min(340px, calc(100vw - 40px)); }
   .settings-row { font-size: 17px; }
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .coach-form, .chat-form, .analysis-layout, .puzzle-layout, .table-row, .oauth-buttons, .lichess-profile, .profile-content-grid, .training-grid, .generated-task-grid { grid-template-columns: 1fr; }
+  .coach-form, .chat-form, .analysis-layout, .puzzle-layout, .opening-trainer, .table-row, .oauth-buttons, .lichess-profile, .profile-content-grid, .training-grid, .generated-task-grid { grid-template-columns: 1fr; }
   .puzzle-board-area { order: 1; }
   .puzzle-play-panel { order: 2; }
   .puzzle-sidebar { order: 3; }
