@@ -31,6 +31,8 @@ type Copy = {
   ratingMode: string;
   awarded: string;
   alreadyAwarded: string;
+  playedMove: string;
+  betterInstead: string;
 };
 
 const text: Record<Lang, Copy> = {
@@ -53,6 +55,8 @@ const text: Record<Lang, Copy> = {
     ratingMode: 'Рейтинговая',
     awarded: 'Рейтинг за задачу',
     alreadyAwarded: 'Рейтинг за эту задачу уже начислен.',
+    playedMove: 'В партии ты сыграл',
+    betterInstead: 'Найди лучший ход вместо него',
   },
   en: {
     wrong: 'Wrong move. Try again.',
@@ -73,6 +77,8 @@ const text: Record<Lang, Copy> = {
     ratingMode: 'Rated',
     awarded: 'Puzzle rating',
     alreadyAwarded: 'Rating for this puzzle was already awarded.',
+    playedMove: 'In the game you played',
+    betterInstead: 'Find the best move instead',
   },
   kk: {
     wrong: 'Қате жүріс. Қайта көр.',
@@ -93,6 +99,8 @@ const text: Record<Lang, Copy> = {
     ratingMode: 'Рейтингтік',
     awarded: 'Тапсырма рейтингі',
     alreadyAwarded: 'Бұл тапсырма үшін рейтинг бұрын берілген.',
+    playedMove: 'Партияда сен ойнадың',
+    betterInstead: 'Оның орнына ең жақсы жүрісті тап',
   },
 };
 
@@ -197,7 +205,7 @@ export function PuzzleSolver({ puzzle, boardStyle, pieceStyle, lang }: Props) {
 
       <aside className="puzzle-play-panel">
         <div className="puzzle-move-list" aria-label={labels.solution}>
-          <div><span>FEN</span><strong>{puzzle.fen}</strong></div>
+          <div><span>{labels.playedMove}</span><strong>{puzzle.sourceMove}</strong></div>
           <div><span>{labels.difficulty}</span><strong>{puzzle.difficulty}/5</strong></div>
         </div>
 
@@ -205,15 +213,20 @@ export function PuzzleSolver({ puzzle, boardStyle, pieceStyle, lang }: Props) {
           <span className="puzzle-king" aria-hidden="true">{puzzle.sideToMove === 'white' ? '♔' : '♚'}</span>
           <div>
             <h1>{labels.yourMove}</h1>
-            <p>{labels.findBest} {sideText}.</p>
+            <p>{labels.betterInstead} {sideText}.</p>
           </div>
         </div>
 
-        <p>{explanationText(puzzle.explanation, puzzle.bestMove, puzzle.theme, lang)}</p>
+        <p>{promptText(puzzle, lang)}</p>
         {hintLevel > 0 && <p className="message">{hintText(puzzle, hintLevel, lang)}</p>}
         {message && <p className="message">{message}</p>}
         {awardNotice && <p className="message">{awardNotice}</p>}
-        {(solved || showSolution) && <p><strong>{labels.solution}:</strong> {puzzle.solution.join(' ')}</p>}
+        {(solved || showSolution) && (
+          <>
+            <p><strong>{labels.solution}:</strong> {puzzle.solution.join(' ')}</p>
+            <p>{explanationText(puzzle.explanation, puzzle.bestMove, puzzle.theme, lang)}</p>
+          </>
+        )}
 
         <div className="puzzle-action-links">
           <button type="button" onClick={() => setHintLevel((level) => Math.min(level + 1, 3))}>
@@ -265,6 +278,23 @@ function themeText(theme: string, lang: Lang) {
     'tactical contact': { ru: 'тактический контакт', en: 'tactical contact', kk: 'тактикалық байланыс' },
   };
   return values[theme]?.[lang] ?? theme;
+}
+
+function promptText(puzzle: StoredPuzzle, lang: Lang) {
+  const loss = puzzle.explanation.match(/lost about (\d+) centipawns/)?.[1];
+  if (lang === 'ru') {
+    return loss
+      ? `Ход ${puzzle.sourceMove} потерял примерно ${loss} сантипешек. Найди лучший ход в этой позиции. Тема: ${themeText(puzzle.theme, lang)}.`
+      : `Ход из партии: ${puzzle.sourceMove}. Найди лучший ход в этой позиции. Тема: ${themeText(puzzle.theme, lang)}.`;
+  }
+  if (lang === 'kk') {
+    return loss
+      ? `${puzzle.sourceMove} жүрісі шамамен ${loss} centipawn жоғалтты. Осы позициядағы ең жақсы жүрісті тап. Тақырып: ${themeText(puzzle.theme, lang)}.`
+      : `Партиядағы жүріс: ${puzzle.sourceMove}. Осы позициядағы ең жақсы жүрісті тап. Тақырып: ${themeText(puzzle.theme, lang)}.`;
+  }
+  return loss
+    ? `Your move ${puzzle.sourceMove} lost about ${loss} centipawns. Find the best move in this position. Theme: ${themeText(puzzle.theme, lang)}.`
+    : `Game move: ${puzzle.sourceMove}. Find the best move in this position. Theme: ${themeText(puzzle.theme, lang)}.`;
 }
 
 function explanationText(explanation: string, bestMove: string, theme: string, lang: Lang) {
