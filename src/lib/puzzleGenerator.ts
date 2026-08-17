@@ -1,10 +1,10 @@
 import { Chess } from 'chess.js';
-import type { MoveReport, StoredAnalysis, StoredGame, StoredPuzzle } from './types';
+import type { GameAnalysis, MoveReport, StoredAnalysis, StoredGame, StoredPuzzle } from './types';
 
 export type PuzzleCandidate = Omit<StoredPuzzle, 'id' | 'createdAt' | 'solvedAt' | 'earnedRating'>;
 export type PuzzleEngine = 'stockfish' | 'caissa';
 
-const MIN_PUZZLE_LOSS = 120;
+const MAJOR_BLUNDER_LOSS = 300;
 const MAX_PUZZLES_PER_GAME = 4;
 
 export function generatePuzzlesForGame(
@@ -32,11 +32,18 @@ export function generatePuzzlesFromAnalyses(games: StoredGame[], analyses: Store
   });
 }
 
+export function hasMajorPlayerBlunder(analysis: GameAnalysis) {
+  return analysis.moveReports.some((report) => isMajorPlayerBlunder(report));
+}
+
 function isUsefulPlayerPosition(report: MoveReport) {
+  return isMajorPlayerBlunder(report) && Boolean(report.bestMove);
+}
+
+function isMajorPlayerBlunder(report: MoveReport) {
   return report.side === 'player'
-    && report.label !== 'good'
-    && report.loss >= MIN_PUZZLE_LOSS
-    && Boolean(report.bestMove);
+    && report.label === 'blunder'
+    && report.loss >= MAJOR_BLUNDER_LOSS;
 }
 
 function toPuzzle(game: StoredGame, analysis: StoredAnalysis, report: MoveReport): PuzzleCandidate | null {
