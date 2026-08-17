@@ -154,7 +154,76 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .generated-task .account-link { justify-self: start; margin-top: 6px; }
 .puzzle-panel { align-content: start; }
 .puzzle-panel p { overflow-wrap: anywhere; }
-.puzzle-badge { justify-self: start; border: 1px solid var(--line); border-radius: 999px; padding: 5px 9px; color: var(--gold); font-weight: 800; }
+.puzzle-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(320px, 560px) minmax(280px, 360px);
+  gap: 18px;
+  align-items: start;
+}
+.puzzle-sidebar { display: grid; gap: 14px; }
+.puzzle-card, .puzzle-play-panel {
+  background: #24211f;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+  padding: 18px;
+}
+.puzzle-card p, .puzzle-play-panel p { color: #d0d3d6; overflow-wrap: anywhere; }
+.puzzle-info-card { display: grid; grid-template-columns: 56px 1fr; gap: 14px; align-items: center; }
+.puzzle-info-card p { margin: 2px 0; }
+.puzzle-info-card strong { color: #4aa3ff; }
+.puzzle-icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  color: #9ca0a6;
+  font-size: 46px;
+  font-weight: 900;
+}
+.puzzle-rating-card span { display: block; color: #d7dce2; font-size: 18px; }
+.puzzle-rating-card strong {
+  display: block;
+  margin-top: 10px;
+  color: #d0d0d0;
+  font-size: clamp(54px, 7vw, 76px);
+  line-height: 1;
+  text-align: center;
+}
+.puzzle-card h2 { margin: 0 0 14px; font-size: 24px; }
+.puzzle-badge {
+  display: inline-flex;
+  width: fit-content;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: var(--gold);
+  font-weight: 800;
+}
+.puzzle-board-area { width: 100%; min-width: 0; }
+.board-wrap.puzzle-board-wrap { max-width: 560px; }
+.puzzle-play-panel { display: grid; gap: 18px; min-width: 0; }
+.puzzle-move-list {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.puzzle-move-list div { display: grid; grid-template-columns: 84px 1fr; gap: 10px; }
+.puzzle-move-list span { color: #73777d; }
+.puzzle-move-list strong { color: #c4c7cc; font-weight: 700; overflow-wrap: anywhere; }
+.puzzle-turn-card { display: grid; grid-template-columns: 74px 1fr; gap: 14px; align-items: center; }
+.puzzle-turn-card h1 { margin: 0 0 4px; font-size: 30px; color: #d9d9d9; }
+.puzzle-king { color: #fff; font-size: 62px; line-height: 1; text-shadow: 0 2px 0 #000; }
+.puzzle-action-links { display: grid; gap: 8px; justify-items: center; }
+.puzzle-action-links button {
+  background: transparent;
+  border: 0;
+  color: #3fa2ff;
+  padding: 8px;
+  text-transform: uppercase;
+}
+.puzzle-action-links button:hover { background: rgba(63,162,255,0.08); }
 .puzzle-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .auth-heading { margin-top: 18px; font-size: 22px; }
 .coach-form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
@@ -242,7 +311,16 @@ input, select { background: #0d131d; padding: 12px 14px; }
   .profile-popover { left: 0; right: auto; width: min(340px, calc(100vw - 40px)); }
   .settings-row { font-size: 17px; }
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .coach-form, .chat-form, .analysis-layout, .table-row, .oauth-buttons, .lichess-profile, .profile-content-grid, .training-grid, .generated-task-grid { grid-template-columns: 1fr; }
+  .coach-form, .chat-form, .analysis-layout, .puzzle-layout, .table-row, .oauth-buttons, .lichess-profile, .profile-content-grid, .training-grid, .generated-task-grid { grid-template-columns: 1fr; }
+  .puzzle-board-area { order: 1; }
+  .puzzle-play-panel { order: 2; }
+  .puzzle-sidebar { order: 3; }
+  .puzzle-card, .puzzle-play-panel { padding: 14px; }
+  .puzzle-info-card, .puzzle-turn-card { grid-template-columns: 52px 1fr; }
+  .puzzle-icon { width: 48px; height: 48px; font-size: 40px; }
+  .puzzle-king { font-size: 48px; }
+  .puzzle-turn-card h1 { font-size: 26px; }
+  .puzzle-move-list div { grid-template-columns: 1fr; gap: 3px; }
   .task-header { flex-direction: column; }
   .move-sheet-head, .move-row { grid-template-columns: 36px 1fr 1fr; }
   .profile-side, .profile-chart { border-right: 0; }
