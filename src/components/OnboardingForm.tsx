@@ -7,6 +7,7 @@ type Props = {
   lang: Lang;
   metadata: unknown;
   onComplete: () => Promise<void>;
+  onLangChange?: (lang: Lang) => void;
 };
 
 const text: Record<Lang, {
@@ -43,7 +44,7 @@ const text: Record<Lang, {
   },
 };
 
-export function OnboardingForm({ lang, metadata, onComplete }: Props) {
+export function OnboardingForm({ lang, metadata, onComplete, onLangChange }: Props) {
   const labels = text[lang];
   const initial = readOnboardingData(metadata);
   const [birthDate, setBirthDate] = useState(initial.birthDate ?? '');
@@ -66,6 +67,7 @@ export function OnboardingForm({ lang, metadata, onComplete }: Props) {
       setBusy(false);
       return;
     }
+    onLangChange?.(preferredLang);
     await onComplete();
     setBusy(false);
   }

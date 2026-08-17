@@ -11,7 +11,7 @@ import { useChessData } from '../lib/useChessData';
 import { isOnboardingComplete } from '../lib/userOnboarding';
 import { OnboardingForm } from '../components/OnboardingForm';
 
-export function AuthPage({ lang }: { lang: Lang }) {
+export function AuthPage({ lang, onLangChange }: { lang: Lang; onLangChange?: (lang: Lang) => void }) {
   const [, navigate] = useLocation();
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
@@ -47,7 +47,14 @@ export function AuthPage({ lang }: { lang: Lang }) {
   if (!ready) return <section className="panel">{t(lang, 'loading')}</section>;
   if (!session) return <Auth lang={lang} />;
   if (!isOnboardingComplete(session.user.user_metadata)) {
-    return <OnboardingForm lang={lang} metadata={session.user.user_metadata} onComplete={refreshSession} />;
+    return (
+      <OnboardingForm
+        lang={lang}
+        metadata={session.user.user_metadata}
+        onComplete={refreshSession}
+        onLangChange={onLangChange}
+      />
+    );
   }
 
   return (

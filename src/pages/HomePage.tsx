@@ -9,9 +9,9 @@ import type { Lang } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
 import { useState } from 'react';
 
-export function HomePage({ lang }: { lang: Lang }) {
+export function HomePage({ lang, onLangChange }: { lang: Lang; onLangChange?: (lang: Lang) => void }) {
   return (
-    <AuthGate lang={lang}>
+    <AuthGate lang={lang} onLangChange={onLangChange}>
       <Dashboard lang={lang} />
     </AuthGate>
   );

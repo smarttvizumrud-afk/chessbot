@@ -9,9 +9,9 @@ import { isGuestMode } from '../lib/guestSession';
 import { isOnboardingComplete } from '../lib/userOnboarding';
 import { OnboardingForm } from './OnboardingForm';
 
-type Props = { children: React.ReactNode; lang: Lang };
+type Props = { children: React.ReactNode; lang: Lang; onLangChange?: (lang: Lang) => void };
 
-export function AuthGate({ children, lang }: Props) {
+export function AuthGate({ children, lang, onLangChange }: Props) {
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
   const [guest, setGuest] = useState(isGuestMode);
@@ -51,7 +51,14 @@ export function AuthGate({ children, lang }: Props) {
   if (!ready) return <section className="panel">{t(lang, 'loading')}</section>;
   if (!session && !guest) return <Auth lang={lang} />;
   if (session && !isOnboardingComplete(session.user.user_metadata)) {
-    return <OnboardingForm lang={lang} metadata={session.user.user_metadata} onComplete={refreshSession} />;
+    return (
+      <OnboardingForm
+        lang={lang}
+        metadata={session.user.user_metadata}
+        onComplete={refreshSession}
+        onLangChange={onLangChange}
+      />
+    );
   }
   return <>{children}</>;
 }
