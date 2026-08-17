@@ -5,6 +5,7 @@ export type BoardStyle = 'classic' | 'blue' | 'green';
 export type PieceStyle = 'classic' | 'alpha' | 'neo';
 export type GameResult = 'win' | 'loss' | 'draw';
 export type PlayerColor = 'white' | 'black';
+export type PuzzleStatus = 'pending' | 'created' | 'no_puzzle';
 
 export type ImportedGame = {
   platform: Platform;
@@ -56,7 +57,7 @@ export type GameAnalysis = {
   aiSummary: string;
 };
 
-export type StoredGame = ImportedGame & { id: string };
+export type StoredGame = ImportedGame & { id: string; puzzleStatus: PuzzleStatus };
 export type StoredProfile = PlayerRatings & { id: string; connectedAt: string };
 export type StoredAnalysis = GameAnalysis & { id: string; gameId: string; createdAt: string };
 export type StoredPinnedOpening = { id: string; opening: string; createdAt: string };

@@ -1,11 +1,10 @@
 import { Chess } from 'chess.js';
-import type { GameAnalysis, MoveReport, StoredAnalysis, StoredGame, StoredPuzzle } from './types';
+import type { MoveReport, StoredAnalysis, StoredGame, StoredPuzzle } from './types';
 
 export type PuzzleCandidate = Omit<StoredPuzzle, 'id' | 'createdAt' | 'solvedAt' | 'earnedRating'>;
 export type PuzzleEngine = 'stockfish' | 'caissa';
 
-const MAJOR_BLUNDER_LOSS = 300;
-const MAX_PUZZLES_PER_GAME = 1;
+const MIN_TRAINING_LOSS = 70;
 
 export function generatePuzzlesForGame(
   game: StoredGame,
@@ -16,12 +15,13 @@ export function generatePuzzlesForGame(
     console.warn('Puzzle engine is not available yet, falling back to Stockfish reports.', engine);
   }
 
-  return analysis.moveReports
+  const report = analysis.moveReports
     .filter(isUsefulPlayerPosition)
     .sort((a, b) => b.loss - a.loss)
     .map((report) => toPuzzle(game, analysis, report))
-    .filter((puzzle): puzzle is PuzzleCandidate => Boolean(puzzle))
-    .slice(0, MAX_PUZZLES_PER_GAME);
+    .filter((puzzle): puzzle is PuzzleCandidate => Boolean(puzzle))[0];
+
+  return report ? [report] : [];
 }
 
 export function generatePuzzlesFromAnalyses(games: StoredGame[], analyses: StoredAnalysis[]) {
@@ -32,18 +32,11 @@ export function generatePuzzlesFromAnalyses(games: StoredGame[], analyses: Store
   });
 }
 
-export function hasMajorPlayerBlunder(analysis: GameAnalysis) {
-  return analysis.moveReports.some((report) => isMajorPlayerBlunder(report));
-}
-
 function isUsefulPlayerPosition(report: MoveReport) {
-  return isMajorPlayerBlunder(report) && Boolean(report.bestMove);
-}
-
-function isMajorPlayerBlunder(report: MoveReport) {
   return report.side === 'player'
-    && report.label === 'blunder'
-    && report.loss >= MAJOR_BLUNDER_LOSS;
+    && report.label !== 'good'
+    && report.loss >= MIN_TRAINING_LOSS
+    && Boolean(report.bestMove);
 }
 
 function toPuzzle(game: StoredGame, analysis: StoredAnalysis, report: MoveReport): PuzzleCandidate | null {

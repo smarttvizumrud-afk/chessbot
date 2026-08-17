@@ -5,6 +5,7 @@ import type {
   GameAnalysis,
   ImportedGame,
   PlayerRatings,
+  PuzzleStatus,
   StoredAnalysis,
   StoredGame,
   StoredProfile,
@@ -23,6 +24,7 @@ type GameRow = {
   opening: string;
   pgn: string;
   time_control: string;
+  puzzle_status: PuzzleStatus;
 };
 
 type ProfileRow = {
@@ -103,7 +105,7 @@ export async function saveProfile(ratings: PlayerRatings) {
 }
 
 export async function saveGame(game: ImportedGame) {
-  if (isGuestMode()) return { ...game, id: crypto.randomUUID() };
+  if (isGuestMode()) return { ...game, id: crypto.randomUUID(), puzzleStatus: 'pending' as const };
   const { data, error } = await supabase
     .from('chess_games')
     .upsert(toGameRow(game), { onConflict: 'user_id,platform,platform_game_id' })
@@ -140,6 +142,15 @@ export async function saveAnalysis(gameId: string, analysis: GameAnalysis) {
   return mapAnalysisRow(data as AnalysisRow);
 }
 
+export async function markGamePuzzleStatus(gameId: string, status: Exclude<PuzzleStatus, 'pending'>) {
+  if (isGuestMode()) return;
+  const { error } = await supabase
+    .from('chess_games')
+    .update({ puzzle_status: status })
+    .eq('id', gameId);
+  if (error) throw error;
+}
+
 function toGameRow(game: ImportedGame) {
   return {
     platform: game.platform,
@@ -170,6 +181,7 @@ function mapGameRow(row: GameRow): StoredGame {
     opening: normalizeOpening(row.opening, row.pgn),
     pgn: row.pgn,
     timeControl: row.time_control,
+    puzzleStatus: row.puzzle_status ?? 'pending',
   };
 }
 

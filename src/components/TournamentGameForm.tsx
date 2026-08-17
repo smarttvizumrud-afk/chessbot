@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Chess } from 'chess.js';
 import { analyzeGame } from '../lib/analyzer';
 import { getOpening } from '../lib/pgn';
-import { generatePuzzlesForGame, hasMajorPlayerBlunder } from '../lib/puzzleGenerator';
-import { saveGeneratedPuzzles } from '../lib/puzzles';
+import { generatePuzzlesForGame } from '../lib/puzzleGenerator';
+import { savePuzzleResultForGame } from '../lib/puzzles';
 import { saveAnalysis, saveGame } from '../lib/storage';
 import { StockfishClient } from '../lib/stockfish';
 import type { GameResult, ImportedGame, Lang, PlayerColor } from '../lib/types';
@@ -88,16 +88,13 @@ export function TournamentGameForm({ lang, onDone }: Props) {
     try {
       const moves = moveRowsToText(moveRows);
       const game = toImportedGame({ username, opponent, whiteRating, blackRating, color, result, moves });
-      const analysis = await analyzeGame(game, engine);
-      if (!hasMajorPlayerBlunder(analysis)) {
-        setMessage(noMajorBlundersText(lang));
-        return;
-      }
       const stored = await saveGame(game);
+      const analysis = await analyzeGame(game, engine);
       const storedAnalysis = await saveAnalysis(stored.id, analysis);
-      await saveGeneratedPuzzles(generatePuzzlesForGame(stored, storedAnalysis));
+      const puzzles = generatePuzzlesForGame(stored, storedAnalysis);
+      await savePuzzleResultForGame(stored, puzzles);
       await onDone();
-      setMessage(labels.saved);
+      setMessage(puzzles.length ? labels.saved : noPuzzleText(lang));
     } catch (error) {
       console.warn('Could not save tournament game.', error);
       setMessage(labels.invalid);
@@ -276,8 +273,8 @@ function resultText(lang: Lang, result: GameResult) {
   return 'Loss';
 }
 
-function noMajorBlundersText(lang: Lang) {
-  if (lang === 'ru') return 'В этой партии нет крупных зевков, поэтому она не добавлена.';
-  if (lang === 'kk') return 'Бұл партияда ірі қате жоқ, сондықтан ол қосылмады.';
-  return 'This game has no major blunders, so it was not added.';
+function noPuzzleText(lang: Lang) {
+  if (lang === 'ru') return 'Партия сохранена, но подходящей позиции для задачи не найдено.';
+  if (lang === 'kk') return 'Партия сақталды, бірақ тапсырмаға лайық позиция табылмады.';
+  return 'Game saved, but no suitable puzzle position was found.';
 }

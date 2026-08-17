@@ -3,15 +3,12 @@ import { getMovesWithFens, phaseForPly } from './pgn';
 import { StockfishClient } from './stockfish';
 import type { GameAnalysis, ImportedGame, MoveReport, PlayerColor } from './types';
 
-const MAX_ANALYZED_PLIES = 36;
-
 export async function analyzeGame(game: ImportedGame, engine: StockfishClient): Promise<GameAnalysis> {
   const moves = getMovesWithFens(game.pgn);
   const playerParity = game.color === 'white' ? 1 : 0;
-  const sampled = moves.slice(0, MAX_ANALYZED_PLIES);
   const reports: MoveReport[] = [];
 
-  for (const move of sampled) {
+  for (const move of moves) {
     const before = await engine.evaluate(move.fenBefore);
     const afterFen = fenAfterPlayedMove(move.fenBefore, move.san);
     const after = await engine.evaluate(afterFen);

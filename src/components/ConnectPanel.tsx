@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { analyzeGame } from '../lib/analyzer';
 import { fetchPlatformGames, fetchPlatformRatings } from '../lib/platforms';
-import { generatePuzzlesForGame, hasMajorPlayerBlunder } from '../lib/puzzleGenerator';
-import { saveGeneratedPuzzles } from '../lib/puzzles';
+import { generatePuzzlesForGame } from '../lib/puzzleGenerator';
+import { savePuzzleResultForGame } from '../lib/puzzles';
 import { saveAnalysis, saveGame, saveProfile } from '../lib/storage';
 import { StockfishClient } from '../lib/stockfish';
 import type { Lang, Platform } from '../lib/types';
@@ -39,17 +39,11 @@ export function ConnectPanel({ lang, onDone }: Props) {
       for (const [index, game] of games.entries()) {
         setStatus(`${t(lang, 'analysing')} ${index + 1}/${games.length}: ${game.opponent}`);
         try {
-          const analysis = await analyzeGame(game, engine);
-          if (!hasMajorPlayerBlunder(analysis)) {
-            skippedCount += 1;
-            continue;
-          }
           const stored = await saveGame(game);
+          const analysis = await analyzeGame(game, engine);
           const storedAnalysis = await saveAnalysis(stored.id, analysis);
           const puzzles = generatePuzzlesForGame(stored, storedAnalysis);
-          await saveGeneratedPuzzles(puzzles).catch((error) => {
-            console.warn('Could not save generated puzzles.', error);
-          });
+          await savePuzzleResultForGame(stored, puzzles);
           analysedCount += 1;
         } catch {
           skippedCount += 1;
