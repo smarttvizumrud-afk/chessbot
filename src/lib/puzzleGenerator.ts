@@ -5,7 +5,7 @@ export type PuzzleCandidate = Omit<StoredPuzzle, 'id' | 'createdAt' | 'solvedAt'
 export type PuzzleEngine = 'stockfish' | 'caissa';
 
 const MAJOR_BLUNDER_LOSS = 300;
-const MAX_PUZZLES_PER_GAME = 4;
+const MAX_PUZZLES_PER_GAME = 1;
 
 export function generatePuzzlesForGame(
   game: StoredGame,
