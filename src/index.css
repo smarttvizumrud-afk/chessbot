@@ -271,6 +271,7 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .opening-study-card h2 { margin-bottom: 6px; }
 .opening-study-card h3 { color: var(--gold); margin-bottom: 12px; }
 .opening-study-card p { color: var(--muted); overflow-wrap: anywhere; }
+.opening-study-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .opening-result { display: grid; gap: 8px; }
 .opening-result strong { font-size: 20px; }
 

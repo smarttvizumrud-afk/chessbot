@@ -29,6 +29,7 @@ export function OpeningVariantTrainer({ variant, progress, boardStyle, pieceStyl
   const { boardWrapRef, boardWidth } = useResponsiveBoardWidth();
   const [chess, setChess] = useState(() => new Chess());
   const [lineIndex, setLineIndex] = useState(0);
+  const [studyPly, setStudyPly] = useState(0);
   const [started, setStarted] = useState(false);
   const [attemptDone, setAttemptDone] = useState(false);
   const [attemptFailed, setAttemptFailed] = useState(false);
@@ -50,6 +51,18 @@ export function OpeningVariantTrainer({ variant, progress, boardStyle, pieceStyl
   function startTraining() {
     resetBoard(true);
     playBotMoves(startPosition(), 0);
+  }
+
+  function showNextStudyMove() {
+    if (started || studyPly >= variant.moves.length) return;
+    const nextChess = new Chess(chess.fen());
+    nextChess.move(variant.moves[studyPly].san);
+    setChess(nextChess);
+    setStudyPly((ply) => ply + 1);
+  }
+
+  function restartStudy() {
+    resetBoard(false);
   }
 
   function dropPiece(sourceSquare: string, targetSquare: string) {
@@ -112,6 +125,7 @@ export function OpeningVariantTrainer({ variant, progress, boardStyle, pieceStyl
     const nextChess = startPosition();
     setChess(nextChess);
     setLineIndex(0);
+    setStudyPly(0);
     setStarted(shouldStart);
     setAttemptDone(false);
     setAttemptFailed(false);
@@ -125,6 +139,7 @@ export function OpeningVariantTrainer({ variant, progress, boardStyle, pieceStyl
 
   const completed = successfulAttempts >= 3 || progress?.status === 'completed';
   const studyMode = !started && !completed;
+  const studyDone = studyPly >= variant.moves.length;
 
   return (
     <section className="opening-trainer">
@@ -136,11 +151,18 @@ export function OpeningVariantTrainer({ variant, progress, boardStyle, pieceStyl
           <>
             <p>{labels.sequence}: {formatLine(variant.moves.map((move) => move.san))}</p>
             <p>{labels.ideas}: {variant.ideas}</p>
+            <p>{labels.shownMoves}: {studyPly}/{variant.moves.length}</p>
           </>
         )}
         <p>{labels.progress}: {Math.min(successfulAttempts + 1, 3)}/3</p>
         <p>{labels.successful}: {successfulAttempts}/3 · {labels.errors}: {errorCount}</p>
-        {!started && <button type="button" onClick={startTraining} disabled={completed}>{labels.start}</button>}
+        {studyMode && (
+          <div className="opening-study-actions">
+            <button type="button" onClick={showNextStudyMove} disabled={studyDone}>{studyDone ? labels.demoDone : labels.showNext}</button>
+            <button className="ghost" type="button" onClick={restartStudy}>{labels.replay}</button>
+            <button type="button" onClick={startTraining}>{labels.start}</button>
+          </div>
+        )}
       </article>
 
       <article className="opening-board-panel">
@@ -190,6 +212,10 @@ const text: Record<Lang, Record<string, string>> = {
     completed: 'Изучено',
     sequence: 'Последовательность',
     ideas: 'Основные идеи',
+    shownMoves: 'Показано ходов',
+    showNext: 'Показать следующий ход',
+    replay: 'Показать с начала',
+    demoDone: 'Вариант показан',
     progress: 'Попытка',
     successful: 'Успешно',
     errors: 'Ошибки',
@@ -212,6 +238,10 @@ const text: Record<Lang, Record<string, string>> = {
     completed: 'Completed',
     sequence: 'Sequence',
     ideas: 'Main ideas',
+    shownMoves: 'Shown moves',
+    showNext: 'Show next move',
+    replay: 'Show from start',
+    demoDone: 'Line shown',
     progress: 'Attempt',
     successful: 'Successful',
     errors: 'Errors',
@@ -234,6 +264,10 @@ const text: Record<Lang, Record<string, string>> = {
     completed: 'Үйренілді',
     sequence: 'Жүрістер тізбегі',
     ideas: 'Негізгі идеялар',
+    shownMoves: 'Көрсетілген жүрістер',
+    showNext: 'Келесі жүрісті көрсету',
+    replay: 'Басынан көрсету',
+    demoDone: 'Вариант көрсетілді',
     progress: 'Талпыныс',
     successful: 'Сәтті',
     errors: 'Қателер',
