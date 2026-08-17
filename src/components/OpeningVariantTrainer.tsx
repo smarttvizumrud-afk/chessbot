@@ -49,7 +49,7 @@ export function OpeningVariantTrainer({ variant, progress, boardStyle, pieceStyl
 
   function startTraining() {
     resetBoard(true);
-    playBotMoves(new Chess(), 0);
+    playBotMoves(startPosition(), 0);
   }
 
   function dropPiece(sourceSquare: string, targetSquare: string) {
@@ -109,7 +109,7 @@ export function OpeningVariantTrainer({ variant, progress, boardStyle, pieceStyl
   }
 
   function resetBoard(shouldStart: boolean) {
-    const nextChess = variant.startFen === 'start' ? new Chess() : new Chess(variant.startFen);
+    const nextChess = startPosition();
     setChess(nextChess);
     setLineIndex(0);
     setStarted(shouldStart);
@@ -119,15 +119,25 @@ export function OpeningVariantTrainer({ variant, progress, boardStyle, pieceStyl
     setMessage(shouldStart ? labels.playLine : '');
   }
 
+  function startPosition() {
+    return variant.startFen === 'start' ? new Chess() : new Chess(variant.startFen);
+  }
+
   const completed = successfulAttempts >= 3 || progress?.status === 'completed';
+  const studyMode = !started && !completed;
 
   return (
     <section className="opening-trainer">
       <article className="opening-study-card">
-        <span className="puzzle-badge">{completed ? labels.completed : labels.training}</span>
+        <span className="puzzle-badge">{completed ? labels.completed : studyMode ? labels.study : labels.memory}</span>
         <h2>{variant.opening}</h2>
         <h3>{variant.variant}</h3>
-        <p>{labels.sequence}: {variant.moves.map((move) => move.san).join(' ')}</p>
+        {studyMode && (
+          <>
+            <p>{labels.sequence}: {formatLine(variant.moves.map((move) => move.san))}</p>
+            <p>{labels.ideas}: {variant.ideas}</p>
+          </>
+        )}
         <p>{labels.progress}: {Math.min(successfulAttempts + 1, 3)}/3</p>
         <p>{labels.successful}: {successfulAttempts}/3 · {labels.errors}: {errorCount}</p>
         {!started && <button type="button" onClick={startTraining} disabled={completed}>{labels.start}</button>}
@@ -148,7 +158,7 @@ export function OpeningVariantTrainer({ variant, progress, boardStyle, pieceStyl
 
       <article className="opening-study-card">
         <h2>{labels.attempt} {Math.min(successfulAttempts + 1, 3)}/3</h2>
-        <p>{labels.userMoves}: {userMoveCount}</p>
+        <p>{started ? labels.memoryWarning : `${labels.userMoves}: ${userMoveCount}`}</p>
         {message && <p className="message">{message}</p>}
         {attemptDone && (
           <div className="opening-result">
@@ -164,58 +174,78 @@ export function OpeningVariantTrainer({ variant, progress, boardStyle, pieceStyl
   );
 }
 
+function formatLine(moves: string[]) {
+  const pairs: string[] = [];
+  for (let index = 0; index < moves.length; index += 2) {
+    pairs.push(`${index / 2 + 1}. ${moves[index]}${moves[index + 1] ? ` ${moves[index + 1]}` : ''}`);
+  }
+  return pairs.join(' ');
+}
+
 const text: Record<Lang, Record<string, string>> = {
   ru: {
+    study: 'Изучение',
+    memory: 'Игра по памяти',
     training: 'Тренировка',
     completed: 'Изучено',
     sequence: 'Последовательность',
+    ideas: 'Основные идеи',
     progress: 'Попытка',
     successful: 'Успешно',
     errors: 'Ошибки',
-    start: 'Начать тренировку',
-    playLine: 'Играй вариант по памяти. Бот ответит ходами линии.',
+    start: 'Я готов — начать тренировку',
+    playLine: 'Режим памяти: ходов больше не видно. Вспоминай вариант сам.',
     wrongMove: 'Неправильный ход',
     correctMove: 'Правильный ход',
     success: '✅ Вариант сыгран правильно',
     failed: '❌ Есть ошибки',
     attempt: 'Попытка',
     userMoves: 'Твоих ходов в линии',
+    memoryWarning: 'Ходы скрыты. Бот отвечает по варианту, твоя задача — вспомнить правильные ходы.',
     move: 'Ход',
     nextAttempt: 'Следующая попытка',
   },
   en: {
+    study: 'Study',
+    memory: 'Memory game',
     training: 'Training',
     completed: 'Completed',
     sequence: 'Sequence',
+    ideas: 'Main ideas',
     progress: 'Attempt',
     successful: 'Successful',
     errors: 'Errors',
-    start: 'Start training',
-    playLine: 'Play the line from memory. The bot will answer with line moves.',
+    start: 'I am ready — start training',
+    playLine: 'Memory mode: the moves are hidden. Recall the variation yourself.',
     wrongMove: 'Wrong move',
     correctMove: 'Correct move',
     success: '✅ Variation played correctly',
     failed: '❌ Mistakes found',
     attempt: 'Attempt',
     userMoves: 'Your moves in line',
+    memoryWarning: 'Moves are hidden. The bot follows the variation; you must remember the correct moves.',
     move: 'Move',
     nextAttempt: 'Next attempt',
   },
   kk: {
+    study: 'Үйрену',
+    memory: 'Жатқа ойнау',
     training: 'Жаттығу',
     completed: 'Үйренілді',
     sequence: 'Жүрістер тізбегі',
+    ideas: 'Негізгі идеялар',
     progress: 'Талпыныс',
     successful: 'Сәтті',
     errors: 'Қателер',
-    start: 'Жаттығуды бастау',
-    playLine: 'Вариантты жатқа ойна. Бот линия бойынша жауап береді.',
+    start: 'Дайынмын — жаттығуды бастау',
+    playLine: 'Жатқа ойнау режимі: жүрістер жасырылды. Вариантты өзің еске түсір.',
     wrongMove: 'Қате жүріс',
     correctMove: 'Дұрыс жүріс',
     success: '✅ Вариант дұрыс ойналды',
     failed: '❌ Қателер бар',
     attempt: 'Талпыныс',
     userMoves: 'Линиядағы сенің жүрістерің',
+    memoryWarning: 'Жүрістер жасырылған. Бот вариант бойынша жауап береді, сен дұрыс жүрістерді еске түсір.',
     move: 'Жүріс',
     nextAttempt: 'Келесі талпыныс',
   },

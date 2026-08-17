@@ -11,6 +11,7 @@ export type OpeningVariant = {
   variant: string;
   startFen: string;
   userSide: PlayerColor;
+  ideas: string;
   moves: OpeningMove[];
 };
 
@@ -23,6 +24,7 @@ export const openingVariants: OpeningVariant[] = [
     variant: 'Najdorf Variation',
     startFen: START_FEN,
     userSide: 'white',
+    ideas: 'Black fights for queenside space with ...a6 and keeps flexible central breaks. White develops quickly and tries to use the d5 square.',
     moves: [
       { side: 'white', san: 'e4' },
       { side: 'black', san: 'c5' },
@@ -43,6 +45,7 @@ export const openingVariants: OpeningVariant[] = [
     variant: 'Berlin Defense',
     startFen: START_FEN,
     userSide: 'white',
+    ideas: 'Black attacks the e4 pawn early and aims for a solid endgame. White castles, opens the center, and must remember the forcing sequence.',
     moves: [
       { side: 'white', san: 'e4' },
       { side: 'black', san: 'e5' },
@@ -61,6 +64,7 @@ export const openingVariants: OpeningVariant[] = [
     variant: 'Accepted Variation',
     startFen: START_FEN,
     userSide: 'white',
+    ideas: 'Black accepts the c4 pawn. White builds the center with e3, recaptures with the bishop, and develops calmly.',
     moves: [
       { side: 'white', san: 'd4' },
       { side: 'black', san: 'd5' },
