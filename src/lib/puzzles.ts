@@ -34,7 +34,7 @@ export async function loadPuzzles() {
     .select('*')
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return (data as PuzzleRow[]).map(mapPuzzleRow);
+  return onePuzzlePerGame((data as PuzzleRow[]).map(mapPuzzleRow));
 }
 
 export async function awardPuzzleRating(puzzle: StoredPuzzle) {
@@ -57,12 +57,12 @@ export async function awardPuzzleRating(puzzle: StoredPuzzle) {
 
 export async function saveGeneratedPuzzles(puzzles: PuzzleCandidate[]) {
   if (isGuestMode() || !puzzles.length) return [];
-  const { data, error } = await supabase
+  const bestPuzzles = oneCandidatePerGame(puzzles);
+  const { error } = await supabase
     .from('training_puzzles')
-    .upsert(puzzles.map(toPuzzleRow), { onConflict: 'user_id,analysis_id,source_ply' })
-    .select('*');
+    .upsert(bestPuzzles.map(toPuzzleRow), { onConflict: 'user_id,analysis_id,source_ply' });
   if (error) throw error;
-  return (data as PuzzleRow[]).map(mapPuzzleRow);
+  return cleanupDuplicatePuzzles(bestPuzzles.map((puzzle) => puzzle.gameId));
 }
 
 function toPuzzleRow(puzzle: PuzzleCandidate) {
@@ -105,6 +105,57 @@ function ratingGainFor(puzzle: StoredPuzzle) {
   const difficultyBonus = puzzle.difficulty * 3;
   const ratingBonus = Math.max(0, Math.round((puzzle.rating - 1000) / 200));
   return Math.min(30, Math.max(8, 7 + difficultyBonus + ratingBonus));
+}
+
+async function cleanupDuplicatePuzzles(gameIds: string[]) {
+  const uniqueGameIds = [...new Set(gameIds)];
+  if (!uniqueGameIds.length) return [];
+
+  const { data, error } = await supabase
+    .from('training_puzzles')
+    .select('*')
+    .in('game_id', uniqueGameIds);
+  if (error) throw error;
+
+  const puzzles = onePuzzlePerGame((data as PuzzleRow[]).map(mapPuzzleRow));
+  const keepIds = new Set(puzzles.map((puzzle) => puzzle.id));
+  const deleteIds = (data as PuzzleRow[])
+    .map((row) => row.id)
+    .filter((id) => !keepIds.has(id));
+
+  if (deleteIds.length) {
+    const { error: deleteError } = await supabase
+      .from('training_puzzles')
+      .delete()
+      .in('id', deleteIds);
+    if (deleteError) throw deleteError;
+  }
+
+  return puzzles;
+}
+
+function oneCandidatePerGame(puzzles: PuzzleCandidate[]) {
+  const byGame = new Map<string, PuzzleCandidate>();
+  puzzles.forEach((puzzle) => {
+    const current = byGame.get(puzzle.gameId);
+    if (!current || puzzle.rating > current.rating) byGame.set(puzzle.gameId, puzzle);
+  });
+  return [...byGame.values()];
+}
+
+function onePuzzlePerGame(puzzles: StoredPuzzle[]) {
+  const byGame = new Map<string, StoredPuzzle>();
+  puzzles.forEach((puzzle) => {
+    const current = byGame.get(puzzle.gameId);
+    if (!current || shouldPreferPuzzle(puzzle, current)) byGame.set(puzzle.gameId, puzzle);
+  });
+  return [...byGame.values()].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+}
+
+function shouldPreferPuzzle(next: StoredPuzzle, current: StoredPuzzle) {
+  if (Boolean(next.solvedAt) !== Boolean(current.solvedAt)) return Boolean(next.solvedAt);
+  if (next.rating !== current.rating) return next.rating > current.rating;
+  return Date.parse(next.createdAt) > Date.parse(current.createdAt);
 }
 
 function mapPuzzleRow(row: PuzzleRow): StoredPuzzle {
