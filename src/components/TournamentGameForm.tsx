@@ -12,11 +12,11 @@ type Props = { lang: Lang; onDone: () => Promise<void> };
 type MoveRow = { white: string; black: string };
 
 const text: Record<Lang, {
-  title: string;
   button: string;
   username: string;
   opponent: string;
-  rating: string;
+  whiteRating: string;
+  blackRating: string;
   white: string;
   black: string;
   addMove: string;
@@ -25,11 +25,11 @@ const text: Record<Lang, {
   invalid: string;
 }> = {
   ru: {
-    title: 'Записать партию с турнира',
     button: 'Записать партию с турнира',
     username: 'Твоё имя',
     opponent: 'Соперник',
-    rating: 'Твой рейтинг',
+    whiteRating: 'Рейтинг белых',
+    blackRating: 'Рейтинг чёрных',
     white: 'Ход белых',
     black: 'Ход чёрных',
     addMove: 'Добавить ход',
@@ -38,11 +38,11 @@ const text: Record<Lang, {
     invalid: 'Ходы неверные. Проверь запись и попробуй ещё раз.',
   },
   en: {
-    title: 'Record tournament game',
     button: 'Record tournament game',
     username: 'Your name',
     opponent: 'Opponent',
-    rating: 'Your rating',
+    whiteRating: 'White rating',
+    blackRating: 'Black rating',
     white: 'White move',
     black: 'Black move',
     addMove: 'Add move',
@@ -51,11 +51,11 @@ const text: Record<Lang, {
     invalid: 'Moves are invalid. Check the notation and try again.',
   },
   kk: {
-    title: 'Турнир партиясын жазу',
     button: 'Турнир партиясын жазу',
     username: 'Өз атың',
     opponent: 'Қарсылас',
-    rating: 'Рейтингің',
+    whiteRating: 'Ақтардың рейтингі',
+    blackRating: 'Қаралардың рейтингі',
     white: 'Ақтардың жүрісі',
     black: 'Қаралардың жүрісі',
     addMove: 'Жүріс қосу',
@@ -65,12 +65,15 @@ const text: Record<Lang, {
   },
 };
 
+const initialRows: MoveRow[] = Array.from({ length: 12 }, () => ({ white: '', black: '' }));
+
 export function TournamentGameForm({ lang, onDone }: Props) {
   const labels = text[lang];
   const [open, setOpen] = useState(false);
   const [username, setUsername] = useState('');
   const [opponent, setOpponent] = useState('');
-  const [rating, setRating] = useState('');
+  const [whiteRating, setWhiteRating] = useState('');
+  const [blackRating, setBlackRating] = useState('');
   const [color, setColor] = useState<PlayerColor>('white');
   const [result, setResult] = useState<GameResult>('win');
   const [moveRows, setMoveRows] = useState<MoveRow[]>(initialRows);
@@ -84,7 +87,7 @@ export function TournamentGameForm({ lang, onDone }: Props) {
     const engine = new StockfishClient();
     try {
       const moves = moveRowsToText(moveRows);
-      const game = toImportedGame({ username, opponent, rating, color, result, moves });
+      const game = toImportedGame({ username, opponent, whiteRating, blackRating, color, result, moves });
       const stored = await saveGame(game);
       const analysis = await analyzeGame(game, engine);
       const storedAnalysis = await saveAnalysis(stored.id, analysis);
@@ -100,6 +103,12 @@ export function TournamentGameForm({ lang, onDone }: Props) {
     }
   }
 
+  function updateMove(index: number, side: keyof MoveRow, value: string) {
+    setMoveRows((rows) => rows.map((row, rowIndex) => (
+      rowIndex === index ? { ...row, [side]: value } : row
+    )));
+  }
+
   return (
     <section className="manual-game">
       <button className="ghost" type="button" onClick={() => setOpen((value) => !value)}>
@@ -109,7 +118,8 @@ export function TournamentGameForm({ lang, onDone }: Props) {
         <form className="coach-form tournament-form" onSubmit={submit}>
           <input value={username} onChange={(event) => setUsername(event.target.value)} placeholder={labels.username} required />
           <input value={opponent} onChange={(event) => setOpponent(event.target.value)} placeholder={labels.opponent} required />
-          <input value={rating} onChange={(event) => setRating(event.target.value)} placeholder={labels.rating} inputMode="numeric" />
+          <input value={whiteRating} onChange={(event) => setWhiteRating(event.target.value)} placeholder={labels.whiteRating} inputMode="numeric" />
+          <input value={blackRating} onChange={(event) => setBlackRating(event.target.value)} placeholder={labels.blackRating} inputMode="numeric" />
           <select value={color} onChange={(event) => setColor(event.target.value as PlayerColor)}>
             <option value="white">White</option>
             <option value="black">Black</option>
@@ -132,7 +142,9 @@ export function TournamentGameForm({ lang, onDone }: Props) {
                 <input value={row.black} onChange={(event) => updateMove(index, 'black', event.target.value)} placeholder={labels.black} />
               </div>
             ))}
-            <button className="ghost" type="button" onClick={addMoveRow}>{labels.addMove}</button>
+            <button className="ghost" type="button" onClick={() => setMoveRows((rows) => [...rows, { white: '', black: '' }])}>
+              {labels.addMove}
+            </button>
           </div>
           <button type="submit" disabled={busy}>{busy ? '...' : labels.save}</button>
         </form>
@@ -140,19 +152,7 @@ export function TournamentGameForm({ lang, onDone }: Props) {
       {message && <p className="message">{message}</p>}
     </section>
   );
-
-  function updateMove(index: number, side: keyof MoveRow, value: string) {
-    setMoveRows((rows) => rows.map((row, rowIndex) => (
-      rowIndex === index ? { ...row, [side]: value } : row
-    )));
-  }
-
-  function addMoveRow() {
-    setMoveRows((rows) => [...rows, { white: '', black: '' }]);
-  }
 }
-
-const initialRows: MoveRow[] = Array.from({ length: 12 }, () => ({ white: '', black: '' }));
 
 function moveRowsToText(rows: MoveRow[]) {
   return rows
@@ -164,7 +164,8 @@ function moveRowsToText(rows: MoveRow[]) {
 function toImportedGame(values: {
   username: string;
   opponent: string;
-  rating: string;
+  whiteRating: string;
+  blackRating: string;
   color: PlayerColor;
   result: GameResult;
   moves: string;
@@ -179,23 +180,24 @@ function toImportedGame(values: {
     playedAt: new Date().toISOString(),
     result: values.result,
     color: values.color,
-    playerRating: Number(values.rating) || undefined,
+    playerRating: playerRating(values),
     opening: getOpening(pgn),
     pgn,
     timeControl: 'tournament',
   };
 }
 
+function playerRating(values: { color: PlayerColor; whiteRating: string; blackRating: string }) {
+  const rating = values.color === 'white' ? values.whiteRating : values.blackRating;
+  return Number(rating) || undefined;
+}
+
 function recreatePgn(
   input: string,
   values: { username: string; opponent: string; color: PlayerColor; result: GameResult },
 ) {
-  const trimmed = input.trim();
-  const parsedPgn = tryLoadPgn(trimmed);
-  if (parsedPgn) return parsedPgn;
-
   const chess = new Chess();
-  moveTokens(trimmed).forEach((token) => {
+  moveTokens(input).forEach((token) => {
     const move = uciMove(token);
     const played = move
       ? chess.move({ from: move.from, to: move.to, promotion: move.promotion })
@@ -205,16 +207,6 @@ function recreatePgn(
 
   if (!chess.history().length) throw new Error('No moves.');
   return withHeaders(chess.pgn(), values);
-}
-
-function tryLoadPgn(input: string) {
-  try {
-    const chess = new Chess();
-    chess.loadPgn(input, { strict: false });
-    return chess.history().length ? input : '';
-  } catch {
-    return '';
-  }
 }
 
 function moveTokens(input: string) {
