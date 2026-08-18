@@ -388,6 +388,9 @@ deno_version = 2
 [functions.lichess-userinfo]
 verify_jwt = false
 
+[functions.polar-webhook]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

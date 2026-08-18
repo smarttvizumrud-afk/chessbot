@@ -11,6 +11,7 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { OpeningsPage } from './pages/OpeningsPage';
 import { PuzzlePage } from './pages/PuzzlePage';
 import { PuzzlesPage } from './pages/PuzzlesPage';
+import { PricingPage } from './pages/PricingPage';
 import { TrainingPage } from './pages/TrainingPage';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
 
@@ -54,6 +55,7 @@ export default function App() {
         <Route path="/auth/callback">{() => <AuthCallbackPage lang={lang} />}</Route>
         <Route path="/openings">{() => <OpeningsPage lang={lang} boardStyle={boardStyle} pieceStyle={pieceStyle} />}</Route>
         <Route path="/puzzles">{() => <PuzzlesPage lang={lang} />}</Route>
+        <Route path="/pricing">{() => <PricingPage lang={lang} onLangChange={setLang} />}</Route>
         <Route path="/training">{() => <TrainingPage lang={lang} />}</Route>
         <Route path="/coach">{() => <CoachPage lang={lang} />}</Route>
         <Route path="/game/:id">

@@ -20,7 +20,12 @@ const nav = [
   ['/openings', 'openings'],
   ['/puzzles', 'puzzles'],
   ['/coach', 'coach'],
+  ['/pricing', 'pricing'],
 ] as const;
+
+const navFallback: Record<string, string> = {
+  pricing: 'Pricing',
+};
 
 export function Layout({
   lang,
@@ -47,7 +52,7 @@ export function Layout({
         <nav className="nav">
           {nav.map(([href, key]) => (
             <Link key={href} href={href} className={location === href ? 'active' : ''}>
-              {t(lang, key)}
+              {navFallback[key] ?? t(lang, key)}
             </Link>
           ))}
         </nav>

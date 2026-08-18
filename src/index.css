@@ -317,13 +317,39 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .onboarding-form label { display: grid; grid-column: span 2; gap: 6px; color: var(--muted); font-weight: 800; }
 .onboarding-form label input, .onboarding-form label select { width: 100%; }
 .onboarding-form button { justify-self: start; }
+.pricing-page { display: grid; gap: 18px; }
+.pricing-header { display: flex; justify-content: space-between; gap: 18px; align-items: end; padding: 28px 0 8px; }
+.pricing-header p { color: var(--muted); line-height: 1.5; }
+.pricing-header h1 { margin-top: 4px; font-size: 52px; line-height: 1; }
+.credit-status { display: grid; gap: 6px; min-width: 150px; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; background: var(--panel); }
+.credit-status span { color: var(--muted); font-size: 13px; font-weight: 800; text-transform: uppercase; }
+.credit-status strong { font-size: 28px; }
+.pricing-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.pricing-card { position: relative; display: grid; gap: 22px; min-height: 430px; align-content: space-between; justify-items: center; border: 1px solid var(--line); border-radius: 8px; padding: 32px 18px; background: #0e141d; }
+.pricing-card.highlighted { border-color: #dc2f7f; box-shadow: 0 0 0 1px rgba(220,47,127,0.24); }
+.best-badge { position: absolute; top: -21px; left: 50%; transform: translateX(-50%); border-radius: 8px; padding: 9px 16px; background: #dc2f7f; color: #fff; font-size: 14px; font-weight: 900; text-transform: uppercase; white-space: nowrap; }
+.plan-pill { border-radius: 999px; padding: 10px 18px; background: var(--panel-2); color: var(--ink); font-weight: 900; text-transform: uppercase; }
+.highlighted .plan-pill { background: #c3288e; }
+.plan-icon { display: grid; place-items: center; width: 96px; height: 96px; border-radius: 50%; background: #151c28; color: #687280; font-size: 54px; line-height: 1; }
+.highlighted .plan-icon { background: rgba(220,47,127,0.16); color: #ff6b54; }
+.price-line { display: grid; justify-items: center; width: 100%; border-top: 1px solid var(--line); padding-top: 34px; }
+.price-line span { color: var(--muted); font-size: 18px; }
+.price-line strong { color: var(--ink); font-size: 56px; line-height: 1; }
+.pricing-card button { width: 100%; min-height: 52px; }
+.highlighted button { background: linear-gradient(135deg, #ff6b1a, #df2aa1); color: #fff; }
+.pricing-footer { display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--muted); }
+.pricing-footer span { color: var(--gold); }
+.success-note { border-color: var(--green); }
 
 @media (max-width: 820px) {
   .topbar, .game-row { align-items: flex-start; flex-direction: column; }
   .profile-popover { left: 0; right: auto; width: min(340px, calc(100vw - 40px)); }
   .settings-row { font-size: 17px; }
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .coach-form, .chat-form, .analysis-layout, .puzzle-layout, .opening-trainer, .table-row, .oauth-buttons, .lichess-profile, .profile-content-grid, .training-grid, .generated-task-grid { grid-template-columns: 1fr; }
+  .coach-form, .chat-form, .analysis-layout, .puzzle-layout, .opening-trainer, .table-row, .oauth-buttons, .lichess-profile, .profile-content-grid, .training-grid, .generated-task-grid, .pricing-grid { grid-template-columns: 1fr; }
+  .pricing-header { align-items: stretch; flex-direction: column; }
+  .pricing-header h1 { font-size: 40px; }
+  .pricing-card { min-height: 360px; }
   .puzzle-board-area { order: 1; }
   .puzzle-play-panel { order: 2; }
   .puzzle-sidebar { order: 3; }
