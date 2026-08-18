@@ -3,6 +3,7 @@ import { useLocation } from 'wouter';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
 import type { Lang } from '../lib/types';
+import { autoImportLichessGames } from '../lib/lichessAutoImport';
 
 export function AuthCallbackPage({ lang }: { lang: Lang }) {
   const [, navigate] = useLocation();
@@ -28,6 +29,7 @@ export function AuthCallbackPage({ lang }: { lang: Lang }) {
           return;
         }
         if (data.session) {
+          await runLichessAutoImport(data.session, setMessage);
           navigate('/');
           return;
         }
@@ -35,6 +37,7 @@ export function AuthCallbackPage({ lang }: { lang: Lang }) {
 
       const { data } = await supabase.auth.getSession();
       if (data.session) {
+        await runLichessAutoImport(data.session, setMessage);
         navigate('/');
         return;
       }
@@ -50,6 +53,17 @@ export function AuthCallbackPage({ lang }: { lang: Lang }) {
   }, [navigate, lang]);
 
   return <section className="panel">{message}</section>;
+}
+
+async function runLichessAutoImport(
+  session: Parameters<typeof autoImportLichessGames>[0],
+  setMessage: (message: string) => void,
+) {
+  try {
+    await autoImportLichessGames(session, setMessage);
+  } catch (error) {
+    console.warn('Could not auto-import Lichess games.', error);
+  }
 }
 
 const callbackErrorText: Record<Lang, string> = {
