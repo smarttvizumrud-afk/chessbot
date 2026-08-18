@@ -6,6 +6,7 @@ type Props = {
   caption?: string;
   icon: string;
   action: string;
+  bestLabel: string;
   productKey: PricingPlanKey;
   highlighted?: boolean;
   busy: boolean;
@@ -18,6 +19,7 @@ export function PricingCard({
   caption,
   icon,
   action,
+  bestLabel,
   productKey,
   highlighted,
   busy,
@@ -28,7 +30,7 @@ export function PricingCard({
 
   return (
     <article className={className}>
-      {highlighted && <div className="best-badge">Best value</div>}
+      {highlighted && <div className="best-badge">{bestLabel}</div>}
       <span className="plan-pill">{title}</span>
       <div className="plan-icon" aria-hidden="true">{icon}</div>
       <div className="price-line">
