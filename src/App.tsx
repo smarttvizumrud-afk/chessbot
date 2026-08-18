@@ -49,7 +49,7 @@ export default function App() {
       onPieceStyleChange={setPieceStyle}
     >
       <Switch>
-        <Route path="/">{() => <HomePage lang={lang} onLangChange={setLang} />}</Route>
+        <Route path="/">{() => hasAuthCallbackParams() ? <AuthCallbackPage lang={lang} /> : <HomePage lang={lang} onLangChange={setLang} />}</Route>
         <Route path="/auth">{() => <AuthPage lang={lang} onLangChange={setLang} />}</Route>
         <Route path="/auth/callback">{() => <AuthCallbackPage lang={lang} />}</Route>
         <Route path="/openings">{() => <OpeningsPage lang={lang} boardStyle={boardStyle} pieceStyle={pieceStyle} />}</Route>
@@ -66,6 +66,11 @@ export default function App() {
       </Switch>
     </Layout>
   );
+}
+
+function hasAuthCallbackParams() {
+  const params = new URLSearchParams(window.location.search);
+  return params.has('code') || params.has('error') || params.has('error_description');
 }
 
 function readPreferredLang(metadata: unknown): Lang | null {

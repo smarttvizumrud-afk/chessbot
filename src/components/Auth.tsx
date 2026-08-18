@@ -124,6 +124,11 @@ const guestButtonText: Record<Lang, string> = {
   kk: '\u0422\u0456\u0440\u043a\u0435\u043b\u0443\u0441\u0456\u0437 \u0436\u0430\u043b\u0493\u0430\u0441\u0442\u044b\u0440\u0443',
 };
 
+const productionOrigin = 'https://chesa.vercel.app';
+
 function authCallbackUrl() {
-  return `${window.location.origin}/auth/callback`;
+  const origin = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? window.location.origin
+    : productionOrigin;
+  return `${origin}/auth/callback`;
 }
