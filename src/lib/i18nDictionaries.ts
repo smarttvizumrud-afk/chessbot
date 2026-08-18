@@ -4,7 +4,7 @@ type Dict = Record<string, string>;
 
 export const dictionaries: Record<Lang, Dict> = {
   ru: {
-    app: 'AI-тренер по шахматам',
+    app: 'CHESA',
     connect: 'Подключить игрока',
     dashboard: 'Главная',
     openings: 'Дебюты',
@@ -71,7 +71,7 @@ export const dictionaries: Record<Lang, Dict> = {
     checkEmail: 'Проверь почту для подтверждения аккаунта.',
   },
   en: {
-    app: 'AI Chess Coach', connect: 'Connect player', dashboard: 'Dashboard', openings: 'Openings', puzzles: 'Puzzles', training: 'Training',
+    app: 'CHESA', connect: 'Connect player', dashboard: 'Dashboard', openings: 'Openings', puzzles: 'Puzzles', training: 'Training',
     game: 'Game', coach: 'AI coach', you: 'You', coachTyping: 'Gemini is thinking...',
     username: 'Username', import: 'Load and analyse',
     week: 'Week', month: 'Month', quarter: '3 months', last10: '10 games',
@@ -97,7 +97,7 @@ export const dictionaries: Record<Lang, Dict> = {
     checkEmail: 'Check your email to confirm the account.',
   },
   kk: {
-    app: 'AI шахмат жаттықтырушысы', connect: 'Ойыншыны қосу', dashboard: 'Басты бет',
+    app: 'CHESA', connect: 'Ойыншыны қосу', dashboard: 'Басты бет',
     openings: 'Дебюттер', puzzles: 'Есептер', training: 'Жаттығу', game: 'Партия', coach: 'AI-жаттықтырушы',
     you: 'Сен', coachTyping: 'Gemini жауап дайындап жатыр...', username: 'Ойыншы аты',
     import: 'Жүктеу және талдау', week: 'Апта', month: 'Ай', quarter: '3 ай',

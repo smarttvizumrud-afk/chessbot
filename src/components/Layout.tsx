@@ -39,7 +39,9 @@ export function Layout({
     <main className={`shell theme-${theme}`}>
       <header className="topbar">
         <Link href="/" className="brand">
-          <span className="brand-mark">♜</span>
+          <span className="brand-mark">
+            <img src="/chesa-logo.png" alt="" />
+          </span>
           <span>{t(lang, 'app')}</span>
         </Link>
         <nav className="nav">

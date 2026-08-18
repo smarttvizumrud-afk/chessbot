@@ -57,8 +57,9 @@ input, select { background: #0d131d; padding: 12px 14px; }
   --line: #cdd9d1;
 }
 .topbar { display: flex; align-items: center; gap: 18px; justify-content: space-between; margin-bottom: 22px; }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 900; }
-.brand-mark { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px; background: var(--gold); color: #111; }
+.brand { display: flex; align-items: center; gap: 12px; font-weight: 900; }
+.brand-mark { display: grid; place-items: center; width: 42px; height: 42px; overflow: hidden; border-radius: 8px; background: #05070a; }
+.brand-mark img { width: 100%; height: 100%; object-fit: cover; }
 .nav { display: flex; gap: 8px; flex-wrap: wrap; }
 .nav a { color: var(--muted); padding: 9px 12px; border-radius: 8px; }
 .nav a.active { background: var(--panel-2); color: var(--ink); }
