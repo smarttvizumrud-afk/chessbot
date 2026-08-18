@@ -1,3 +1,4 @@
+import { openingName, variantName } from '../lib/openingLocalization';
 import { openingVariants } from '../lib/openingVariants';
 import type { Lang } from '../lib/types';
 
@@ -14,7 +15,7 @@ export function OpeningLibrary({ lang, onTrain }: Props) {
         {openingVariants.map((variant) => (
           <article className="table-row" key={variant.id}>
             <div>
-              <strong>{variant.opening}: {variant.variant}</strong>
+              <strong>{openingName(variant.opening, lang)}: {variantName(variant.variant, lang)}</strong>
               <p>{variant.ideas}</p>
             </div>
             <span>{variant.userSide === 'white' ? sideText[lang].white : sideText[lang].black}</span>

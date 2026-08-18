@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { saveOpeningAttempt, type OpeningProgress } from '../lib/openingProgress';
+import { openingName, variantName } from '../lib/openingLocalization';
 import type { OpeningVariant } from '../lib/openingVariants';
 import type { BoardStyle, Lang, PieceStyle } from '../lib/types';
 import { usePositionEvaluation } from '../lib/usePositionEvaluation';
@@ -147,8 +148,8 @@ export function OpeningVariantTrainer({ variant, progress, boardStyle, pieceStyl
     <section className="opening-trainer">
       <article className="opening-study-card">
         <span className="puzzle-badge">{completed ? labels.completed : studyMode ? labels.study : labels.memory}</span>
-        <h2>{variant.opening}</h2>
-        <h3>{variant.variant}</h3>
+        <h2>{openingName(variant.opening, lang)}</h2>
+        <h3>{variantName(variant.variant, lang)}</h3>
         {studyMode && (
           <>
             <p>{labels.sequence}: {formatLine(variant.moves.map((move) => move.san))}</p>

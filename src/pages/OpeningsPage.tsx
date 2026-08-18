@@ -4,6 +4,7 @@ import { OpeningLibrary } from '../components/OpeningLibrary';
 import { OpeningVariantTrainer } from '../components/OpeningVariantTrainer';
 import { openingRecommendationText, t } from '../lib/i18n';
 import { openingStats } from '../lib/insights';
+import { openingName } from '../lib/openingLocalization';
 import { loadOpeningProgress, type OpeningProgress } from '../lib/openingProgress';
 import { variantById, variantForOpening } from '../lib/openingVariants';
 import { loadPinnedOpenings, pinOpening, unpinOpening } from '../lib/pinnedOpenings';
@@ -110,8 +111,8 @@ function OpeningsContent({ lang, boardStyle, pieceStyle }: { lang: Lang; boardSt
         {openings.map((item) => (
           <article className={pinnedSet.has(item.opening) ? 'table-row pinned-opening' : 'table-row'} key={item.opening}>
             <div>
-              <strong>{item.opening}</strong>
-              <p>{openingRecommendationText(lang, item.opening, item.score, item.errors)}</p>
+              <strong>{openingName(item.opening, lang)}</strong>
+              <p>{openingRecommendationText(lang, openingName(item.opening, lang), item.score, item.errors)}</p>
             </div>
             <span>{item.games} {t(lang, 'games').toLowerCase()}</span>
             <span>{item.score || '-'}%</span>
