@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Chess } from 'chess.js';
 import { analyzeGame } from '../lib/analyzer';
 import { getOpening } from '../lib/pgn';
-import { generatePuzzlesForGame } from '../lib/puzzleGenerator';
-import { savePuzzleResultForGame } from '../lib/puzzles';
+import { generatePuzzleForGame } from '../lib/puzzleGenerator';
+import { savePuzzleGenerationResult } from '../lib/puzzles';
 import { saveAnalysis, saveGame } from '../lib/storage';
 import { StockfishClient } from '../lib/stockfish';
 import type { GameResult, ImportedGame, Lang, PlayerColor } from '../lib/types';
@@ -91,10 +91,10 @@ export function TournamentGameForm({ lang, onDone }: Props) {
       const stored = await saveGame(game);
       const analysis = await analyzeGame(game, engine);
       const storedAnalysis = await saveAnalysis(stored.id, analysis);
-      const puzzles = generatePuzzlesForGame(stored, storedAnalysis);
-      await savePuzzleResultForGame(stored, puzzles);
+      const puzzleResult = generatePuzzleForGame(stored, storedAnalysis);
+      await savePuzzleGenerationResult(puzzleResult);
       await onDone();
-      setMessage(puzzles.length ? labels.saved : noPuzzleText(lang));
+      setMessage(puzzleResult.puzzle ? labels.saved : noPuzzleText(lang));
     } catch (error) {
       console.warn('Could not save tournament game.', error);
       setMessage(labels.invalid);

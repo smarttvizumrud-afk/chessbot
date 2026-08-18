@@ -3,40 +3,52 @@ import type { MoveReport, StoredAnalysis, StoredGame, StoredPuzzle } from './typ
 
 export type PuzzleCandidate = Omit<StoredPuzzle, 'id' | 'createdAt' | 'solvedAt' | 'earnedRating'>;
 export type PuzzleEngine = 'stockfish' | 'caissa';
+export type PuzzleGenerationResult = {
+  gameId: string;
+  status: 'created' | 'no_puzzle';
+  puzzle?: PuzzleCandidate;
+};
 
-const MIN_TRAINING_LOSS = 70;
+const MIN_MAJOR_LOSS = 180;
 
-export function generatePuzzlesForGame(
+export function generatePuzzleForGame(
   game: StoredGame,
   analysis: StoredAnalysis,
   engine: PuzzleEngine = 'stockfish',
-): PuzzleCandidate[] {
+): PuzzleGenerationResult {
   if (engine !== 'stockfish') {
     console.warn('Puzzle engine is not available yet, falling back to Stockfish reports.', engine);
   }
 
-  const report = analysis.moveReports
+  const puzzle = analysis.moveReports
     .filter(isUsefulPlayerPosition)
-    .sort((a, b) => b.loss - a.loss)
+    .sort(comparePuzzleReports)
     .map((report) => toPuzzle(game, analysis, report))
     .filter((puzzle): puzzle is PuzzleCandidate => Boolean(puzzle))[0];
 
-  return report ? [report] : [];
+  return puzzle
+    ? { gameId: game.id, status: 'created', puzzle }
+    : { gameId: game.id, status: 'no_puzzle' };
 }
 
 export function generatePuzzlesFromAnalyses(games: StoredGame[], analyses: StoredAnalysis[]) {
   const byGame = new Map(games.map((game) => [game.id, game]));
-  return analyses.flatMap((analysis) => {
+  return analyses.map((analysis) => {
     const game = byGame.get(analysis.gameId);
-    return game ? generatePuzzlesForGame(game, analysis) : [];
-  });
+    return game ? generatePuzzleForGame(game, analysis) : null;
+  }).filter((result): result is PuzzleGenerationResult => Boolean(result));
 }
 
 function isUsefulPlayerPosition(report: MoveReport) {
   return report.side === 'player'
-    && report.label !== 'good'
-    && report.loss >= MIN_TRAINING_LOSS
+    && (report.label === 'mistake' || report.label === 'blunder')
+    && report.loss >= MIN_MAJOR_LOSS
     && Boolean(report.bestMove);
+}
+
+function comparePuzzleReports(a: MoveReport, b: MoveReport) {
+  if (a.label !== b.label) return a.label === 'blunder' ? -1 : 1;
+  return b.loss - a.loss;
 }
 
 function toPuzzle(game: StoredGame, analysis: StoredAnalysis, report: MoveReport): PuzzleCandidate | null {

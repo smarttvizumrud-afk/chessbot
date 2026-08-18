@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
 import { AuthGate } from '../components/AuthGate';
 import { generatePuzzlesFromAnalyses } from '../lib/puzzleGenerator';
-import { loadPuzzles, savePuzzleResultForGame } from '../lib/puzzles';
+import { loadPuzzles, savePuzzleGenerationResult } from '../lib/puzzles';
 import { loadAnalyses, loadGames } from '../lib/storage';
 import { t } from '../lib/i18n';
 import type { Lang, StoredPuzzle } from '../lib/types';
@@ -77,12 +77,8 @@ function PuzzlesContent({ lang }: { lang: Lang }) {
     setMessage('');
     try {
       const [games, analyses] = await Promise.all([loadGames(), loadAnalyses()]);
-      const candidates = generatePuzzlesFromAnalyses(games, analyses);
-      const analysedGameIds = new Set(analyses.map((analysis) => analysis.gameId));
-      const analysedGames = games.filter((game) => analysedGameIds.has(game.id));
-      await Promise.all(analysedGames.map((game) => (
-        savePuzzleResultForGame(game, candidates.filter((puzzle) => puzzle.gameId === game.id))
-      )));
+      const results = generatePuzzlesFromAnalyses(games, analyses);
+      await Promise.all(results.map(savePuzzleGenerationResult));
       await refresh();
       setMessage(labels.generated);
     } catch (error) {

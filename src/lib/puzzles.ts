@@ -1,8 +1,8 @@
 import { isGuestMode } from './guestSession';
 import { supabase } from './supabase';
 import { markGamePuzzleStatus } from './storage';
-import type { PuzzleCandidate } from './puzzleGenerator';
-import type { StoredGame, StoredPuzzle } from './types';
+import type { PuzzleCandidate, PuzzleGenerationResult } from './puzzleGenerator';
+import type { StoredPuzzle } from './types';
 
 type PuzzleRow = {
   id: string;
@@ -66,15 +66,14 @@ export async function saveGeneratedPuzzles(puzzles: PuzzleCandidate[]) {
   return cleanupDuplicatePuzzles(bestPuzzles.map((puzzle) => puzzle.gameId));
 }
 
-export async function savePuzzleResultForGame(game: StoredGame, puzzles: PuzzleCandidate[]) {
-  const puzzle = oneCandidatePerGame(puzzles.filter((item) => item.gameId === game.id))[0];
-  if (!puzzle) {
-    await markGamePuzzleStatus(game.id, 'no_puzzle');
+export async function savePuzzleGenerationResult(result: PuzzleGenerationResult) {
+  if (result.status === 'no_puzzle' || !result.puzzle) {
+    await markGamePuzzleStatus(result.gameId, 'no_puzzle');
     return [];
   }
 
-  const saved = await saveGeneratedPuzzles([puzzle]);
-  await markGamePuzzleStatus(game.id, 'created');
+  const saved = await saveGeneratedPuzzles([result.puzzle]);
+  await markGamePuzzleStatus(result.gameId, 'created');
   return saved;
 }
 
