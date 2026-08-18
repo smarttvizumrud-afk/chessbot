@@ -267,6 +267,7 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .table-row { display: grid; grid-template-columns: 1fr auto auto auto auto auto; }
 .table-row button { padding: 9px 12px; }
 .pinned-opening { border-color: var(--gold); background: #151923; }
+.opening-library-title { margin: 28px 0 12px; }
 .opening-trainer { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(300px, 520px) minmax(220px, 1fr); gap: 18px; margin-top: 18px; align-items: start; }
 .opening-study-card, .opening-board-panel { background: #151b25; border: 1px solid var(--line); border-radius: 8px; padding: 18px; }
 .opening-study-card h2 { margin-bottom: 6px; }

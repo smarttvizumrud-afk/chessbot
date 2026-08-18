@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AuthGate } from '../components/AuthGate';
+import { OpeningLibrary } from '../components/OpeningLibrary';
 import { OpeningVariantTrainer } from '../components/OpeningVariantTrainer';
 import { openingRecommendationText, t } from '../lib/i18n';
 import { openingStats } from '../lib/insights';
 import { loadOpeningProgress, type OpeningProgress } from '../lib/openingProgress';
-import { variantForOpening } from '../lib/openingVariants';
+import { variantById, variantForOpening } from '../lib/openingVariants';
 import { loadPinnedOpenings, pinOpening, unpinOpening } from '../lib/pinnedOpenings';
 import type { BoardStyle, Lang, PieceStyle } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
@@ -22,6 +23,7 @@ function OpeningsContent({ lang, boardStyle, pieceStyle }: { lang: Lang; boardSt
   const [pinned, setPinned] = useState<string[]>([]);
   const [progress, setProgress] = useState<OpeningProgress[]>([]);
   const [selectedOpening, setSelectedOpening] = useState('');
+  const [selectedVariantId, setSelectedVariantId] = useState('');
   const [trainerOpen, setTrainerOpen] = useState(false);
   const [busyOpening, setBusyOpening] = useState('');
   const [pinError, setPinError] = useState('');
@@ -30,7 +32,9 @@ function OpeningsContent({ lang, boardStyle, pieceStyle }: { lang: Lang; boardSt
   const openings = useMemo(() => {
     return openingStats(games, analyses).sort((a, b) => Number(pinnedSet.has(b.opening)) - Number(pinnedSet.has(a.opening)));
   }, [analyses, games, pinnedSet]);
-  const selectedVariant = trainerOpen && selectedOpening ? variantForOpening(selectedOpening) : null;
+  const selectedVariant = trainerOpen
+    ? selectedVariantId ? variantById(selectedVariantId) : selectedOpening ? variantForOpening(selectedOpening) : null
+    : null;
   const selectedProgress = selectedVariant
     ? progress.find((item) => item.opening === selectedVariant.opening && item.variant === selectedVariant.variant)
     : undefined;
@@ -68,6 +72,13 @@ function OpeningsContent({ lang, boardStyle, pieceStyle }: { lang: Lang; boardSt
 
   function trainOpening(opening: string) {
     setSelectedOpening(opening);
+    setSelectedVariantId('');
+    setTrainerOpen(true);
+    window.setTimeout(() => trainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
+  }
+
+  function trainVariant(id: string) {
+    setSelectedVariantId(id);
     setTrainerOpen(true);
     window.setTimeout(() => trainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
   }
@@ -114,6 +125,7 @@ function OpeningsContent({ lang, boardStyle, pieceStyle }: { lang: Lang; boardSt
           </article>
         ))}
       </div>
+      <OpeningLibrary lang={lang} onTrain={trainVariant} />
     </section>
   );
 }
