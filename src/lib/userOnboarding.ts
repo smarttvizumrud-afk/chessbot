@@ -1,6 +1,7 @@
 import type { Lang } from './types';
 
 export type OnboardingData = {
+  displayName: string;
   birthDate: string;
   preferredLang: Lang;
   isAdult: boolean;
@@ -12,6 +13,7 @@ export type InterfaceMode = 'main' | 'student';
 export function readOnboardingData(metadata: unknown): Partial<OnboardingData> {
   if (!metadata || typeof metadata !== 'object') return {};
   const values = metadata as Record<string, unknown>;
+  const displayName = getDisplayName(values);
   const birthDate = typeof values.birth_date === 'string' ? values.birth_date : '';
   const preferredLang = isLang(values.preferred_lang) ? values.preferred_lang : undefined;
   const isAdult = typeof values.is_adult === 'boolean' ? values.is_adult : getIsAdult(birthDate);
@@ -19,12 +21,12 @@ export function readOnboardingData(metadata: unknown): Partial<OnboardingData> {
     ? values.interface_mode
     : interfaceModeForBirthDate(birthDate);
 
-  return { birthDate, preferredLang, isAdult, interfaceMode };
+  return { displayName, birthDate, preferredLang, isAdult, interfaceMode };
 }
 
 export function isOnboardingComplete(metadata: unknown) {
   const data = readOnboardingData(metadata);
-  return Boolean(data.birthDate && isValidBirthDate(data.birthDate) && data.preferredLang);
+  return Boolean(data.displayName && data.birthDate && isValidBirthDate(data.birthDate) && data.preferredLang);
 }
 
 export function interfaceModeForBirthDate(birthDate: string): InterfaceMode {
@@ -70,4 +72,18 @@ function isLang(value: unknown): value is Lang {
 
 function isInterfaceMode(value: unknown): value is InterfaceMode {
   return value === 'main' || value === 'student';
+}
+
+function getDisplayName(values: Record<string, unknown>) {
+  return (
+    getText(values.display_name) ||
+    getText(values.username) ||
+    getText(values.preferred_username) ||
+    getText(values.name) ||
+    getText(values.full_name)
+  );
+}
+
+function getText(value: unknown) {
+  return typeof value === 'string' ? value.trim() : '';
 }

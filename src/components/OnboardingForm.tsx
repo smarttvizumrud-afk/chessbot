@@ -10,25 +10,30 @@ type Props = {
   onLangChange?: (lang: Lang) => void;
 };
 
-const text: Record<Lang, {
+type Labels = {
   title: string;
   intro: string;
+  nickname: string;
   birthDate: string;
   language: string;
   save: string;
   error: string;
-}> = {
+};
+
+const text: Record<Lang, Labels> = {
   ru: {
     title: 'Расскажи немного о себе',
-    intro: 'После регистрации укажи дату рождения и язык интерфейса.',
+    intro: 'После регистрации укажи ник, дату рождения и язык интерфейса.',
+    nickname: 'Ник',
     birthDate: 'Дата рождения',
     language: 'Язык',
     save: 'Сохранить',
-    error: 'Не получилось сохранить данные. Попробуй ещё раз.',
+    error: 'Не получилось сохранить данные. Попробуй еще раз.',
   },
   en: {
     title: 'Tell us a little about you',
-    intro: 'After registration, add your birth date and interface language.',
+    intro: 'After registration, add your nickname, birth date, and interface language.',
+    nickname: 'Nickname',
     birthDate: 'Birth date',
     language: 'Language',
     save: 'Save',
@@ -36,7 +41,8 @@ const text: Record<Lang, {
   },
   kk: {
     title: 'Өзің туралы қысқаша',
-    intro: 'Тіркелгеннен кейін туған күніңді және интерфейс тілін таңда.',
+    intro: 'Тіркелгеннен кейін ник, туған күніңді және интерфейс тілін таңда.',
+    nickname: 'Ник',
     birthDate: 'Туған күн',
     language: 'Тіл',
     save: 'Сақтау',
@@ -47,6 +53,7 @@ const text: Record<Lang, {
 export function OnboardingForm({ lang, metadata, onComplete, onLangChange }: Props) {
   const labels = text[lang];
   const initial = readOnboardingData(metadata);
+  const [displayName, setDisplayName] = useState(initial.displayName ?? '');
   const [birthDate, setBirthDate] = useState(initial.birthDate ?? '');
   const [preferredLang, setPreferredLang] = useState<Lang>(initial.preferredLang ?? lang);
   const [busy, setBusy] = useState(false);
@@ -56,20 +63,27 @@ export function OnboardingForm({ lang, metadata, onComplete, onLangChange }: Pro
     event.preventDefault();
     setBusy(true);
     setMessage('');
+
+    const cleanName = displayName.trim();
     const interfaceMode = interfaceModeForBirthDate(birthDate);
     const { error } = await supabase.auth.updateUser({
       data: {
+        username: cleanName,
+        display_name: cleanName,
+        full_name: cleanName,
         birth_date: birthDate,
         preferred_lang: preferredLang,
         is_adult: interfaceMode === 'main',
         interface_mode: interfaceMode,
       },
     });
+
     if (error) {
       setMessage(labels.error);
       setBusy(false);
       return;
     }
+
     onLangChange?.(preferredLang);
     await onComplete();
     setBusy(false);
@@ -80,6 +94,17 @@ export function OnboardingForm({ lang, metadata, onComplete, onLangChange }: Pro
       <h1>{labels.title}</h1>
       <p>{labels.intro}</p>
       <form className="coach-form onboarding-form" onSubmit={submit}>
+        <label>
+          <span>{labels.nickname}</span>
+          <input
+            type="text"
+            value={displayName}
+            onChange={(event) => setDisplayName(event.target.value)}
+            minLength={2}
+            maxLength={24}
+            required
+          />
+        </label>
         <label>
           <span>{labels.birthDate}</span>
           <input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} required />
