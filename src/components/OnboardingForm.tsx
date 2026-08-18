@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { readOnboardingData } from '../lib/userOnboarding';
+import { interfaceModeForBirthDate, readOnboardingData } from '../lib/userOnboarding';
 import type { Lang } from '../lib/types';
 
 type Props = {
@@ -56,10 +56,13 @@ export function OnboardingForm({ lang, metadata, onComplete, onLangChange }: Pro
     event.preventDefault();
     setBusy(true);
     setMessage('');
+    const interfaceMode = interfaceModeForBirthDate(birthDate);
     const { error } = await supabase.auth.updateUser({
       data: {
         birth_date: birthDate,
         preferred_lang: preferredLang,
+        is_adult: interfaceMode === 'main',
+        interface_mode: interfaceMode,
       },
     });
     if (error) {

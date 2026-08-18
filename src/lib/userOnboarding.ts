@@ -3,21 +3,71 @@ import type { Lang } from './types';
 export type OnboardingData = {
   birthDate: string;
   preferredLang: Lang;
+  isAdult: boolean;
+  interfaceMode: InterfaceMode;
 };
+
+export type InterfaceMode = 'main' | 'student';
 
 export function readOnboardingData(metadata: unknown): Partial<OnboardingData> {
   if (!metadata || typeof metadata !== 'object') return {};
   const values = metadata as Record<string, unknown>;
   const birthDate = typeof values.birth_date === 'string' ? values.birth_date : '';
   const preferredLang = isLang(values.preferred_lang) ? values.preferred_lang : undefined;
-  return { birthDate, preferredLang };
+  const isAdult = typeof values.is_adult === 'boolean' ? values.is_adult : getIsAdult(birthDate);
+  const interfaceMode = isInterfaceMode(values.interface_mode)
+    ? values.interface_mode
+    : interfaceModeForBirthDate(birthDate);
+
+  return { birthDate, preferredLang, isAdult, interfaceMode };
 }
 
 export function isOnboardingComplete(metadata: unknown) {
   const data = readOnboardingData(metadata);
-  return Boolean(data.birthDate && data.preferredLang);
+  return Boolean(data.birthDate && isValidBirthDate(data.birthDate) && data.preferredLang);
+}
+
+export function interfaceModeForBirthDate(birthDate: string): InterfaceMode {
+  return getIsAdult(birthDate) ? 'main' : 'student';
+}
+
+function getIsAdult(birthDate: string, today = new Date()) {
+  const parsed = parseBirthDate(birthDate);
+  if (!parsed) return false;
+
+  let age = today.getUTCFullYear() - parsed.getUTCFullYear();
+  const monthDiff = today.getUTCMonth() - parsed.getUTCMonth();
+  const hasBirthdayPassed = monthDiff > 0 || (monthDiff === 0 && today.getUTCDate() >= parsed.getUTCDate());
+  if (!hasBirthdayPassed) age -= 1;
+
+  return age >= 18;
+}
+
+function isValidBirthDate(birthDate: string) {
+  return Boolean(parseBirthDate(birthDate));
+}
+
+function parseBirthDate(value: string) {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  const isRealDate =
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day;
+
+  if (!isRealDate || date.getTime() > Date.now()) return null;
+  return date;
 }
 
 function isLang(value: unknown): value is Lang {
   return value === 'ru' || value === 'en' || value === 'kk';
+}
+
+function isInterfaceMode(value: unknown): value is InterfaceMode {
+  return value === 'main' || value === 'student';
 }
