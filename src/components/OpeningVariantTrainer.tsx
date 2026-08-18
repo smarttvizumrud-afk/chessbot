@@ -4,6 +4,7 @@ import { Chessboard } from 'react-chessboard';
 import { saveOpeningAttempt, type OpeningProgress } from '../lib/openingProgress';
 import type { OpeningVariant } from '../lib/openingVariants';
 import type { BoardStyle, Lang, PieceStyle } from '../lib/types';
+import { usePositionEvaluation } from '../lib/usePositionEvaluation';
 import { useResponsiveBoardWidth } from '../lib/useResponsiveBoardWidth';
 
 type Props = {
@@ -28,6 +29,7 @@ export function OpeningVariantTrainer({ variant, progress, boardStyle, pieceStyl
   const colors = boardStyles[boardStyle];
   const { boardWrapRef, boardWidth } = useResponsiveBoardWidth();
   const [chess, setChess] = useState(() => new Chess());
+  const evaluation = usePositionEvaluation(chess.fen());
   const [lineIndex, setLineIndex] = useState(0);
   const [studyPly, setStudyPly] = useState(0);
   const [started, setStarted] = useState(false);
@@ -175,6 +177,10 @@ export function OpeningVariantTrainer({ variant, progress, boardStyle, pieceStyl
             customDarkSquareStyle={{ backgroundColor: colors.dark }}
             onPieceDrop={dropPiece}
           />
+          <div className="eval-chip">
+            <span>{labels.evaluation}</span>
+            <strong>{evaluation.loading ? '...' : evaluation.label}</strong>
+          </div>
         </div>
       </article>
 
@@ -213,6 +219,7 @@ const text: Record<Lang, Record<string, string>> = {
     sequence: 'Последовательность',
     ideas: 'Основные идеи',
     shownMoves: 'Показано ходов',
+    evaluation: 'Оценка позиции',
     showNext: 'Показать следующий ход',
     replay: 'Показать с начала',
     demoDone: 'Вариант показан',
@@ -239,6 +246,7 @@ const text: Record<Lang, Record<string, string>> = {
     sequence: 'Sequence',
     ideas: 'Main ideas',
     shownMoves: 'Shown moves',
+    evaluation: 'Position evaluation',
     showNext: 'Show next move',
     replay: 'Show from start',
     demoDone: 'Line shown',
@@ -265,6 +273,7 @@ const text: Record<Lang, Record<string, string>> = {
     sequence: 'Жүрістер тізбегі',
     ideas: 'Негізгі идеялар',
     shownMoves: 'Көрсетілген жүрістер',
+    evaluation: 'Позиция бағасы',
     showNext: 'Келесі жүрісті көрсету',
     replay: 'Басынан көрсету',
     demoDone: 'Вариант көрсетілді',

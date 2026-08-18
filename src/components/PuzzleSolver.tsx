@@ -3,6 +3,7 @@ import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { awardPuzzleRating } from '../lib/puzzles';
 import type { BoardStyle, Lang, PieceStyle, StoredPuzzle } from '../lib/types';
+import { usePositionEvaluation } from '../lib/usePositionEvaluation';
 import { useResponsiveBoardWidth } from '../lib/useResponsiveBoardWidth';
 
 type Props = {
@@ -33,6 +34,7 @@ type Copy = {
   alreadyAwarded: string;
   playedMove: string;
   betterInstead: string;
+  evaluation: string;
 };
 
 const text: Record<Lang, Copy> = {
@@ -57,6 +59,7 @@ const text: Record<Lang, Copy> = {
     alreadyAwarded: 'Рейтинг за эту задачу уже начислен.',
     playedMove: 'В партии ты сыграл',
     betterInstead: 'Найди лучший ход вместо него',
+    evaluation: 'Оценка позиции',
   },
   en: {
     wrong: 'Wrong move. Try again.',
@@ -79,6 +82,7 @@ const text: Record<Lang, Copy> = {
     alreadyAwarded: 'Rating for this puzzle was already awarded.',
     playedMove: 'In the game you played',
     betterInstead: 'Find the best move instead',
+    evaluation: 'Position evaluation',
   },
   kk: {
     wrong: 'Қате жүріс. Қайта көр.',
@@ -101,6 +105,7 @@ const text: Record<Lang, Copy> = {
     alreadyAwarded: 'Бұл тапсырма үшін рейтинг бұрын берілген.',
     playedMove: 'Партияда сен ойнадың',
     betterInstead: 'Оның орнына ең жақсы жүрісті тап',
+    evaluation: 'Позиция бағасы',
   },
 };
 
@@ -120,6 +125,7 @@ export function PuzzleSolver({ puzzle, boardStyle, pieceStyle, lang }: Props) {
   const [awardNotice, setAwardNotice] = useState('');
   const colors = boardStyles[boardStyle];
   const { boardWrapRef, boardWidth } = useResponsiveBoardWidth();
+  const evaluation = usePositionEvaluation(fen);
   const expectedMove = puzzle.solution[0] ?? puzzle.bestMove;
   void pieceStyle;
 
@@ -207,6 +213,7 @@ export function PuzzleSolver({ puzzle, boardStyle, pieceStyle, lang }: Props) {
         <div className="puzzle-move-list" aria-label={labels.solution}>
           <div><span>{labels.playedMove}</span><strong>{puzzle.sourceMove}</strong></div>
           <div><span>{labels.difficulty}</span><strong>{puzzle.difficulty}/5</strong></div>
+          <div><span>{labels.evaluation}</span><strong>{evaluation.loading ? '...' : evaluation.label}</strong></div>
         </div>
 
         <div className="puzzle-turn-card">

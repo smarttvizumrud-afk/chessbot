@@ -278,6 +278,9 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .analysis-layout { display: grid; grid-template-columns: minmax(280px, 540px) 1fr; gap: 18px; align-items: start; }
 .board-panel { overflow: hidden; }
 .board-wrap { width: 100%; max-width: 520px; margin: 0 auto; overflow: hidden; }
+.eval-chip { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; background: #0d131d; padding: 10px 12px; }
+.eval-chip span { color: var(--muted); font-size: 13px; font-weight: 800; }
+.eval-chip strong { color: var(--gold); font-size: 20px; }
 .piece-symbol { display: grid; place-items: center; line-height: 1; user-select: none; }
 .piece-alpha { font-family: Georgia, "Times New Roman", serif; font-weight: 900; text-shadow: 0 2px 2px rgba(0,0,0,0.32); }
 .piece-neo { font-family: Inter, "Segoe UI Symbol", sans-serif; font-weight: 900; filter: drop-shadow(0 3px 2px rgba(0,0,0,0.34)); }

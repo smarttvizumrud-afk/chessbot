@@ -3,6 +3,7 @@ import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import type { CustomPieces, Piece } from 'react-chessboard/dist/chessboard/types';
 import type { BoardStyle, PieceStyle } from '../lib/types';
+import { usePositionEvaluation } from '../lib/usePositionEvaluation';
 import { useResponsiveBoardWidth } from '../lib/useResponsiveBoardWidth';
 
 type Props = {
@@ -33,6 +34,7 @@ export function AnalysisBoard({ fen, boardStyle, pieceStyle }: Props) {
   const customPieces = useMemo(() => getCustomPieces(pieceStyle), [pieceStyle]);
   const boardColors = boardStyles[boardStyle];
   const { boardWrapRef, boardWidth } = useResponsiveBoardWidth();
+  const evaluation = usePositionEvaluation(boardFen);
 
   useEffect(() => {
     setBoardFen(fen);
@@ -60,6 +62,10 @@ export function AnalysisBoard({ fen, boardStyle, pieceStyle }: Props) {
         customDarkSquareStyle={{ backgroundColor: boardColors.dark }}
         onPieceDrop={dropPiece}
       />
+      <div className="eval-chip">
+        <span>Оценка позиции</span>
+        <strong>{evaluation.loading ? '...' : evaluation.label}</strong>
+      </div>
     </div>
   );
 }
