@@ -199,10 +199,11 @@ function recreatePgn(
 ) {
   const chess = new Chess();
   moveTokens(input).forEach((token) => {
-    const move = uciMove(token);
+    const normalizedToken = normalizeMoveToken(token);
+    const move = uciMove(normalizedToken);
     const played = move
       ? chess.move({ from: move.from, to: move.to, promotion: move.promotion })
-      : chess.move(token);
+      : chess.move(normalizedToken);
     if (!played) throw new Error(`Invalid move: ${token}`);
   });
 
@@ -227,6 +228,61 @@ function uciMove(token: string) {
   const match = token.match(/^([a-h][1-8])([a-h][1-8])([nbrq])?$/i);
   if (!match) return null;
   return { from: match[1], to: match[2], promotion: match[3]?.toLowerCase() ?? 'q' };
+}
+
+function normalizeMoveToken(token: string) {
+  const trimmed = token.trim();
+  const russian = normalizeRussianSan(trimmed);
+  return russian || trimmed;
+}
+
+function normalizeRussianSan(token: string) {
+  const clean = token
+    .replace(/[–—]/g, '-')
+    .trim();
+  const lower = clean.toLowerCase();
+
+  if (lower === '0-0' || lower === 'о-о') return 'O-O';
+  if (lower === '0-0-0' || lower === 'о-о-о') return 'O-O-O';
+
+  const kingPrefix = lower.startsWith('кр');
+  const piece = kingPrefix ? 'K' : russianPiece(clean[0]);
+  const rest = kingPrefix ? clean.slice(2) : piece ? clean.slice(1) : clean;
+  const normalizedRest = normalizeRussianSquares(rest);
+
+  return piece ? `${piece}${normalizedRest}` : normalizedRest;
+}
+
+function russianPiece(value: string) {
+  const lower = value.toLowerCase();
+  if (lower === 'к') return 'N';
+  if (lower === 'ф') return 'Q';
+  if (lower === 'л') return 'R';
+  if (lower === 'с') return 'B';
+  return '';
+}
+
+function normalizeRussianSquares(value: string) {
+  return [...value].map((char, index, chars) => {
+    const lower = char.toLowerCase();
+    if (lower === 'х' && index < chars.length - 1) return 'x';
+    return russianFile(lower) ?? char;
+  }).join('');
+}
+
+function russianFile(value: string) {
+  const files: Record<string, string> = {
+    а: 'a',
+    б: 'b',
+    с: 'c',
+    д: 'd',
+    е: 'e',
+    ё: 'e',
+    ф: 'f',
+    г: 'g',
+    х: 'h',
+  };
+  return files[value];
 }
 
 function withHeaders(pgn: string, values: { username: string; opponent: string; color: PlayerColor; result: GameResult }) {
