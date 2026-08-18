@@ -109,25 +109,50 @@ function OpeningsContent({ lang, boardStyle, pieceStyle }: { lang: Lang; boardSt
       )}
       <div className="table">
         {openings.map((item) => (
-          <article className={pinnedSet.has(item.opening) ? 'table-row pinned-opening' : 'table-row'} key={item.opening}>
-            <div>
-              <strong>{openingName(item.opening, lang)}</strong>
-              <p>{openingRecommendationText(lang, openingName(item.opening, lang), item.score, item.errors)}</p>
-            </div>
-            <span>{item.games} {t(lang, 'games').toLowerCase()}</span>
-            <span>{item.score || '-'}%</span>
-            <span>{item.errors} {t(lang, 'errors')}</span>
-            <button type="button" onClick={() => trainOpening(item.opening)}>
-              {trainText[lang]}
-            </button>
-            <button type="button" onClick={() => togglePinned(item.opening)} disabled={busyOpening === item.opening}>
-              {pinnedSet.has(item.opening) ? unpinText[lang] : pinText[lang]}
-            </button>
-          </article>
+          <OpeningRow
+            key={item.opening}
+            item={item}
+            lang={lang}
+            pinned={pinnedSet.has(item.opening)}
+            busy={busyOpening === item.opening}
+            onTrain={trainOpening}
+            onTogglePin={togglePinned}
+          />
         ))}
       </div>
       <OpeningLibrary lang={lang} onTrain={trainVariant} />
     </section>
+  );
+}
+
+type OpeningRowProps = {
+  item: { opening: string; games: number; score: number; errors: number };
+  lang: Lang;
+  pinned: boolean;
+  busy: boolean;
+  onTrain: (opening: string) => void;
+  onTogglePin: (opening: string) => void;
+};
+
+function OpeningRow({ item, lang, pinned, busy, onTrain, onTogglePin }: OpeningRowProps) {
+  const localizedOpening = openingName(item.opening, lang);
+
+  return (
+    <article className={pinned ? 'table-row pinned-opening' : 'table-row'}>
+      <div>
+        <strong>{localizedOpening}</strong>
+        <p>{openingRecommendationText(lang, localizedOpening, item.score, item.errors)}</p>
+      </div>
+      <span>{item.games} {t(lang, 'games').toLowerCase()}</span>
+      <span>{item.score || '-'}%</span>
+      <span>{item.errors} {t(lang, 'errors')}</span>
+      <button type="button" onClick={() => onTrain(item.opening)}>
+        {trainText[lang]}
+      </button>
+      <button type="button" onClick={() => onTogglePin(item.opening)} disabled={busy}>
+        {pinned ? unpinText[lang] : pinText[lang]}
+      </button>
+    </article>
   );
 }
 
