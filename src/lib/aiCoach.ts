@@ -23,13 +23,14 @@ export async function askCoach(
   analyses: StoredAnalysis[],
   history: CoachMessage[] = [],
   interfaceMode: InterfaceMode = 'student',
+  userAge?: number,
 ) {
-  await spendCredits(1, 'ai_coach', { feature: 'coach_request' });
+  await spendCredits(1, 'ai_coach', { feature: 'coach_request', userAge });
   const context = buildContext(games, analyses);
   const system = [
     `You are a personal chess coach powered by Gemini. Answer in ${languageName[lang]}.`,
     'Use only the supplied player data, Stockfish results, openings, weaknesses, and chat history.',
-    coachTone(interfaceMode),
+    coachTone(interfaceMode, userAge),
   ].join(' ');
   const prompt = trimPrompt(`${context}\n\nChat history:\n${formatHistory(history)}\n\nUser question: ${question}`);
   const { data, error } = await supabase.functions.invoke('ai', { body: { prompt, system } });
@@ -41,17 +42,31 @@ export async function coachSummary(lang: Lang, games: StoredGame[], analyses: St
   return askCoach('What should I improve first and why?', lang, games, analyses);
 }
 
-function coachTone(interfaceMode: InterfaceMode) {
+function coachTone(interfaceMode: InterfaceMode, userAge?: number) {
   if (interfaceMode === 'preschool') {
     return [
-      'The user is 3 to 6 years old.',
+      ageSentence(userAge, 'The user is 6 to 11 years old.'),
       'Explain chess like one friendly child talking to another child.',
       'Use very short sentences, simple words, playful encouragement, and one tiny step at a time.',
       'Do not use scary pressure, long analysis, notation-heavy explanations, or adult coaching language.',
     ].join(' ');
   }
 
+  if (interfaceMode === 'student') {
+    return [
+      ageSentence(userAge, 'The user is a teenager from 12 to 18 years old.'),
+      'Talk like a smart peer-coach for a teenager, not like a teacher lecturing a small child.',
+      'Use chess examples connected to online games, ratings, tournaments, school schedule, focus, and improvement streaks.',
+      'If the user is around 16, assume they may care about progress, competition, independence, fast feedback, and practical training.',
+      'Keep the tone confident, direct, motivating, and not childish.',
+    ].join(' ');
+  }
+
   return 'Be concrete, kind, and concise.';
+}
+
+function ageSentence(userAge: number | undefined, fallback: string) {
+  return typeof userAge === 'number' ? `The user is ${userAge} years old.` : fallback;
 }
 
 function buildContext(games: StoredGame[], analyses: StoredAnalysis[]) {

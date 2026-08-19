@@ -32,15 +32,19 @@ export function isOnboardingComplete(metadata: unknown) {
 }
 
 export function interfaceModeForBirthDate(birthDate: string): InterfaceMode {
-  const age = getAge(birthDate);
+  const age = ageFromBirthDate(birthDate);
   if (age === null) return 'student';
   if (age >= 6 && age < 12) return 'preschool';
   if (age >= 12 && age <= 18) return 'student';
   return age > 18 ? 'main' : 'student';
 }
 
+export function ageFromBirthDate(birthDate: string) {
+  return getAge(birthDate);
+}
+
 function getIsAdult(birthDate: string) {
-  const age = getAge(birthDate);
+  const age = ageFromBirthDate(birthDate);
   return age !== null && age > 18;
 }
 
