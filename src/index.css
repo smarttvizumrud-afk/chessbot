@@ -335,6 +335,9 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .credit-status { display: grid; gap: 6px; min-width: 150px; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; background: var(--panel); }
 .credit-status span { color: var(--muted); font-size: 13px; font-weight: 800; text-transform: uppercase; }
 .credit-status strong { font-size: 28px; }
+.credit-limit-notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; border: 1px solid rgba(224, 109, 103, 0.42); border-radius: 8px; padding: 14px; background: rgba(224, 109, 103, 0.08); }
+.credit-limit-notice p { color: var(--ink); font-weight: 800; }
+.credit-limit-notice .account-link { margin: 0; }
 .promo-card { display: grid; gap: 8px; width: min(330px, 42vw); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; background: var(--panel); }
 .promo-card span { color: var(--muted); font-size: 13px; font-weight: 800; text-transform: uppercase; }
 .promo-row { display: grid; grid-template-columns: minmax(110px, 1fr) auto; gap: 8px; }
@@ -357,6 +360,159 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .pricing-footer { display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--muted); }
 .pricing-footer span { color: var(--gold); }
 .success-note { border-color: var(--green); }
+
+.interface-student {
+  width: min(1420px, 100%);
+  min-height: 100vh;
+  --bg: #07090c;
+  --panel: #0d1116;
+  --panel-2: #141922;
+  --ink: #f6f1e8;
+  --muted: #aaa59d;
+  --gold: #e88722;
+  --green: #d49a45;
+  --line: rgba(255, 255, 255, 0.1);
+}
+
+.interface-student::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 78% 5%, rgba(232, 135, 34, 0.14), transparent 26%),
+    linear-gradient(180deg, #090b0f 0%, #050608 100%);
+}
+
+.interface-student .topbar {
+  min-height: 70px;
+  margin-bottom: 18px;
+}
+
+.interface-student .brand {
+  color: #fff7ea;
+  font-size: 28px;
+  text-transform: uppercase;
+}
+
+.interface-student .brand-mark {
+  width: 50px;
+  height: 50px;
+  background: #090b0f;
+}
+
+.interface-student .nav {
+  gap: 12px;
+}
+
+.interface-student .nav a {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0 16px;
+  color: #e8e0d4;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.interface-student .nav a:nth-child(1)::before { content: "H"; color: var(--gold); }
+.interface-student .nav a:nth-child(2)::before { content: "X"; color: #c9b7a2; }
+.interface-student .nav a:nth-child(3)::before { content: "O"; color: #c9b7a2; }
+.interface-student .nav a:nth-child(4)::before { content: "AI"; color: #c9b7a2; }
+.interface-student .nav a:nth-child(5)::before { content: "*"; color: #c9b7a2; }
+
+.interface-student .nav a.active {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, #22262d, #11151b);
+  color: #ffd19a;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+.interface-student .profile-link,
+.interface-student .lang-select {
+  min-width: 50px;
+  height: 50px;
+  border-color: rgba(255, 255, 255, 0.14);
+  background: #171b22;
+}
+
+.interface-student .hero {
+  min-height: 316px;
+  align-content: center;
+  border-color: rgba(255, 255, 255, 0.12);
+  padding: 38px;
+  background:
+    linear-gradient(90deg, rgba(7, 9, 12, 0.98) 0%, rgba(7, 9, 12, 0.78) 38%, rgba(7, 9, 12, 0.08) 72%),
+    url("/teen-hero.jpg") center / cover no-repeat;
+  box-shadow: inset 0 0 52px rgba(0, 0, 0, 0.36);
+}
+
+.interface-student .hero-copy {
+  display: grid;
+  gap: 14px;
+  max-width: 560px;
+}
+
+.interface-student .hero p {
+  color: #f1c27a;
+  font-size: 19px;
+  font-weight: 900;
+}
+
+.interface-student .hero h1 {
+  max-width: 520px;
+  color: #f8f1e7;
+  font-size: clamp(42px, 5vw, 68px);
+  line-height: 1.05;
+  text-transform: uppercase;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.72);
+}
+
+.interface-student .panel,
+.interface-student .auth-card,
+.interface-student .board-panel {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(12, 15, 20, 0.92);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+}
+
+.interface-student .panel h2::before {
+  content: "+ ";
+  color: var(--gold);
+}
+
+.interface-student button,
+.interface-student .account-link {
+  min-height: 54px;
+  border-color: rgba(255, 178, 78, 0.36);
+  background: linear-gradient(135deg, #f7a438, #d96a14);
+  color: #160d05;
+  box-shadow: 0 12px 26px rgba(217, 106, 20, 0.24);
+}
+
+.interface-student input,
+.interface-student select {
+  min-height: 54px;
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(4, 6, 9, 0.74);
+}
+
+.interface-student .stat,
+.interface-student .game-row,
+.interface-student .table-row,
+.interface-student .generated-task {
+  background: rgba(10, 13, 17, 0.9);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.interface-student .chips li,
+.interface-student .puzzle-badge {
+  background: rgba(232, 135, 34, 0.1);
+  color: #f0a34b;
+}
 
 .interface-preschool {
   width: min(1420px, 100%);
@@ -562,6 +718,19 @@ input, select { background: #0d131d; padding: 12px 14px; }
   .profile-edit-form { grid-template-columns: 1fr; }
   .coach-form input { grid-column: span 1; }
   .onboarding-form label { grid-column: span 1; }
+  .interface-student .topbar { gap: 14px; }
+  .interface-student .brand { font-size: 24px; }
+  .interface-student .nav a { min-height: 44px; font-size: 16px; padding: 0 12px; }
+  .interface-student .hero {
+    min-height: 430px;
+    align-content: start;
+    padding: 24px;
+    background:
+      linear-gradient(180deg, rgba(7, 9, 12, 0.96) 0%, rgba(7, 9, 12, 0.58) 42%, rgba(7, 9, 12, 0.14) 100%),
+      url("/teen-hero.jpg") center bottom / cover no-repeat;
+  }
+  .interface-student .hero h1 { font-size: 36px; }
+  .interface-student .hero p { font-size: 17px; }
   .interface-preschool .topbar { gap: 14px; }
   .interface-preschool .brand { font-size: 24px; }
   .interface-preschool .nav a { min-height: 46px; font-size: 16px; padding: 0 12px; }

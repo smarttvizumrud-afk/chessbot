@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { Chess } from 'chess.js';
 import { analyzeGame } from '../lib/analyzer';
+import { hasActiveSubscription, loadBillingState } from '../lib/credits';
+import { FREE_DAILY_TOURNAMENT_LIMIT, loadDailyUsage } from '../lib/dailyLimits';
 import { getOpening } from '../lib/pgn';
 import { generatePuzzleForGame } from '../lib/puzzleGenerator';
 import { savePuzzleGenerationResult } from '../lib/puzzles';
 import { saveAnalysis, saveGame } from '../lib/storage';
 import { StockfishClient } from '../lib/stockfish';
 import type { GameResult, ImportedGame, Lang, PlayerColor } from '../lib/types';
+import { CreditLimitNotice } from './CreditLimitNotice';
 
 type Props = { lang: Lang; onDone: () => Promise<void> };
 type MoveRow = { white: string; black: string };
@@ -79,13 +82,21 @@ export function TournamentGameForm({ lang, onDone }: Props) {
   const [moveRows, setMoveRows] = useState<MoveRow[]>(initialRows);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [limitNotice, setLimitNotice] = useState(false);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
     setMessage('');
+    setLimitNotice(false);
     const engine = new StockfishClient();
     try {
+      const allowance = await loadTournamentAllowance();
+      if (!allowance.canRecord) {
+        setLimitNotice(true);
+        return;
+      }
+      if (allowance.isFreeMode) setLimitNotice(true);
       const moves = moveRowsToText(moveRows);
       const game = toImportedGame({ username, opponent, whiteRating, blackRating, color, result, moves });
       const stored = await saveGame(game);
@@ -150,9 +161,19 @@ export function TournamentGameForm({ lang, onDone }: Props) {
           <button type="submit" disabled={busy}>{busy ? '...' : labels.save}</button>
         </form>
       )}
+      {limitNotice && <CreditLimitNotice lang={lang} kind="tournament" />}
       {message && <p className="message">{message}</p>}
     </section>
   );
+}
+
+async function loadTournamentAllowance() {
+  const [billing, usage] = await Promise.all([loadBillingState(), loadDailyUsage()]);
+  const isFreeMode = billing.balance <= 0 && !hasActiveSubscription(billing);
+  return {
+    canRecord: !isFreeMode || usage.tournamentGames < FREE_DAILY_TOURNAMENT_LIMIT,
+    isFreeMode,
+  };
 }
 
 function moveRowsToText(rows: MoveRow[]) {

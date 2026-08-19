@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { analyzeGame } from '../lib/analyzer';
+import { hasActiveSubscription, loadBillingState } from '../lib/credits';
+import { FREE_DAILY_ANALYSIS_LIMIT, loadDailyUsage } from '../lib/dailyLimits';
 import { fetchPlatformGames, fetchPlatformRatings } from '../lib/platforms';
 import { generatePuzzleForGame } from '../lib/puzzleGenerator';
 import { savePuzzleGenerationResult } from '../lib/puzzles';
@@ -7,6 +9,7 @@ import { saveAnalysis, saveGame, saveProfile } from '../lib/storage';
 import { StockfishClient } from '../lib/stockfish';
 import type { Lang, Platform } from '../lib/types';
 import { t } from '../lib/i18n';
+import { CreditLimitNotice } from './CreditLimitNotice';
 import { TournamentGameForm } from './TournamentGameForm';
 
 type Props = { lang: Lang; onDone: () => Promise<void> };
@@ -17,18 +20,29 @@ export function ConnectPanel({ lang, onDone }: Props) {
   const [username, setUsername] = useState('');
   const [range, setRange] = useState<Range>('10');
   const [status, setStatus] = useState('');
+  const [limitNotice, setLimitNotice] = useState<{ kind: 'analysis'; remaining?: number } | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function runImport(event: React.FormEvent) {
     event.preventDefault();
     if (busy) return;
     setBusy(true);
+    setLimitNotice(null);
     const engine = new StockfishClient();
     setStatus(t(lang, 'loadingGames'));
     try {
+      const allowance = await loadAnalysisAllowance();
+      if (allowance.allowedGames <= 0) {
+        setLimitNotice({ kind: 'analysis' });
+        setStatus('');
+        return;
+      }
+      if (allowance.isFreeMode) {
+        setLimitNotice({ kind: 'analysis', remaining: allowance.allowedGames });
+      }
       const ratings = await fetchPlatformRatings(platform, username);
       await saveProfile(ratings);
-      const games = await fetchPlatformGames(toOptions(platform, username, range));
+      const games = await fetchPlatformGames(toOptions(platform, username, range, allowance.allowedGames));
       if (!games.length) {
         setStatus(t(lang, 'noData'));
         return;
@@ -82,17 +96,29 @@ export function ConnectPanel({ lang, onDone }: Props) {
         <button type="submit" disabled={busy}>{busy ? '...' : t(lang, 'import')}</button>
       </form>
       <TournamentGameForm lang={lang} onDone={onDone} />
+      {limitNotice && <CreditLimitNotice lang={lang} kind={limitNotice.kind} remaining={limitNotice.remaining} />}
       {status && <p className="message">{status}</p>}
     </section>
   );
 }
 
-function toOptions(platform: Platform, username: string, range: Range) {
+async function loadAnalysisAllowance() {
+  const [billing, usage] = await Promise.all([loadBillingState(), loadDailyUsage()]);
+  const isFreeMode = billing.balance <= 0 && !hasActiveSubscription(billing);
+  return {
+    allowedGames: isFreeMode
+      ? Math.max(FREE_DAILY_ANALYSIS_LIMIT - usage.analyses, 0)
+      : Number.POSITIVE_INFINITY,
+    isFreeMode,
+  };
+}
+
+function toOptions(platform: Platform, username: string, range: Range, allowedGames: number) {
   const days = range === 'week' ? 7 : range === 'month' ? 30 : range === 'quarter' ? 90 : 0;
   return {
     platform,
     username,
-    limit: importLimit(range),
+    limit: Math.min(importLimit(range), allowedGames),
     since: days ? new Date(Date.now() - days * 86_400_000).toISOString() : undefined,
   };
 }
