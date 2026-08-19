@@ -50,7 +50,6 @@ function CoachContent({ lang }: { lang: Lang }) {
     const assistantMessages = messages.filter((message) => message.role === 'assistant');
     const lastAnswer = assistantMessages[assistantMessages.length - 1]?.text;
     setMessages(lastAnswer === answer ? nextMessages : [...nextMessages, { role: 'assistant', text: answer }]);
-    void speak(answer, lang, userAge);
     setBusy(false);
   }
 

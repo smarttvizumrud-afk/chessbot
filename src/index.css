@@ -614,15 +614,6 @@ input, select { background: #0d131d; padding: 12px 14px; }
   max-width: 520px;
 }
 
-.interface-preschool .hero::after {
-  content: "⭐";
-  position: absolute;
-  left: 42%;
-  top: 16%;
-  font-size: 26px;
-  filter: drop-shadow(0 0 10px rgba(255, 212, 71, 0.7));
-}
-
 .interface-preschool .hero h1 {
   max-width: 460px;
   color: #fff;
