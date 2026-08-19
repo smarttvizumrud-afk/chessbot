@@ -1,0 +1,70 @@
+const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
+const CHILD_VOICE_ID = Deno.env.get('ELEVENLABS_CHILD_VOICE_ID') ?? 'KGm9JQce2gqC2w6y4q3p';
+
+const cors = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+function json(body: object, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...cors, 'Content-Type': 'application/json' },
+  });
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+  if (req.method !== 'POST') return json({ error: 'Use a POST request.' }, 405);
+
+  try {
+    if (!ELEVENLABS_API_KEY) return json({ error: 'ElevenLabs key is not configured.' }, 503);
+
+    const body = (await req.json()) as { text?: unknown };
+    const text = typeof body.text === 'string' ? body.text.trim() : '';
+    if (!text) return json({ error: 'Text is required.' }, 400);
+    if (text.length > 2_000) return json({ error: 'Text is too long.' }, 400);
+
+    const response = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${CHILD_VOICE_ID}?output_format=mp3_44100_128`,
+      {
+        method: 'POST',
+        headers: {
+          'xi-api-key': ELEVENLABS_API_KEY,
+          'Content-Type': 'application/json',
+          Accept: 'audio/mpeg',
+        },
+        body: JSON.stringify({
+          text,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: {
+            stability: 0.55,
+            similarity_boost: 0.8,
+            style: 0.25,
+            use_speaker_boost: true,
+          },
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      console.error('ElevenLabs request failed', response.status, await response.text());
+      return json({ error: 'Could not generate speech.' }, 502);
+    }
+
+    return json({ audio: base64(await response.arrayBuffer()) });
+  } catch (error) {
+    console.error('TTS function failed', error);
+    return json({ error: 'Could not generate speech.' }, 500);
+  }
+});
+
+function base64(buffer: ArrayBuffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
+  }
+  return btoa(binary);
+}

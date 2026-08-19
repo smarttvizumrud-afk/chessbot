@@ -8,7 +8,7 @@ export type OnboardingData = {
   interfaceMode: InterfaceMode;
 };
 
-export type InterfaceMode = 'main' | 'student' | 'preschool';
+export type InterfaceMode = 'main' | 'student' | 'preschool' | 'child';
 
 export function readOnboardingData(metadata: unknown): Partial<OnboardingData> {
   if (!metadata || typeof metadata !== 'object') return {};
@@ -34,9 +34,10 @@ export function isOnboardingComplete(metadata: unknown) {
 export function interfaceModeForBirthDate(birthDate: string): InterfaceMode {
   const age = ageFromBirthDate(birthDate);
   if (age === null) return 'student';
+  if (age >= 3 && age < 6) return 'child';
   if (age >= 6 && age < 12) return 'preschool';
-  if (age >= 12 && age <= 18) return 'student';
-  return age > 18 ? 'main' : 'student';
+  if (age >= 12 && age < 18) return 'student';
+  return age >= 18 ? 'main' : 'student';
 }
 
 export function ageFromBirthDate(birthDate: string) {
@@ -86,7 +87,7 @@ function isLang(value: unknown): value is Lang {
 }
 
 function isInterfaceMode(value: unknown): value is InterfaceMode {
-  return value === 'main' || value === 'student' || value === 'preschool';
+  return value === 'main' || value === 'student' || value === 'preschool' || value === 'child';
 }
 
 function getDisplayName(values: Record<string, unknown>) {

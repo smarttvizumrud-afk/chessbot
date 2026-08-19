@@ -4,6 +4,7 @@ import { askCoach, type CoachMessage } from '../lib/aiCoach';
 import { NotEnoughCreditsError } from '../lib/credits';
 import { t } from '../lib/i18n';
 import { supabase } from '../lib/supabase';
+import { speakWithChildVoice } from '../lib/tts';
 import type { Lang } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
 import { ageFromBirthDate, readOnboardingData, type InterfaceMode } from '../lib/userOnboarding';
@@ -61,8 +62,8 @@ function CoachContent({ lang }: { lang: Lang }) {
           <article className={`chat-message ${message.role}`} key={`${message.role}-${index}`}>
             <span>
               {message.role === 'user' ? t(lang, 'you') : t(lang, 'coach')}
-              {message.role === 'assistant' && canSpeak() && (
-                <button className="speak-button" type="button" onClick={() => void speak(message.text, lang, userAge)} aria-label="Speak answer">
+              {message.role === 'assistant' && canSpeak(interfaceMode) && (
+                <button className="speak-button" type="button" onClick={() => void speak(message.text, lang, userAge, interfaceMode)} aria-label="Speak answer">
                   🔊
                 </button>
               )}
@@ -108,16 +109,28 @@ function noCreditsText(lang: Lang) {
   return 'Кредиты закончились. Один запрос к AI-тренеру стоит 1 кредит. Открой раздел «Кредиты», чтобы купить ещё.';
 }
 
-function canSpeak() {
+function canSpeak(interfaceMode?: InterfaceMode) {
+  if (interfaceMode === 'child') return typeof window !== 'undefined' && 'Audio' in window;
   return typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
 }
 
-async function speak(text: string, lang: Lang, userAge?: number) {
-  if (!canSpeak()) return;
+async function speak(text: string, lang: Lang, userAge: number | undefined, interfaceMode: InterfaceMode) {
+  if (!canSpeak(interfaceMode)) return;
+  const cleanText = cleanSpeechText(text);
+  if (interfaceMode === 'child') {
+    try {
+      await speakWithChildVoice(cleanText);
+      return;
+    } catch (error) {
+      console.warn('Could not use child ElevenLabs voice.', error);
+    }
+  }
+
+  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return;
   window.speechSynthesis.cancel();
   const voice = await bestVoice(lang);
   const voiceStyle = speechStyle(userAge);
-  speechChunks(text).forEach((chunk) => {
+  speechChunks(cleanText).forEach((chunk) => {
     const utterance = new SpeechSynthesisUtterance(chunk);
     utterance.lang = speechLang(lang);
     utterance.volume = 1;

@@ -43,6 +43,14 @@ export async function coachSummary(lang: Lang, games: StoredGame[], analyses: St
 }
 
 function coachTone(interfaceMode: InterfaceMode, userAge?: number) {
+  if (interfaceMode === 'child') {
+    return [
+      ageSentence(userAge, 'The user is 3 to 5 years old.'),
+      'Use tiny sentences, very simple words, warm playful tone, and one action at a time.',
+      'Avoid complex notation, pressure, long explanations, and adult coaching language.',
+    ].join(' ');
+  }
+
   if (interfaceMode === 'preschool') {
     return [
       ageSentence(userAge, 'The user is 6 to 11 years old.'),
@@ -113,7 +121,7 @@ function readText(data: unknown) {
 }
 
 function fallbackAnswer(lang: Lang, games: StoredGame[], analyses: StoredAnalysis[], interfaceMode: InterfaceMode) {
-  if (interfaceMode === 'preschool') return preschoolFallback(lang, analyses.length > 0);
+  if (interfaceMode === 'child' || interfaceMode === 'preschool') return preschoolFallback(lang, analyses.length > 0);
   if (!analyses.length) return noDataAnswer(lang);
   const stats = dashboardStats(games, analyses);
   const openings = openingStats(games, analyses);
