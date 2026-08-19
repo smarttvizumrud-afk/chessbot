@@ -11,21 +11,47 @@ export type EndgameCard = {
   drill: string;
 };
 
-export const endgameCopy: Record<Lang, { title: string; subtitle: string; drill: string }> = {
+export type EndgameCopy = {
+  title: string;
+  subtitle: string;
+  drill: string;
+  fromGames: string;
+  emptyFromGames: string;
+  played: string;
+  best: string;
+  open: string;
+};
+
+export const endgameCopy: Record<Lang, EndgameCopy> = {
   ru: {
     title: 'Эндшпиль',
     subtitle: 'Все основные типы окончаний: от пешек до ферзей и матовых схем.',
     drill: 'Тренировка',
+    fromGames: 'Эндшпили из твоих партий',
+    emptyFromGames: 'Пока в анализах нет эндшпильных ошибок. Загрузи больше партий, которые дошли до конца.',
+    played: 'Ты сыграл',
+    best: 'Лучше',
+    open: 'Открыть партию',
   },
   en: {
     title: 'Endgames',
     subtitle: 'All core endgame types: from pawns to queens and mate patterns.',
     drill: 'Drill',
+    fromGames: 'Endgames from your games',
+    emptyFromGames: 'No endgame mistakes in analyses yet. Upload more games that reached the endgame.',
+    played: 'You played',
+    best: 'Better',
+    open: 'Open game',
   },
   kk: {
     title: 'Endshpil',
     subtitle: 'Negizgi endshpil turleri: peshkadan ferzige jane mat ulgilerine deiin.',
     drill: 'Jattygu',
+    fromGames: 'Partialaryndagy endshpil',
+    emptyFromGames: 'Taldauda endshpil qateleri azir joq. Endshpilge jetken kobirek partia jukte.',
+    played: 'Sen oynadyn',
+    best: 'Jaqsy',
+    open: 'Partiany ashu',
   },
 };
 
