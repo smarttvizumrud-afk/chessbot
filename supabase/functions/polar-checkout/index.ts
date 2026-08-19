@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
     const { data, error: userError } = await authClient.auth.getUser();
     if (userError || !data.user) return json({ error: 'Sign in before buying credits.' }, 401);
 
-    const origin = req.headers.get('origin') ?? SITE_URL;
+    const origin = checkoutOrigin(req.headers.get('origin'));
     const checkout = await createPolarCheckout({
       productId,
       plan,
@@ -125,6 +125,13 @@ function normalizePlan(value: unknown): PlanKey | null {
   if (value === 'credits_50' || value === 'credits_100' || value === 'yearly') return value;
   if (value === 'unlimited_year') return 'yearly';
   return null;
+}
+
+function checkoutOrigin(origin: string | null) {
+  if (origin?.startsWith('http://localhost') || origin?.startsWith('http://127.0.0.1')) {
+    return origin;
+  }
+  return SITE_URL;
 }
 
 function customerIpAddress(headers: Headers) {

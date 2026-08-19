@@ -37,21 +37,31 @@ function PricingContent({ lang }: { lang: Lang }) {
     const refreshIfActive = () => {
       if (!stopped) refreshBilling();
     };
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') refreshIfActive();
+    };
 
     refreshIfActive();
+    window.addEventListener('focus', refreshIfActive);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+
+    const cleanupRefresh = () => {
+      stopped = true;
+      window.removeEventListener('focus', refreshIfActive);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
+
     if (checkoutState === 'success') {
       setMessage(copy.ready);
       const timers = [1200, 3500, 7000].map((delay) => window.setTimeout(refreshIfActive, delay));
       return () => {
-        stopped = true;
+        cleanupRefresh();
         timers.forEach(window.clearTimeout);
       };
     }
     if (checkoutState === 'cancel') setMessage(copy.canceled);
 
-    return () => {
-      stopped = true;
-    };
+    return cleanupRefresh;
   }, [checkoutState, copy.canceled, copy.ready, refreshBilling]);
 
   async function buy(productKey: PaidPlanKey) {
