@@ -6,18 +6,25 @@ import { WeeklyHistory } from '../components/WeeklyHistory';
 import { combinedPlan, dashboardStats } from '../lib/insights';
 import { localizeInsight, t } from '../lib/i18n';
 import type { Lang } from '../lib/types';
+import type { InterfaceMode } from '../lib/userOnboarding';
 import { useChessData } from '../lib/useChessData';
 import { useState } from 'react';
 
-export function HomePage({ lang, onLangChange }: { lang: Lang; onLangChange?: (lang: Lang) => void }) {
+type Props = {
+  lang: Lang;
+  interfaceMode: InterfaceMode;
+  onLangChange?: (lang: Lang) => void;
+};
+
+export function HomePage({ lang, interfaceMode, onLangChange }: Props) {
   return (
     <AuthGate lang={lang} onLangChange={onLangChange}>
-      <Dashboard lang={lang} />
+      <Dashboard lang={lang} interfaceMode={interfaceMode} />
     </AuthGate>
   );
 }
 
-function Dashboard({ lang }: { lang: Lang }) {
+function Dashboard({ lang, interfaceMode }: { lang: Lang; interfaceMode: InterfaceMode }) {
   const { games, analyses, profiles, loading, error, refresh } = useChessData();
   const [closedAnalyses, setClosedAnalyses] = useState<string[]>([]);
   const stats = dashboardStats(games, analyses);
@@ -27,10 +34,7 @@ function Dashboard({ lang }: { lang: Lang }) {
 
   return (
     <div className="page-grid">
-      <section className="hero">
-        <p>{t(lang, 'heroKicker')}</p>
-        <h1>{t(lang, 'app')}</h1>
-      </section>
+      <HomeHero lang={lang} interfaceMode={interfaceMode} />
       <ConnectPanel lang={lang} onDone={refresh} />
       {loading && <section className="panel">{t(lang, 'loading')}</section>}
       {error && <section className="panel warning">{error}</section>}
@@ -56,5 +60,23 @@ function Dashboard({ lang }: { lang: Lang }) {
       <GameList games={games} analyses={analyses} closedAnalyses={closedAnalyses} lang={lang} onClose={closeAnalysis} />
       <WeeklyHistory games={games} analyses={analyses} closedAnalyses={closedAnalyses} lang={lang} onClose={closeAnalysis} />
     </div>
+  );
+}
+
+function HomeHero({ lang, interfaceMode }: { lang: Lang; interfaceMode: InterfaceMode }) {
+  const isKidsMode = interfaceMode === 'preschool';
+
+  return (
+    <section className="hero">
+      {isKidsMode && (
+        <video className="hero-video" autoPlay muted loop playsInline poster="/preschool-hero.png">
+          <source src="/kids-hero.mp4" type="video/mp4" />
+        </video>
+      )}
+      <div className="hero-copy">
+        <p>{t(lang, 'heroKicker')}</p>
+        <h1>{t(lang, 'app')}</h1>
+      </div>
+    </section>
   );
 }

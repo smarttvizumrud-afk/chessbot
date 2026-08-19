@@ -57,7 +57,11 @@ export default function App() {
       onPieceStyleChange={setPieceStyle}
     >
       <Switch>
-        <Route path="/">{() => hasAuthCallbackParams() ? <AuthCallbackPage lang={lang} /> : <HomePage lang={lang} onLangChange={setLang} />}</Route>
+        <Route path="/">
+          {() => hasAuthCallbackParams()
+            ? <AuthCallbackPage lang={lang} />
+            : <HomePage lang={lang} interfaceMode={interfaceMode} onLangChange={setLang} />}
+        </Route>
         <Route path="/auth">{() => <AuthPage lang={lang} onLangChange={setLang} />}</Route>
         <Route path="/auth/callback">{() => <AuthCallbackPage lang={lang} />}</Route>
         <Route path="/openings">{() => <OpeningsPage lang={lang} boardStyle={boardStyle} pieceStyle={pieceStyle} />}</Route>
