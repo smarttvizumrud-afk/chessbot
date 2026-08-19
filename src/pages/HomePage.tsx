@@ -72,7 +72,7 @@ function HomeHero({ lang, interfaceMode }: { lang: Lang; interfaceMode: Interfac
   return (
     <section className="hero">
       {isKidsMode && (
-        <video className="hero-video" autoPlay muted loop playsInline poster="/preschool-hero.png">
+        <video className="hero-video" autoPlay muted loop playsInline preload="auto">
           <source src="/kids-hero.mp4" type="video/mp4" />
         </video>
       )}

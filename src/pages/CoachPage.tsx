@@ -32,6 +32,11 @@ function CoachContent({ lang }: { lang: Lang }) {
     });
   }, []);
 
+  useEffect(() => {
+    if (!canSpeak()) return;
+    window.speechSynthesis.getVoices();
+  }, []);
+
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     const text = question.trim();
@@ -45,7 +50,7 @@ function CoachContent({ lang }: { lang: Lang }) {
     const assistantMessages = messages.filter((message) => message.role === 'assistant');
     const lastAnswer = assistantMessages[assistantMessages.length - 1]?.text;
     setMessages(lastAnswer === answer ? nextMessages : [...nextMessages, { role: 'assistant', text: answer }]);
-    speak(answer, lang, userAge);
+    void speak(answer, lang, userAge);
     setBusy(false);
   }
 
@@ -58,7 +63,7 @@ function CoachContent({ lang }: { lang: Lang }) {
             <span>
               {message.role === 'user' ? t(lang, 'you') : t(lang, 'coach')}
               {message.role === 'assistant' && canSpeak() && (
-                <button className="speak-button" type="button" onClick={() => speak(message.text, lang)} aria-label="Speak answer">
+                <button className="speak-button" type="button" onClick={() => void speak(message.text, lang, userAge)} aria-label="Speak answer">
                   🔊
                 </button>
               )}
@@ -108,33 +113,98 @@ function canSpeak() {
   return typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
 }
 
-function speak(text: string, lang: Lang, userAge?: number) {
+async function speak(text: string, lang: Lang, userAge?: number) {
   if (!canSpeak()) return;
   window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = speechLang(lang);
-  const voice = bestVoice(lang);
+  const voice = await bestVoice(lang);
   const voiceStyle = speechStyle(userAge);
-  if (voice) utterance.voice = voice;
-  utterance.rate = voiceStyle.rate;
-  utterance.pitch = voiceStyle.pitch;
-  window.speechSynthesis.speak(utterance);
+  speechChunks(text).forEach((chunk) => {
+    const utterance = new SpeechSynthesisUtterance(chunk);
+    utterance.lang = speechLang(lang);
+    utterance.volume = 1;
+    utterance.rate = voiceStyle.rate;
+    utterance.pitch = voiceStyle.pitch;
+    if (voice) utterance.voice = voice;
+    window.speechSynthesis.speak(utterance);
+  });
 }
 
 function speechStyle(userAge?: number) {
-  if (typeof userAge !== 'number') return { rate: 0.92, pitch: 1 };
-  if (userAge < 12) return { rate: 0.86, pitch: 1.18 };
-  if (userAge <= 15) return { rate: 0.96, pitch: 1.06 };
-  if (userAge <= 18) return { rate: 1, pitch: 0.98 };
-  return { rate: 0.94, pitch: 0.94 };
+  if (typeof userAge !== 'number') return { rate: 0.96, pitch: 1 };
+  if (userAge < 12) return { rate: 0.9, pitch: 1.08 };
+  if (userAge <= 15) return { rate: 0.98, pitch: 1.02 };
+  if (userAge <= 18) return { rate: 1.02, pitch: 0.98 };
+  return { rate: 0.96, pitch: 0.96 };
 }
 
-function bestVoice(lang: Lang) {
-  const voices = window.speechSynthesis.getVoices();
+async function bestVoice(lang: Lang) {
+  const voices = await loadVoices();
   const prefix = speechLang(lang).slice(0, 2).toLowerCase();
-  return voices.find((voice) => voice.lang.toLowerCase().startsWith(prefix))
+  const matching = voices.filter((voice) => voice.lang.toLowerCase().startsWith(prefix));
+  return matching.sort((left, right) => voiceScore(right) - voiceScore(left))[0]
     ?? voices.find((voice) => voice.default)
+    ?? matching[0]
     ?? null;
+}
+
+function loadVoices() {
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length) return Promise.resolve(voices);
+
+  return new Promise<SpeechSynthesisVoice[]>((resolve) => {
+    const timer = window.setTimeout(() => resolve(window.speechSynthesis.getVoices()), 800);
+    window.speechSynthesis.onvoiceschanged = () => {
+      window.clearTimeout(timer);
+      resolve(window.speechSynthesis.getVoices());
+    };
+  });
+}
+
+function voiceScore(voice: SpeechSynthesisVoice) {
+  const name = voice.name.toLowerCase();
+  let score = voice.default ? 4 : 0;
+  if (name.includes('natural')) score += 8;
+  if (name.includes('neural')) score += 8;
+  if (name.includes('online')) score += 5;
+  if (name.includes('google')) score += 5;
+  if (name.includes('microsoft')) score += 5;
+  if (name.includes('apple')) score += 4;
+  if (name.includes('yandex')) score += 4;
+  if (name.includes('premium')) score += 3;
+  return score;
+}
+
+function speechChunks(text: string) {
+  return cleanSpeechText(text)
+    .split(/(?<=[.!?])\s+/)
+    .flatMap((sentence) => splitLongSpeech(sentence, 180))
+    .filter(Boolean);
+}
+
+function splitLongSpeech(text: string, maxLength: number) {
+  if (text.length <= maxLength) return [text];
+  const chunks: string[] = [];
+  let current = '';
+  text.split(/,\s+|\s+-\s+/).forEach((part) => {
+    const next = current ? `${current}, ${part}` : part;
+    if (next.length > maxLength && current) {
+      chunks.push(current);
+      current = part;
+    } else {
+      current = next;
+    }
+  });
+  if (current) chunks.push(current);
+  return chunks;
+}
+
+function cleanSpeechText(text: string) {
+  return text
+    .replace(/[`*_#>]/g, '')
+    .replace(/\s+/g, ' ')
+    .replace(/\bAI\b/g, 'эй ай')
+    .replace(/[^\p{L}\p{N}\s.,!?;:()\-+/%]/gu, '')
+    .trim();
 }
 
 function speechLang(lang: Lang) {
