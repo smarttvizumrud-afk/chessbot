@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { Link } from 'wouter';
 import { AuthGate } from '../components/AuthGate';
-import { endgameCopy, endgameGroups, type EndgameCopy } from '../lib/endgameCatalog';
+import { endgameCopy, endgameGroups, type EndgameCard, type EndgameCopy } from '../lib/endgameCatalog';
 import { endgameMomentsFromGames, type EndgameMoment } from '../lib/endgameTraining';
 import type { Lang } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
@@ -17,6 +18,7 @@ function EndgamesContent({ lang }: { lang: Lang }) {
   const labels = endgameCopy[lang];
   const { games, analyses, loading } = useChessData();
   const moments = endgameMomentsFromGames(games, analyses);
+  const [activeDrill, setActiveDrill] = useState<EndgameCard | null>(null);
 
   return (
     <div className="page-grid">
@@ -24,6 +26,26 @@ function EndgamesContent({ lang }: { lang: Lang }) {
         <h1>{labels.title}</h1>
         <p>{labels.subtitle}</p>
       </section>
+      {activeDrill && (
+        <section className="panel endgame-practice">
+          <div className="task-header">
+            <div>
+              <h2>{activeDrill.title}</h2>
+              <p>{activeDrill.text}</p>
+            </div>
+            <button type="button" className="ghost" onClick={() => setActiveDrill(null)}>
+              {labels.close}
+            </button>
+          </div>
+          <div className="generated-task-grid">
+            <article className="generated-task">
+              <span>{labels.drill}</span>
+              <h3>{activeDrill.drill}</h3>
+              <p>{practiceTip(activeDrill.title, lang)}</p>
+            </article>
+          </div>
+        </section>
+      )}
       <section className="panel generated-tasks">
         <h2>{labels.fromGames}</h2>
         {loading ? (
@@ -46,8 +68,10 @@ function EndgamesContent({ lang }: { lang: Lang }) {
               <article className="training-card" key={card.title}>
                 <h3>{card.title}</h3>
                 <p>{card.text}</p>
-                <strong>{labels.drill}</strong>
                 <p>{card.drill}</p>
+                <button type="button" onClick={() => setActiveDrill(card)}>
+                  {labels.drill}
+                </button>
               </article>
             ))}
           </div>
@@ -55,6 +79,12 @@ function EndgamesContent({ lang }: { lang: Lang }) {
       ))}
     </div>
   );
+}
+
+function practiceTip(title: string, lang: Lang) {
+  if (lang === 'en') return `Set up this position on a board and solve it three times: first slowly, then with a timer. Topic: ${title}.`;
+  if (lang === 'kk') return `Pozitsiany taqtada quryp, ush ret shesh: birinshi ret baiap, sodan son uaqytpen. Taqyryp: ${title}.`;
+  return `Поставь такую позицию на доске и реши 3 раза: сначала спокойно, потом на время. Тема: ${title}.`;
 }
 
 function EndgameMomentCard({

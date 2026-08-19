@@ -20,6 +20,7 @@ export type EndgameCopy = {
   played: string;
   best: string;
   open: string;
+  close: string;
 };
 
 export const endgameCopy: Record<Lang, EndgameCopy> = {
@@ -32,6 +33,7 @@ export const endgameCopy: Record<Lang, EndgameCopy> = {
     played: 'Ты сыграл',
     best: 'Лучше',
     open: 'Открыть партию',
+    close: 'Закрыть',
   },
   en: {
     title: 'Endgames',
@@ -42,6 +44,7 @@ export const endgameCopy: Record<Lang, EndgameCopy> = {
     played: 'You played',
     best: 'Better',
     open: 'Open game',
+    close: 'Close',
   },
   kk: {
     title: 'Endshpil',
@@ -52,6 +55,7 @@ export const endgameCopy: Record<Lang, EndgameCopy> = {
     played: 'Sen oynadyn',
     best: 'Jaqsy',
     open: 'Partiany ashu',
+    close: 'Jabu',
   },
 };
 
