@@ -3,6 +3,7 @@ import type { Lang, StoredAnalysis, StoredGame } from './types';
 import { combinedPlan, dashboardStats, openingStats } from './insights';
 import { localizeInsight } from './i18n';
 import type { InterfaceMode } from './userOnboarding';
+import { spendCredits } from './credits';
 
 export type CoachMessage = {
   role: 'user' | 'assistant';
@@ -23,6 +24,7 @@ export async function askCoach(
   history: CoachMessage[] = [],
   interfaceMode: InterfaceMode = 'student',
 ) {
+  await spendCredits(1, 'ai_coach', { feature: 'coach_request' });
   const context = buildContext(games, analyses);
   const system = [
     `You are a personal chess coach powered by Gemini. Answer in ${languageName[lang]}.`,

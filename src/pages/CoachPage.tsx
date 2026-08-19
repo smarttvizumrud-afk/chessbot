@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AuthGate } from '../components/AuthGate';
 import { askCoach, type CoachMessage } from '../lib/aiCoach';
+import { NotEnoughCreditsError } from '../lib/credits';
 import { t } from '../lib/i18n';
 import { supabase } from '../lib/supabase';
 import type { Lang } from '../lib/types';
@@ -38,7 +39,7 @@ function CoachContent({ lang }: { lang: Lang }) {
     setMessages(nextMessages);
     setQuestion('');
     setBusy(true);
-    const answer = await askCoach(text, lang, games, analyses, nextMessages, interfaceMode);
+    const answer = await askCoachAnswer(text, lang, games, analyses, nextMessages, interfaceMode);
     const assistantMessages = messages.filter((message) => message.role === 'assistant');
     const lastAnswer = assistantMessages[assistantMessages.length - 1]?.text;
     setMessages(lastAnswer === answer ? nextMessages : [...nextMessages, { role: 'assistant', text: answer }]);
@@ -76,6 +77,28 @@ function CoachContent({ lang }: { lang: Lang }) {
       </form>
     </section>
   );
+}
+
+async function askCoachAnswer(
+  text: string,
+  lang: Lang,
+  games: ReturnType<typeof useChessData>['games'],
+  analyses: ReturnType<typeof useChessData>['analyses'],
+  messages: CoachMessage[],
+  interfaceMode: InterfaceMode,
+) {
+  try {
+    return await askCoach(text, lang, games, analyses, messages, interfaceMode);
+  } catch (error) {
+    if (error instanceof NotEnoughCreditsError) return noCreditsText(lang);
+    throw error;
+  }
+}
+
+function noCreditsText(lang: Lang) {
+  if (lang === 'en') return 'Credits are empty. One AI coach request costs 1 credit. Open Credits to buy more.';
+  if (lang === 'kk') return 'Kreditter bittti. AI trenerge bir suraq 1 kredit turady. Kreditter bolimine otip, tagy satyp al.';
+  return 'Кредиты закончились. Один запрос к AI-тренеру стоит 1 кредит. Открой раздел «Кредиты», чтобы купить ещё.';
 }
 
 function canSpeak() {

@@ -12,6 +12,13 @@ export type BillingState = {
   subscription?: SubscriptionState;
 };
 
+export class NotEnoughCreditsError extends Error {
+  constructor() {
+    super('Not enough credits.');
+    this.name = 'NotEnoughCreditsError';
+  }
+}
+
 type CreditBalanceRow = {
   balance: number;
 };
@@ -50,6 +57,18 @@ export function hasActiveSubscription(state: BillingState) {
   if (subscription.status !== 'active' && subscription.status !== 'trialing') return false;
   if (!subscription.currentPeriodEnd) return true;
   return new Date(subscription.currentPeriodEnd) > new Date();
+}
+
+export async function spendCredits(amount: number, productKey: string, metadata: Record<string, unknown> = {}) {
+  const state = await loadBillingState();
+  if (amount <= 0 || hasActiveSubscription(state)) return;
+  const { data, error } = await supabase.rpc('spend_user_credits', {
+    p_amount: amount,
+    p_product_key: productKey,
+    p_metadata: metadata,
+  });
+  if (error) throw error;
+  if (data !== true) throw new NotEnoughCreditsError();
 }
 
 function mapCreditBalance(row: CreditBalanceRow) {

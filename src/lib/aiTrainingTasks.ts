@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { spendCredits } from './credits';
 import { buildTrainingSections, type TrainingTask } from './trainingTasks';
 import type { Lang, MoveReport, StoredAnalysis, StoredGame } from './types';
 
@@ -20,6 +21,7 @@ export async function generateAiTrainingTasks(
   analyses: StoredAnalysis[],
   lang: Lang,
 ): Promise<AiTrainingTask[]> {
+  await spendCredits(1, 'ai_tasks', { feature: 'training_tasks', taskCount: 2 });
   const system = [
     'You are a chess coach that creates short training tasks.',
     `Answer only in ${languageName[lang]}.`,
@@ -32,7 +34,7 @@ export async function generateAiTrainingTasks(
   const text = readText(data);
   const parsed = parseTasks(text);
   if (!parsed.length) throw new Error('Gemini did not return training tasks.');
-  return parsed.slice(0, 6);
+  return parsed.slice(0, 2);
 }
 
 function buildPrompt(games: StoredGame[], analyses: StoredAnalysis[]) {
@@ -52,7 +54,7 @@ function buildPrompt(games: StoredGame[], analyses: StoredAnalysis[]) {
   };
 
   return [
-    'Create 4 to 6 personal chess training tasks from this player data.',
+    'Create exactly 2 personal chess training tasks from this player data.',
     'Use concrete wording. Prefer tasks about blunders, recent games, and repeated openings.',
     'Each instruction should be one practical exercise, not general advice.',
     JSON.stringify(context),

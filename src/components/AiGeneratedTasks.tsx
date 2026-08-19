@@ -1,4 +1,5 @@
 import { Link } from 'wouter';
+import { NotEnoughCreditsError } from '../lib/credits';
 import { generateAiTrainingTasks, type AiTrainingTask } from '../lib/aiTrainingTasks';
 import type { Lang, StoredAnalysis, StoredGame } from '../lib/types';
 import { useState } from 'react';
@@ -50,8 +51,8 @@ export function AiGeneratedTasks({ games, analyses, lang }: Props) {
     setError('');
     try {
       setTasks(await generateAiTrainingTasks(games, analyses, lang));
-    } catch {
-      setError(labels.error);
+    } catch (error) {
+      setError(error instanceof NotEnoughCreditsError ? noCreditsText(lang) : labels.error);
     } finally {
       setBusy(false);
     }
@@ -74,6 +75,12 @@ export function AiGeneratedTasks({ games, analyses, lang }: Props) {
       </div>
     </section>
   );
+}
+
+function noCreditsText(lang: Lang) {
+  if (lang === 'en') return 'Credits are empty. Two AI tasks cost 1 credit.';
+  if (lang === 'kk') return 'Kreditter bittti. Eki AI tapsyrma 1 kredit turady.';
+  return 'Кредиты закончились. Две AI-задачи стоят 1 кредит.';
 }
 
 function AiTaskCard({ task, open }: { task: AiTrainingTask; open: string }) {
