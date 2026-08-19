@@ -150,6 +150,8 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .training-card .account-link { justify-self: start; margin-top: 12px; }
 .training-card button { justify-self: start; margin-top: 12px; }
 .endgame-grid .training-card strong { color: var(--gold); }
+.endgame-section h2 { margin-bottom: 14px; }
+.endgame-section .training-card h3 { font-size: 20px; }
 .generated-tasks h2 { margin-bottom: 14px; }
 .task-header { display: flex; justify-content: space-between; gap: 18px; align-items: start; }
 .task-header p { color: var(--muted); line-height: 1.55; }
