@@ -753,17 +753,13 @@ input, select { background: #0d131d; padding: 12px 14px; }
   border-radius: 8px;
   padding: 44px;
   background:
-    linear-gradient(90deg, rgba(9, 11, 33, 0.96) 0%, rgba(9, 11, 33, 0.82) 42%, rgba(9, 11, 33, 0.48) 100%),
+    linear-gradient(90deg, rgba(9, 11, 33, 0.96) 0%, rgba(9, 11, 33, 0.74) 42%, rgba(9, 11, 33, 0.16) 100%),
+    url("/preschool-hero.png") center / cover no-repeat,
     #07091a;
   box-shadow: inset 0 0 48px rgba(148, 77, 255, 0.16);
 }
 .interface-child .hero-video {
-  display: block;
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  display: none;
 }
 .interface-child .hero-copy { display: grid; gap: 16px; max-width: 520px; }
 .interface-child .hero h1 {
@@ -874,7 +870,8 @@ input, select { background: #0d131d; padding: 12px 14px; }
     align-content: start;
     padding: 26px;
     background:
-      linear-gradient(180deg, rgba(9, 11, 33, 0.95) 0%, rgba(9, 11, 33, 0.72) 100%),
+      linear-gradient(180deg, rgba(9, 11, 33, 0.95) 0%, rgba(9, 11, 33, 0.54) 100%),
+      url("/preschool-hero.png") center / cover no-repeat,
       #07091a;
   }
   .interface-child .hero h1 { font-size: 38px; }

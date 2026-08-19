@@ -64,7 +64,7 @@ function Dashboard({ lang, interfaceMode }: { lang: Lang; interfaceMode: Interfa
 }
 
 function HomeHero({ lang, interfaceMode }: { lang: Lang; interfaceMode: InterfaceMode }) {
-  const isKidsMode = interfaceMode === 'child' || interfaceMode === 'preschool';
+  const isKidsMode = interfaceMode === 'preschool';
   const isStudentMode = interfaceMode === 'student';
   const title = isStudentMode ? studentHeroTitle(lang) : t(lang, 'app');
   const kicker = isStudentMode ? studentHeroKicker(lang) : t(lang, 'heroKicker');
