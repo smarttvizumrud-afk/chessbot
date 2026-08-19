@@ -9,6 +9,11 @@ type CheckoutResponse = {
 };
 
 export async function startPolarCheckout(productKey: PaidPlanKey) {
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !sessionData.session) {
+    throw new Error('Войди в аккаунт ещё раз, потом нажми купить.');
+  }
+
   const { data, error } = await supabase.functions.invoke('polar-checkout', {
     body: { plan: toCheckoutPlan(productKey) },
   });

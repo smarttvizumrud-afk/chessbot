@@ -87,11 +87,11 @@ function HomeHero({ lang, interfaceMode }: { lang: Lang; interfaceMode: Interfac
 function studentHeroTitle(lang: Lang) {
   if (lang === 'en') return 'Play chess. Become a champion.';
   if (lang === 'kk') return 'Shakhmat oina. Chempion bol.';
-  return 'Igrai v shakhmaty. Stanovis chempionom.';
+  return 'Играй в шахматы. Становись чемпионом.';
 }
 
 function studentHeroKicker(lang: Lang) {
   if (lang === 'en') return 'Train, analyse, win more games.';
   if (lang === 'kk') return 'Uiren, oina, zheniske zhet.';
-  return 'Uchis, igrai, pobezhdai.';
+  return 'Учись, играй, побеждай.';
 }
