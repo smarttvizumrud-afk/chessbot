@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AuthGate } from '../components/AuthGate';
 import { askCoach, type CoachMessage } from '../lib/aiCoach';
 import { t } from '../lib/i18n';
+import { supabase } from '../lib/supabase';
 import type { Lang } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
+import { readOnboardingData, type InterfaceMode } from '../lib/userOnboarding';
 
 export function CoachPage({ lang }: { lang: Lang }) {
   return (
@@ -18,6 +20,14 @@ function CoachContent({ lang }: { lang: Lang }) {
   const [messages, setMessages] = useState<CoachMessage[]>(() => [welcomeMessage(lang)]);
   const [question, setQuestion] = useState('');
   const [busy, setBusy] = useState(false);
+  const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>('student');
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const mode = readOnboardingData(data.user?.user_metadata).interfaceMode;
+      if (mode) setInterfaceMode(mode);
+    });
+  }, []);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -28,10 +38,11 @@ function CoachContent({ lang }: { lang: Lang }) {
     setMessages(nextMessages);
     setQuestion('');
     setBusy(true);
-    const answer = await askCoach(text, lang, games, analyses, nextMessages);
+    const answer = await askCoach(text, lang, games, analyses, nextMessages, interfaceMode);
     const assistantMessages = messages.filter((message) => message.role === 'assistant');
     const lastAnswer = assistantMessages[assistantMessages.length - 1]?.text;
     setMessages(lastAnswer === answer ? nextMessages : [...nextMessages, { role: 'assistant', text: answer }]);
+    if (interfaceMode === 'preschool') speak(answer, lang);
     setBusy(false);
   }
 
@@ -41,7 +52,14 @@ function CoachContent({ lang }: { lang: Lang }) {
       <div className="chat-window">
         {messages.map((message, index) => (
           <article className={`chat-message ${message.role}`} key={`${message.role}-${index}`}>
-            <span>{message.role === 'user' ? t(lang, 'you') : t(lang, 'coach')}</span>
+            <span>
+              {message.role === 'user' ? t(lang, 'you') : t(lang, 'coach')}
+              {message.role === 'assistant' && canSpeak() && (
+                <button className="speak-button" type="button" onClick={() => speak(message.text, lang)} aria-label="Speak answer">
+                  🔊
+                </button>
+              )}
+            </span>
             <p>{message.text}</p>
           </article>
         ))}
@@ -58,6 +76,26 @@ function CoachContent({ lang }: { lang: Lang }) {
       </form>
     </section>
   );
+}
+
+function canSpeak() {
+  return typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+}
+
+function speak(text: string, lang: Lang) {
+  if (!canSpeak()) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = speechLang(lang);
+  utterance.rate = 0.9;
+  utterance.pitch = 1.15;
+  window.speechSynthesis.speak(utterance);
+}
+
+function speechLang(lang: Lang) {
+  if (lang === 'en') return 'en-US';
+  if (lang === 'kk') return 'kk-KZ';
+  return 'ru-RU';
 }
 
 function welcomeMessage(lang: Lang): CoachMessage {

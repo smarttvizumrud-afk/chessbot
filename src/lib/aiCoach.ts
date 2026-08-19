@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 import type { Lang, StoredAnalysis, StoredGame } from './types';
 import { combinedPlan, dashboardStats, openingStats } from './insights';
 import { localizeInsight } from './i18n';
+import type { InterfaceMode } from './userOnboarding';
 
 export type CoachMessage = {
   role: 'user' | 'assistant';
@@ -20,17 +21,35 @@ export async function askCoach(
   games: StoredGame[],
   analyses: StoredAnalysis[],
   history: CoachMessage[] = [],
+  interfaceMode: InterfaceMode = 'student',
 ) {
   const context = buildContext(games, analyses);
-  const system = `You are a personal chess coach powered by Gemini. Answer in ${languageName[lang]}. Use only the supplied player data, Stockfish results, openings, weaknesses, and chat history. Be concrete, kind, and concise.`;
+  const system = [
+    `You are a personal chess coach powered by Gemini. Answer in ${languageName[lang]}.`,
+    'Use only the supplied player data, Stockfish results, openings, weaknesses, and chat history.',
+    coachTone(interfaceMode),
+  ].join(' ');
   const prompt = trimPrompt(`${context}\n\nChat history:\n${formatHistory(history)}\n\nUser question: ${question}`);
   const { data, error } = await supabase.functions.invoke('ai', { body: { prompt, system } });
-  if (error) return fallbackAnswer(lang, games, analyses);
-  return readText(data) || fallbackAnswer(lang, games, analyses);
+  if (error) return fallbackAnswer(lang, games, analyses, interfaceMode);
+  return readText(data) || fallbackAnswer(lang, games, analyses, interfaceMode);
 }
 
 export async function coachSummary(lang: Lang, games: StoredGame[], analyses: StoredAnalysis[]) {
   return askCoach('What should I improve first and why?', lang, games, analyses);
+}
+
+function coachTone(interfaceMode: InterfaceMode) {
+  if (interfaceMode === 'preschool') {
+    return [
+      'The user is 3 to 6 years old.',
+      'Explain chess like one friendly child talking to another child.',
+      'Use very short sentences, simple words, playful encouragement, and one tiny step at a time.',
+      'Do not use scary pressure, long analysis, notation-heavy explanations, or adult coaching language.',
+    ].join(' ');
+  }
+
+  return 'Be concrete, kind, and concise.';
 }
 
 function buildContext(games: StoredGame[], analyses: StoredAnalysis[]) {
@@ -76,7 +95,8 @@ function readText(data: unknown) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-function fallbackAnswer(lang: Lang, games: StoredGame[], analyses: StoredAnalysis[]) {
+function fallbackAnswer(lang: Lang, games: StoredGame[], analyses: StoredAnalysis[], interfaceMode: InterfaceMode) {
+  if (interfaceMode === 'preschool') return preschoolFallback(lang, analyses.length > 0);
   if (!analyses.length) return noDataAnswer(lang);
   const stats = dashboardStats(games, analyses);
   const openings = openingStats(games, analyses);
@@ -90,6 +110,22 @@ function fallbackAnswer(lang: Lang, games: StoredGame[], analyses: StoredAnalysi
     return `Gemini қазір жауап бермей тұр, сондықтан қысқа жергілікті кеңес: орташа дәлдігің ${stats.accuracy}%. Бірінші жұмыс бағыты: ${mainWeakness}. ${opening ? `Дебют бойынша ${opening} партияларын қайта қара.` : 'Дебютке кеңес алу үшін тағы бірнеше партия талда.'}`;
   }
   return `Gemini сейчас не отвечает, поэтому даю короткий локальный совет: средняя точность ${stats.accuracy}%. Первый фокус: ${mainWeakness}. ${opening ? `По дебютам пересмотри партии в ${opening}.` : 'Для дебютных советов проанализируй ещё несколько партий.'}`;
+}
+
+function preschoolFallback(lang: Lang, hasAnalyses: boolean) {
+  if (lang === 'en') {
+    return hasAnalyses
+      ? 'Let us play one tiny chess step. Look for a piece that is in danger. Then help it, like a little teammate.'
+      : 'First add a chess game. Then I can help with tiny, easy tips.';
+  }
+  if (lang === 'kk') {
+    return hasAnalyses
+      ? 'Бір кішкентай қадам жасайық. Қауіпте тұрған тасты тап. Сосын оған көмектес.'
+      : 'Алдымен бір партия қос. Сосын мен өте оңай кеңес айтамын.';
+  }
+  return hasAnalyses
+    ? 'Давай сделаем один маленький шаг. Найди фигурку, которой опасно. Потом помоги ей.'
+    : 'Сначала добавь одну партию. Потом я дам очень простой совет.';
 }
 
 function noDataAnswer(lang: Lang) {
