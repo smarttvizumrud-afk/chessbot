@@ -120,10 +120,10 @@ async function speak(text: string, lang: Lang, userAge: number | undefined, inte
   if (interfaceMode === 'child') {
     try {
       await speakWithChildVoice(cleanText);
-      return;
     } catch (error) {
       console.warn('Could not use child ElevenLabs voice.', error);
     }
+    return;
   }
 
   if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return;

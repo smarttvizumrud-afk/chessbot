@@ -17,6 +17,8 @@
     "keep-awake:setup": "node scripts/setup-keep-awake.mjs",
     "ai:secret": "node scripts/setup-ai-secret.mjs",
     "ai:deploy": "supabase functions deploy ai",
+    "tts:secret": "node scripts/setup-tts-secret.mjs",
+    "tts:deploy": "supabase functions deploy tts",
     "lichess:deploy": "supabase functions deploy lichess-userinfo --no-verify-jwt"
   },
   "dependencies": {
