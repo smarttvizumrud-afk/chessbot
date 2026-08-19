@@ -10,7 +10,7 @@ type CheckoutResponse = {
 
 export async function startPolarCheckout(productKey: PaidPlanKey) {
   const { data, error } = await supabase.functions.invoke('polar-checkout', {
-    body: { productKey },
+    body: { plan: toCheckoutPlan(productKey) },
   });
 
   if (error) throw error;
@@ -24,4 +24,8 @@ export async function startPolarCheckout(productKey: PaidPlanKey) {
   }
 
   window.location.assign(response.url);
+}
+
+function toCheckoutPlan(productKey: PaidPlanKey) {
+  return productKey === 'unlimited_year' ? 'yearly' : productKey;
 }

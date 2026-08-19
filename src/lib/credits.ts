@@ -1,37 +1,65 @@
 import { isGuestMode } from './guestSession';
 import { supabase } from './supabase';
 
-export type CreditBalance = {
+export type SubscriptionState = {
+  status: string;
+  currentPeriodEnd?: string;
+  cancelAtPeriodEnd: boolean;
+};
+
+export type BillingState = {
   balance: number;
-  unlimitedUntil?: string;
+  subscription?: SubscriptionState;
 };
 
 type CreditBalanceRow = {
   balance: number;
-  unlimited_until: string | null;
 };
 
-export async function loadCreditBalance(): Promise<CreditBalance> {
+type SubscriptionRow = {
+  status: string;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean | null;
+};
+
+export async function loadBillingState(): Promise<BillingState> {
   if (isGuestMode()) return { balance: 0 };
 
-  const { data, error } = await supabase
-    .from('credit_balances')
-    .select('balance, unlimited_until')
-    .maybeSingle();
+  const [balanceResult, subscriptionResult] = await Promise.all([
+    supabase.from('credit_balances').select('balance').maybeSingle(),
+    supabase
+      .from('user_subscriptions')
+      .select('status, current_period_end, cancel_at_period_end')
+      .maybeSingle(),
+  ]);
 
-  if (error) throw error;
-  if (!data) return { balance: 0 };
+  if (balanceResult.error) throw balanceResult.error;
+  if (subscriptionResult.error) throw subscriptionResult.error;
 
-  return mapCreditBalance(data as CreditBalanceRow);
-}
-
-export function hasUnlimitedAccess(balance: CreditBalance) {
-  return Boolean(balance.unlimitedUntil && new Date(balance.unlimitedUntil) > new Date());
-}
-
-function mapCreditBalance(row: CreditBalanceRow): CreditBalance {
   return {
-    balance: row.balance,
-    unlimitedUntil: row.unlimited_until ?? undefined,
+    balance: balanceResult.data ? mapCreditBalance(balanceResult.data as CreditBalanceRow).balance : 0,
+    subscription: subscriptionResult.data
+      ? mapSubscription(subscriptionResult.data as SubscriptionRow)
+      : undefined,
+  };
+}
+
+export function hasActiveSubscription(state: BillingState) {
+  const subscription = state.subscription;
+  if (!subscription) return false;
+  if (subscription.status !== 'active' && subscription.status !== 'trialing') return false;
+  if (!subscription.currentPeriodEnd) return true;
+  return new Date(subscription.currentPeriodEnd) > new Date();
+}
+
+function mapCreditBalance(row: CreditBalanceRow) {
+  return { balance: row.balance };
+}
+
+function mapSubscription(row: SubscriptionRow): SubscriptionState {
+  return {
+    status: row.status,
+    currentPeriodEnd: row.current_period_end ?? undefined,
+    cancelAtPeriodEnd: Boolean(row.cancel_at_period_end),
   };
 }
