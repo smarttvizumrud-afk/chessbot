@@ -8,7 +8,7 @@ export type OnboardingData = {
   interfaceMode: InterfaceMode;
 };
 
-export type InterfaceMode = 'main' | 'student';
+export type InterfaceMode = 'main' | 'student' | 'preschool';
 
 export function readOnboardingData(metadata: unknown): Partial<OnboardingData> {
   if (!metadata || typeof metadata !== 'object') return {};
@@ -17,9 +17,11 @@ export function readOnboardingData(metadata: unknown): Partial<OnboardingData> {
   const birthDate = typeof values.birth_date === 'string' ? values.birth_date : '';
   const preferredLang = isLang(values.preferred_lang) ? values.preferred_lang : undefined;
   const isAdult = typeof values.is_adult === 'boolean' ? values.is_adult : getIsAdult(birthDate);
-  const interfaceMode = isInterfaceMode(values.interface_mode)
-    ? values.interface_mode
-    : interfaceModeForBirthDate(birthDate);
+  const interfaceMode = isValidBirthDate(birthDate)
+    ? interfaceModeForBirthDate(birthDate)
+    : isInterfaceMode(values.interface_mode)
+      ? values.interface_mode
+      : 'student';
 
   return { displayName, birthDate, preferredLang, isAdult, interfaceMode };
 }
@@ -30,19 +32,27 @@ export function isOnboardingComplete(metadata: unknown) {
 }
 
 export function interfaceModeForBirthDate(birthDate: string): InterfaceMode {
-  return getIsAdult(birthDate) ? 'main' : 'student';
+  const age = getAge(birthDate);
+  if (age === null) return 'student';
+  if (age >= 3 && age <= 6) return 'preschool';
+  return age >= 18 ? 'main' : 'student';
 }
 
-function getIsAdult(birthDate: string, today = new Date()) {
+function getIsAdult(birthDate: string) {
+  const age = getAge(birthDate);
+  return age !== null && age >= 18;
+}
+
+function getAge(birthDate: string, today = new Date()) {
   const parsed = parseBirthDate(birthDate);
-  if (!parsed) return false;
+  if (!parsed) return null;
 
   let age = today.getUTCFullYear() - parsed.getUTCFullYear();
   const monthDiff = today.getUTCMonth() - parsed.getUTCMonth();
   const hasBirthdayPassed = monthDiff > 0 || (monthDiff === 0 && today.getUTCDate() >= parsed.getUTCDate());
   if (!hasBirthdayPassed) age -= 1;
 
-  return age >= 18;
+  return age;
 }
 
 function isValidBirthDate(birthDate: string) {
@@ -71,7 +81,7 @@ function isLang(value: unknown): value is Lang {
 }
 
 function isInterfaceMode(value: unknown): value is InterfaceMode {
-  return value === 'main' || value === 'student';
+  return value === 'main' || value === 'student' || value === 'preschool';
 }
 
 function getDisplayName(values: Record<string, unknown>) {

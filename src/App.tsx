@@ -14,22 +14,28 @@ import { PuzzlesPage } from './pages/PuzzlesPage';
 import { PricingPage } from './pages/PricingPage';
 import { TrainingPage } from './pages/TrainingPage';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
+import { readOnboardingData, type InterfaceMode } from './lib/userOnboarding';
 
 export default function App() {
   const [lang, setLang] = useState<Lang>('ru');
   const [theme, setTheme] = useState<AppTheme>('dark');
   const [boardStyle, setBoardStyle] = useState<BoardStyle>('classic');
   const [pieceStyle, setPieceStyle] = useState<PieceStyle>('classic');
+  const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>('main');
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
     supabase.auth.getSession().then(({ data }) => {
-      const preferredLang = readPreferredLang(data.session?.user.user_metadata);
+      const metadata = readOnboardingData(data.session?.user.user_metadata);
+      const preferredLang = metadata.preferredLang;
       if (preferredLang) setLang(preferredLang);
+      if (data.session) setInterfaceMode(metadata.interfaceMode ?? 'student');
     });
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      const preferredLang = readPreferredLang(session?.user.user_metadata);
+      const metadata = readOnboardingData(session?.user.user_metadata);
+      const preferredLang = metadata.preferredLang;
       if (preferredLang) setLang(preferredLang);
+      setInterfaceMode(session ? metadata.interfaceMode ?? 'student' : 'main');
     });
     return () => data.subscription.unsubscribe();
   }, []);
@@ -42,6 +48,7 @@ export default function App() {
     <Layout
       lang={lang}
       theme={theme}
+      interfaceMode={interfaceMode}
       boardStyle={boardStyle}
       pieceStyle={pieceStyle}
       onLangChange={changeLang}
@@ -73,10 +80,4 @@ export default function App() {
 function hasAuthCallbackParams() {
   const params = new URLSearchParams(window.location.search);
   return params.has('code') || params.has('error') || params.has('error_description');
-}
-
-function readPreferredLang(metadata: unknown): Lang | null {
-  if (!metadata || typeof metadata !== 'object') return null;
-  const value = (metadata as Record<string, unknown>).preferred_lang;
-  return value === 'ru' || value === 'en' || value === 'kk' ? value : null;
 }

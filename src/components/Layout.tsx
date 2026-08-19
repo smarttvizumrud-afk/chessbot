@@ -1,11 +1,13 @@
 import { Link, useLocation } from 'wouter';
 import type { AppTheme, BoardStyle, Lang, PieceStyle } from '../lib/types';
+import type { InterfaceMode } from '../lib/userOnboarding';
 import { t } from '../lib/i18n';
 import { AccountMenu } from './AccountMenu';
 
 type Props = {
   lang: Lang;
   theme: AppTheme;
+  interfaceMode: InterfaceMode;
   boardStyle: BoardStyle;
   pieceStyle: PieceStyle;
   onLangChange: (lang: Lang) => void;
@@ -26,6 +28,7 @@ const nav = [
 export function Layout({
   lang,
   theme,
+  interfaceMode,
   boardStyle,
   pieceStyle,
   onLangChange,
@@ -37,7 +40,7 @@ export function Layout({
   const [location] = useLocation();
 
   return (
-    <main className={`shell theme-${theme}`}>
+    <main className={`shell theme-${theme} interface-${interfaceMode}`}>
       <header className="topbar">
         <Link href="/" className="brand">
           <span className="brand-mark">
