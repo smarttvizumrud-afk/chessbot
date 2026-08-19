@@ -12,6 +12,8 @@ const text: Record<Lang, {
   action: string;
   loading: string;
   error: string;
+  noAnalyses: string;
+  buyCredits: string;
   open: string;
 }> = {
   ru: {
@@ -19,7 +21,9 @@ const text: Record<Lang, {
     text: 'Gemini соберёт короткие задания по твоим партиям, зевкам и дебютам.',
     action: 'Сгенерировать задачи',
     loading: 'Генерирую...',
-    error: 'Не получилось сгенерировать задачи. Проверь секрет Gemini в Supabase.',
+    error: 'Не получилось сгенерировать задачи. Проверь AI-функцию Gemini в Supabase.',
+    noAnalyses: 'Сначала загрузи и проанализируй хотя бы одну партию.',
+    buyCredits: 'Купить кредиты',
     open: 'Открыть партию',
   },
   en: {
@@ -28,6 +32,8 @@ const text: Record<Lang, {
     action: 'Generate tasks',
     loading: 'Generating...',
     error: 'Could not generate tasks. Check the Gemini secret in Supabase.',
+    noAnalyses: 'Import and analyse at least one game first.',
+    buyCredits: 'Buy credits',
     open: 'Open game',
   },
   kk: {
@@ -36,6 +42,8 @@ const text: Record<Lang, {
     action: 'Есептер жасау',
     loading: 'Жасалып жатыр...',
     error: 'Есептер жасалмады. Supabase ішіндегі Gemini құпиясын тексер.',
+    noAnalyses: 'Aldymen keminde bir partiany juktep, talda.',
+    buyCredits: 'Kredit alu',
     open: 'Партияны ашу',
   },
 };
@@ -45,14 +53,22 @@ export function AiGeneratedTasks({ games, analyses, lang }: Props) {
   const [tasks, setTasks] = useState<AiTrainingTask[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [needsCredits, setNeedsCredits] = useState(false);
 
   async function handleGenerate() {
     setBusy(true);
     setError('');
+    setNeedsCredits(false);
     try {
       setTasks(await generateAiTrainingTasks(games, analyses, lang));
     } catch (error) {
-      setError(error instanceof NotEnoughCreditsError ? noCreditsText(lang) : labels.error);
+      if (error instanceof NotEnoughCreditsError) {
+        setNeedsCredits(true);
+        setError(noCreditsText(lang));
+      } else {
+        console.warn('Could not generate AI training tasks.', error);
+        setError(labels.error);
+      }
     } finally {
       setBusy(false);
     }
@@ -69,7 +85,9 @@ export function AiGeneratedTasks({ games, analyses, lang }: Props) {
           {busy ? labels.loading : labels.action}
         </button>
       </div>
+      {!analyses.length && <p className="message">{labels.noAnalyses}</p>}
       {error && <p className="message">{error}</p>}
+      {needsCredits && <Link href="/pricing" className="account-link">{labels.buyCredits}</Link>}
       <div className="generated-task-grid">
         {tasks.map((task, index) => <AiTaskCard key={`${task.title}-${index}`} task={task} open={labels.open} />)}
       </div>
