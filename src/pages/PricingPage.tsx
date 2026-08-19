@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'wouter';
 import { AuthGate } from '../components/AuthGate';
 import { PricingCard } from '../components/PricingCard';
+import { PromoCodeForm } from '../components/PromoCodeForm';
 import { hasActiveSubscription, loadBillingState, type BillingState } from '../lib/credits';
 import { startPolarCheckout, type PaidPlanKey } from '../lib/payments';
 import { pricingPlans, pricingText } from '../lib/pricingPlans';
@@ -22,22 +23,25 @@ function PricingContent({ lang }: { lang: Lang }) {
   const copy = pricingText[lang];
   const checkoutState = new URLSearchParams(window.location.search).get('checkout');
 
+  const refreshBilling = useCallback(async () => {
+    try {
+      const nextBilling = await loadBillingState();
+      setBilling(nextBilling);
+    } catch {
+      setMessage(copy.loadError);
+    }
+  }, [copy.loadError]);
+
   useEffect(() => {
     let stopped = false;
+    const refreshIfActive = () => {
+      if (!stopped) refreshBilling();
+    };
 
-    async function refreshBilling() {
-      try {
-        const nextBilling = await loadBillingState();
-        if (!stopped) setBilling(nextBilling);
-      } catch {
-        if (!stopped) setMessage(copy.loadError);
-      }
-    }
-
-    refreshBilling();
+    refreshIfActive();
     if (checkoutState === 'success') {
       setMessage(copy.ready);
-      const timers = [1200, 3500, 7000].map((delay) => window.setTimeout(refreshBilling, delay));
+      const timers = [1200, 3500, 7000].map((delay) => window.setTimeout(refreshIfActive, delay));
       return () => {
         stopped = true;
         timers.forEach(window.clearTimeout);
@@ -48,7 +52,7 @@ function PricingContent({ lang }: { lang: Lang }) {
     return () => {
       stopped = true;
     };
-  }, [checkoutState, copy.canceled, copy.loadError, copy.ready]);
+  }, [checkoutState, copy.canceled, copy.ready, refreshBilling]);
 
   async function buy(productKey: PaidPlanKey) {
     setBusyPlan(productKey);
@@ -68,9 +72,18 @@ function PricingContent({ lang }: { lang: Lang }) {
           <p>{copy.kicker}</p>
           <h1>{copy.title}</h1>
         </div>
-        <div className="credit-status">
-          <span>{copy.balance}</span>
-          <strong>{hasActiveSubscription(billing) ? copy.yearly : billing.balance}</strong>
+        <div className="billing-tools">
+          <PromoCodeForm
+            title={copy.promoTitle}
+            placeholder={copy.promoPlaceholder}
+            action={copy.promoAction}
+            success={(credits) => copy.promoSuccess.replace('{credits}', String(credits))}
+            onApplied={refreshBilling}
+          />
+          <div className="credit-status">
+            <span>{copy.balance}</span>
+            <strong>{hasActiveSubscription(billing) ? copy.yearly : billing.balance}</strong>
+          </div>
         </div>
       </section>
       {message && <section className="panel message">{message}</section>}

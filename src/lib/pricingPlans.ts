@@ -25,6 +25,10 @@ export type PricingText = {
   yearly: string;
   account: string;
   best: string;
+  promoTitle: string;
+  promoPlaceholder: string;
+  promoAction: string;
+  promoSuccess: string;
   loadError: string;
   checkoutError: string;
   plans: Record<PricingPlanKey, PlanText>;
@@ -49,6 +53,10 @@ export const pricingText: Record<Lang, PricingText> = {
     yearly: 'Годовой доступ',
     account: 'Аккаунт',
     best: 'Лучший выбор',
+    promoTitle: 'Промокод',
+    promoPlaceholder: 'CHESA2026',
+    promoAction: 'Применить',
+    promoSuccess: '+{credits} кредитов',
     loadError: 'Не удалось загрузить данные оплаты.',
     checkoutError: 'Не удалось открыть оплату.',
     plans: {
@@ -69,6 +77,10 @@ export const pricingText: Record<Lang, PricingText> = {
     yearly: 'Yearly access',
     account: 'Account',
     best: 'Best value',
+    promoTitle: 'Promo code',
+    promoPlaceholder: 'CHESA2026',
+    promoAction: 'Apply',
+    promoSuccess: '+{credits} credits',
     loadError: 'Could not load billing data.',
     checkoutError: 'Could not open checkout.',
     plans: {
@@ -89,6 +101,10 @@ export const pricingText: Record<Lang, PricingText> = {
     yearly: 'Жылдық қолжетімділік',
     account: 'Аккаунт',
     best: 'Ең тиімді',
+    promoTitle: 'Промокод',
+    promoPlaceholder: 'CHESA2026',
+    promoAction: 'Қолдану',
+    promoSuccess: '+{credits} кредит',
     loadError: 'Төлем деректерін жүктеу мүмкін болмады.',
     checkoutError: 'Төлемді ашу мүмкін болмады.',
     plans: {
