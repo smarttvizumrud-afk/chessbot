@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { AuthGate } from '../components/AuthGate';
+import { EndgamePracticeBoard } from '../components/EndgamePracticeBoard';
 import { endgameCopy, endgameGroups, type EndgameCard, type EndgameCopy } from '../lib/endgameCatalog';
 import { endgameMomentsFromGames, type EndgameMoment } from '../lib/endgameTraining';
 import type { Lang } from '../lib/types';
@@ -37,13 +38,7 @@ function EndgamesContent({ lang }: { lang: Lang }) {
               {labels.close}
             </button>
           </div>
-          <div className="generated-task-grid">
-            <article className="generated-task">
-              <span>{labels.drill}</span>
-              <h3>{activeDrill.drill}</h3>
-              <p>{practiceTip(activeDrill.title, lang)}</p>
-            </article>
-          </div>
+          <EndgamePracticeBoard card={activeDrill} lang={lang} />
         </section>
       )}
       <section className="panel generated-tasks">
@@ -79,12 +74,6 @@ function EndgamesContent({ lang }: { lang: Lang }) {
       ))}
     </div>
   );
-}
-
-function practiceTip(title: string, lang: Lang) {
-  if (lang === 'en') return `Set up this position on a board and solve it three times: first slowly, then with a timer. Topic: ${title}.`;
-  if (lang === 'kk') return `Pozitsiany taqtada quryp, ush ret shesh: birinshi ret baiap, sodan son uaqytpen. Taqyryp: ${title}.`;
-  return `Поставь такую позицию на доске и реши 3 раза: сначала спокойно, потом на время. Тема: ${title}.`;
 }
 
 function EndgameMomentCard({
