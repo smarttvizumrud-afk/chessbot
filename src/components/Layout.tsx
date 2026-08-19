@@ -21,6 +21,7 @@ const nav = [
   ['/', 'dashboard'],
   ['/openings', 'openings'],
   ['/puzzles', 'puzzles'],
+  ['/endgames', 'endgames'],
   ['/coach', 'coach'],
   ['/pricing', 'pricing'],
 ] as const;

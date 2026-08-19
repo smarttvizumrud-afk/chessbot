@@ -5,6 +5,7 @@ import type { AppTheme, BoardStyle, Lang, PieceStyle } from './lib/types';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { AuthPage } from './pages/AuthPage';
 import { CoachPage } from './pages/CoachPage';
+import { EndgamesPage } from './pages/EndgamesPage';
 import { GamePage } from './pages/GamePage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -66,6 +67,7 @@ export default function App() {
         <Route path="/auth/callback">{() => <AuthCallbackPage lang={lang} />}</Route>
         <Route path="/openings">{() => <OpeningsPage lang={lang} boardStyle={boardStyle} pieceStyle={pieceStyle} />}</Route>
         <Route path="/puzzles">{() => <PuzzlesPage lang={lang} />}</Route>
+        <Route path="/endgames">{() => <EndgamesPage lang={lang} />}</Route>
         <Route path="/pricing">{() => <PricingPage lang={lang} onLangChange={setLang} />}</Route>
         <Route path="/training">{() => <TrainingPage lang={lang} />}</Route>
         <Route path="/coach">{() => <CoachPage lang={lang} />}</Route>

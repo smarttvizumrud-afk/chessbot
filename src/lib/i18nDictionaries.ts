@@ -9,6 +9,7 @@ export const dictionaries: Record<Lang, Dict> = {
     dashboard: 'Главная',
     openings: 'Дебюты',
     puzzles: 'Задачи',
+    endgames: 'Эндшпиль',
     training: 'Тренировка',
     pricing: 'Кредиты',
     game: 'Партия',
@@ -72,7 +73,7 @@ export const dictionaries: Record<Lang, Dict> = {
     checkEmail: 'Проверь почту для подтверждения аккаунта.',
   },
   en: {
-    app: 'CHESA', connect: 'Connect player', dashboard: 'Dashboard', openings: 'Openings', puzzles: 'Puzzles', training: 'Training', pricing: 'Credits',
+    app: 'CHESA', connect: 'Connect player', dashboard: 'Dashboard', openings: 'Openings', puzzles: 'Puzzles', endgames: 'Endgames', training: 'Training', pricing: 'Credits',
     game: 'Game', coach: 'AI coach', you: 'You', coachTyping: 'Gemini is thinking...',
     username: 'Username', import: 'Load and analyse',
     week: 'Week', month: 'Month', quarter: '3 months', last10: '10 games',
@@ -99,7 +100,7 @@ export const dictionaries: Record<Lang, Dict> = {
   },
   kk: {
     app: 'CHESA', connect: 'Ойыншыны қосу', dashboard: 'Басты бет',
-    openings: 'Дебюттер', puzzles: 'Есептер', training: 'Жаттығу', pricing: 'Кредиттер', game: 'Партия', coach: 'AI-жаттықтырушы',
+    openings: 'Дебюттер', puzzles: 'Есептер', endgames: 'Endshpil', training: 'Жаттығу', pricing: 'Кредиттер', game: 'Партия', coach: 'AI-жаттықтырушы',
     you: 'Сен', coachTyping: 'Gemini жауап дайындап жатыр...', username: 'Ойыншы аты',
     import: 'Жүктеу және талдау', week: 'Апта', month: 'Ай', quarter: '3 ай',
     last10: '10 партия', last25: '25 партия', last50: '50 партия', last100: '100 партия',

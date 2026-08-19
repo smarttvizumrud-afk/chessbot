@@ -149,6 +149,7 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .training-card p { color: var(--muted); line-height: 1.55; }
 .training-card .account-link { justify-self: start; margin-top: 12px; }
 .training-card button { justify-self: start; margin-top: 12px; }
+.endgame-grid .training-card strong { color: var(--gold); }
 .generated-tasks h2 { margin-bottom: 14px; }
 .task-header { display: flex; justify-content: space-between; gap: 18px; align-items: start; }
 .task-header p { color: var(--muted); line-height: 1.55; }
@@ -423,8 +424,9 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .interface-student .nav a:nth-child(1)::before { content: "\1f3e0"; }
 .interface-student .nav a:nth-child(2)::before { content: "\2694\fe0f"; }
 .interface-student .nav a:nth-child(3)::before { content: "\1f3af"; }
-.interface-student .nav a:nth-child(4)::before { content: "\1f916"; }
-.interface-student .nav a:nth-child(5)::before { content: "\2b50"; }
+.interface-student .nav a:nth-child(4)::before { content: "\2654"; }
+.interface-student .nav a:nth-child(5)::before { content: "\1f916"; }
+.interface-student .nav a:nth-child(6)::before { content: "\2b50"; }
 
 .interface-student .nav a.active {
   border-color: rgba(255, 255, 255, 0.08);
@@ -572,8 +574,9 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .interface-preschool .nav a:nth-child(1)::before { content: "🏠"; }
 .interface-preschool .nav a:nth-child(2)::before { content: "🚀"; }
 .interface-preschool .nav a:nth-child(3)::before { content: "🎯"; }
-.interface-preschool .nav a:nth-child(4)::before { content: "🤖"; }
-.interface-preschool .nav a:nth-child(5)::before { content: "⭐"; }
+.interface-preschool .nav a:nth-child(4)::before { content: "♔"; }
+.interface-preschool .nav a:nth-child(5)::before { content: "🤖"; }
+.interface-preschool .nav a:nth-child(6)::before { content: "⭐"; }
 
 .interface-preschool .nav a.active {
   background: linear-gradient(135deg, #ff75dc, #6f3bd7);
