@@ -3,6 +3,8 @@ import type { Session } from '@supabase/supabase-js';
 import { Link } from 'wouter';
 import { loadPuzzles } from '../lib/puzzles';
 import type { Lang, StoredGame, StoredProfile } from '../lib/types';
+import { ProfileEditForm } from './ProfileEditForm';
+import { ProfileRatingMode } from './ProfileRatingMode';
 
 type Props = {
   session: Session;
@@ -11,9 +13,8 @@ type Props = {
   busy: boolean;
   lang: Lang;
   onSignOut: () => void;
+  onProfileUpdated: () => Promise<void>;
 };
-
-type ModeIcon = 'bullet' | 'blitz' | 'rapid' | 'classic' | 'puzzles';
 
 const signOutText: Record<Lang, string> = {
   ru: '\u0412\u044b\u0439\u0442\u0438',
@@ -39,11 +40,12 @@ const text = {
   playTime: '\u041f\u0440\u043e\u0432\u0435\u0434\u0451\u043d\u043d\u043e\u0435 \u0437\u0430 \u0438\u0433\u0440\u043e\u0439 \u0432\u0440\u0435\u043c\u044f',
 };
 
-export function AccountProfile({ session, profiles, games, busy, lang, onSignOut }: Props) {
+export function AccountProfile({ session, profiles, games, busy, lang, onSignOut, onProfileUpdated }: Props) {
   const profile = profiles[0];
   const username = profile?.username || getDisplayName(session);
   const counts = getModeCounts(games);
   const [solvedPuzzles, setSolvedPuzzles] = useState(0);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     loadPuzzles()
@@ -54,12 +56,12 @@ export function AccountProfile({ session, profiles, games, busy, lang, onSignOut
   return (
     <section className="lichess-profile">
       <aside className="profile-side">
-        <RatingMode icon="bullet" label={text.bullet} value="?" count={counts.bullet} unit={text.games} />
-        <RatingMode icon="blitz" label={text.blitz} value={profile?.blitz} count={counts.blitz} unit={text.games} />
-        <RatingMode icon="rapid" label={text.rapid} value={profile?.rapid} count={counts.rapid} unit={text.games} />
-        <RatingMode icon="classic" label={text.classic} value={profile?.classical} count={counts.classical} unit={text.games} />
+        <ProfileRatingMode icon="bullet" label={text.bullet} value="?" count={counts.bullet} unit={text.games} />
+        <ProfileRatingMode icon="blitz" label={text.blitz} value={profile?.blitz} count={counts.blitz} unit={text.games} />
+        <ProfileRatingMode icon="rapid" label={text.rapid} value={profile?.rapid} count={counts.rapid} unit={text.games} />
+        <ProfileRatingMode icon="classic" label={text.classic} value={profile?.classical} count={counts.classical} unit={text.games} />
         <div className="profile-side-line" />
-        <RatingMode icon="puzzles" label={text.puzzles} value={profile?.puzzleRating ?? 1500} count={solvedPuzzles} unit={text.puzzleUnit} />
+        <ProfileRatingMode icon="puzzles" label={text.puzzles} value={profile?.puzzleRating ?? 1500} count={solvedPuzzles} unit={text.puzzleUnit} />
       </aside>
 
       <div className="profile-main">
@@ -69,11 +71,22 @@ export function AccountProfile({ session, profiles, games, busy, lang, onSignOut
         </header>
 
         <div className="profile-actions-bar">
-          <button type="button" className="profile-tool">{text.edit}</button>
+          <button type="button" className="profile-tool" onClick={() => setEditing((value) => !value)}>
+            {text.edit}
+          </button>
           <Link href="/" className="profile-tool">{text.watch}</Link>
           <Link href="/" className="profile-tool">{text.download}</Link>
           <button type="button" className="profile-tool muted-tool">{text.more}</button>
         </div>
+
+        {editing && (
+          <ProfileEditForm
+            session={session}
+            lang={lang}
+            onCancel={() => setEditing(false)}
+            onSaved={onProfileUpdated}
+          />
+        )}
 
         <div className="profile-content-grid">
           <div className="profile-chart">
@@ -95,24 +108,6 @@ export function AccountProfile({ session, profiles, games, busy, lang, onSignOut
         </div>
       </div>
     </section>
-  );
-}
-
-function RatingMode({ icon, label, value, count, unit }: {
-  icon: ModeIcon;
-  label: string;
-  value?: number | string;
-  count: number;
-  unit: string;
-}) {
-  return (
-    <div className="rating-mode">
-      <span className={`mode-mark mode-${icon}`} />
-      <div>
-        <strong>{label}</strong>
-        <p>{value ?? '?'} {'\u00b7'} {count} {unit}</p>
-      </div>
-    </div>
   );
 }
 

@@ -65,6 +65,7 @@ export function AuthPage({ lang, onLangChange }: { lang: Lang; onLangChange?: (l
       busy={busy}
       lang={lang}
       onSignOut={signOut}
+      onProfileUpdated={refreshSession}
     />
   );
 }
