@@ -3,8 +3,8 @@ import { ConnectPanel } from '../components/ConnectPanel';
 import { GameList } from '../components/GameList';
 import { StatGrid } from '../components/StatGrid';
 import { WeeklyHistory } from '../components/WeeklyHistory';
-import { combinedPlan, dashboardStats } from '../lib/insights';
-import { localizeInsight, t } from '../lib/i18n';
+import { dashboardStats, gameAdvice } from '../lib/insights';
+import { t } from '../lib/i18n';
 import type { Lang } from '../lib/types';
 import type { InterfaceMode } from '../lib/userOnboarding';
 import { useChessData } from '../lib/useChessData';
@@ -29,7 +29,7 @@ function Dashboard({ lang, interfaceMode }: { lang: Lang; interfaceMode: Interfa
   const [closedAnalyses, setClosedAnalyses] = useState<string[]>([]);
   const stats = dashboardStats(games, analyses);
   const profile = profiles[0];
-  const plan = combinedPlan(analyses);
+  const advice = gameAdvice(games, analyses);
   const closeAnalysis = (id: string) => setClosedAnalyses((ids) => [...new Set([...ids, id])]);
 
   return (
@@ -51,9 +51,9 @@ function Dashboard({ lang, interfaceMode }: { lang: Lang; interfaceMode: Interfa
       ]} />
       <section className="panel">
         <h2>{t(lang, 'improve')}</h2>
-        <ul className="chips">
-          {(plan.length ? plan : stats.weaknesses).map((item) => (
-            <li key={item}>{localizeInsight(item, lang)}</li>
+        <ul className="advice-list">
+          {advice.map((item) => (
+            <li key={item}>{item}</li>
           ))}
         </ul>
       </section>

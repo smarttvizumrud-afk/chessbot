@@ -50,6 +50,47 @@ export function combinedPlan(analyses: StoredAnalysis[]) {
   return topStrings(plan).slice(0, 5);
 }
 
+export function gameAdvice(games: StoredGame[], analyses: StoredAnalysis[]) {
+  if (!analyses.length) {
+    return [
+      'Загрузи 5-10 партий и сначала посмотри, где чаще теряешь фигуры.',
+      'После каждой партии выпиши один момент: где был выбор между взятием, шахом и защитой.',
+      'Начни с коротких партий: легче увидеть повторяющиеся ошибки.',
+    ];
+  }
+
+  const stats = dashboardStats(games, analyses);
+  const recentAnalyses = analyses.slice(0, 5);
+  const criticalReports = recentAnalyses
+    .flatMap((analysis) => analysis.moveReports)
+    .filter((report) => report.side === 'player' && report.label !== 'good')
+    .sort((a, b) => b.loss - a.loss);
+  const worst = criticalReports[0];
+  const openings = openingStats(games, analyses).filter((opening) => opening.errors > 0);
+  const advice: string[] = [];
+
+  if (stats.blunders > 0) {
+    advice.push(`Разбери ${Math.min(stats.blunders, 3)} самых больших зевка: перед ходом проверяй шахи, взятия и угрозы соперника.`);
+  }
+
+  if (worst) {
+    advice.push(`Вернись к ходу ${worst.moveNumber}: ты сыграл ${worst.san}, а Stockfish хотел ${worst.bestMove}. Найди, что менялось после лучшего хода.`);
+  }
+
+  if (openings[0]) {
+    advice.push(`В дебюте ${openings[0].opening} повторяются ошибки. Выучи первые 6-8 ходов и главный план, а не просто ходы на память.`);
+  }
+
+  if (stats.accuracy < 70) {
+    advice.push('Играй медленнее в критических позициях: если есть шах, взятие или нападение, потрать ещё 20 секунд перед ходом.');
+  } else {
+    advice.push('Точность уже нормальная: теперь ищи не только ошибки, а упущенные активные ходы и атаки.');
+  }
+
+  advice.push('После каждой новой партии открывай анализ и выбирай один главный урок, не пытайся чинить всё сразу.');
+  return advice.slice(0, 5);
+}
+
 function recommendation(opening: string, accuracy: number, errors: number) {
   if (errors >= 3) return `Review the first critical moment in ${opening}.`;
   if (accuracy && accuracy < 75) return `Learn two model games in ${opening}.`;
