@@ -99,7 +99,7 @@ function CoachContent({ lang }: { lang: Lang }) {
     setSpeechBusy(true);
     try {
       const result = await speak(text, lang, userAge, interfaceMode);
-      if (result === 'browser-fallback') setSpeechNotice(speechNoticeText(lang));
+      if (result === 'elevenlabs-unavailable') setSpeechNotice(childVoiceErrorText(lang));
     } finally {
       speechBusyRef.current = false;
       setSpeechBusy(false);
@@ -234,10 +234,10 @@ function noCreditsText(lang: Lang) {
   return 'Кредиты закончились. Один запрос к AI-тренеру стоит 1 кредит. Открой раздел «Кредиты», чтобы купить ещё.';
 }
 
-function speechNoticeText(lang: Lang) {
-  if (lang === 'en') return 'ElevenLabs voice is unavailable now, so I used the browser voice.';
-  if (lang === 'kk') return 'ElevenLabs dausy qazir qosyldap turgan joq, sondyqtan browser dausy qosyldy.';
-  return 'Голос ElevenLabs сейчас недоступен, поэтому включился голос браузера.';
+function childVoiceErrorText(lang: Lang) {
+  if (lang === 'en') return 'ElevenLabs voice is unavailable now. Try again later.';
+  if (lang === 'kk') return 'ElevenLabs dausy qazir qosyldap turgan joq. Keinirek qaitalap kor.';
+  return 'Голос ElevenLabs сейчас недоступен. Попробуй ещё раз позже.';
 }
 
 function canSpeak(interfaceMode?: InterfaceMode) {
@@ -251,16 +251,18 @@ function canSpeak(interfaceMode?: InterfaceMode) {
 async function speak(text: string, lang: Lang, userAge: number | undefined, interfaceMode: InterfaceMode) {
   if (!canSpeak(interfaceMode)) return 'unavailable';
   const cleanText = cleanSpeechText(text);
-  if (interfaceMode === 'child') {
+  const isChildMode = interfaceMode === 'child';
+  if (isChildMode) {
     if (Date.now() >= childVoiceUnavailableUntil) {
       try {
         await speakWithChildVoice(cleanText);
         return 'elevenlabs';
       } catch (error) {
         childVoiceUnavailableUntil = Date.now() + 5 * 60 * 1_000;
-        console.warn('Could not use child ElevenLabs voice. Falling back to browser speech.', error);
+        console.warn('Could not use child ElevenLabs voice.', error);
       }
     }
+    return 'elevenlabs-unavailable';
   }
 
   if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return 'unavailable';
@@ -287,7 +289,7 @@ async function speak(text: string, lang: Lang, userAge: number | undefined, inte
       window.speechSynthesis.speak(utterance);
     });
   });
-  return interfaceMode === 'child' ? 'browser-fallback' : 'browser';
+  return 'browser';
 }
 
 function speechStyle(userAge?: number) {
