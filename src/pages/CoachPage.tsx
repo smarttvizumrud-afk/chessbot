@@ -216,7 +216,10 @@ function noCreditsText(lang: Lang) {
 }
 
 function canSpeak(interfaceMode?: InterfaceMode) {
-  if (interfaceMode === 'child') return typeof window !== 'undefined' && 'Audio' in window;
+  if (interfaceMode === 'child') {
+    return typeof window !== 'undefined'
+      && ('Audio' in window || ('speechSynthesis' in window && 'SpeechSynthesisUtterance' in window));
+  }
   return typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
 }
 
@@ -226,10 +229,10 @@ async function speak(text: string, lang: Lang, userAge: number | undefined, inte
   if (interfaceMode === 'child') {
     try {
       await speakWithChildVoice(cleanText);
+      return;
     } catch (error) {
-      console.warn('Could not use child ElevenLabs voice.', error);
+      console.warn('Could not use child ElevenLabs voice. Falling back to browser speech.', error);
     }
-    return;
   }
 
   if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return;
