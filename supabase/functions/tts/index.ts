@@ -11,6 +11,7 @@ const KAZAKH_VOICE_ID =
   Deno.env.get('ELEVENLABS_PAP_VOICE_ID') ??
   Deno.env.get('ELEVENLABS_KAZAKH_VOICE_ID') ??
   'eCXtdAm4Y1qWFZvJePPF';
+const KAZAKH_FEMALE_VOICE_ID = Deno.env.get('ELEVENLABS_KAZAKH_FEMALE_VOICE_ID') ?? KAZAKH_VOICE_ID;
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -68,7 +69,7 @@ Deno.serve(async (req) => {
 });
 
 function voiceIdFor(voice: unknown, lang: unknown) {
-  if (lang === 'kk') return KAZAKH_VOICE_ID;
+  if (lang === 'kk') return isFemaleVoice(voice) ? KAZAKH_FEMALE_VOICE_ID : KAZAKH_VOICE_ID;
   if (voice === 'adult') return TEEN_VOICE_ID;
   if (voice === 'child_female') return CHILD_FEMALE_VOICE_ID;
   if (voice === 'school_female') return SCHOOL_FEMALE_VOICE_ID;
@@ -76,6 +77,10 @@ function voiceIdFor(voice: unknown, lang: unknown) {
   if (voice === 'school') return SCHOOL_MALE_VOICE_ID;
   if (voice === 'teen') return TEEN_VOICE_ID;
   return CHILD_VOICE_ID;
+}
+
+function isFemaleVoice(voice: unknown) {
+  return voice === 'child_female' || voice === 'school_female' || voice === 'teen_female';
 }
 
 function voiceSettingsFor(lang: unknown) {
