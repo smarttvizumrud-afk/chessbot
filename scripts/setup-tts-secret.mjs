@@ -37,6 +37,7 @@ const schoolMaleVoiceId = readValue(source, 'ELEVENLABS_SCHOOL_MALE_VOICE_ID') |
 const childFemaleVoiceId = readValue(source, 'ELEVENLABS_CHILD_FEMALE_VOICE_ID') || voiceId;
 const schoolFemaleVoiceId = readValue(source, 'ELEVENLABS_SCHOOL_FEMALE_VOICE_ID') || schoolVoiceId;
 const teenFemaleVoiceId = readValue(source, 'ELEVENLABS_TEEN_FEMALE_VOICE_ID') || teenVoiceId;
+const kazakhVoiceId = readValue(source, 'ELEVENLABS_PAP_VOICE_ID') || readValue(source, 'ELEVENLABS_KAZAKH_VOICE_ID');
 if (!apiKey) fail('ELEVENLABS_API_KEY is missing in .env');
 
 const tempDirectory = await mkdtemp(join(tmpdir(), 'nfact-tts-secret-'));
@@ -57,6 +58,7 @@ try {
     `ELEVENLABS_CHILD_FEMALE_VOICE_ID=${childFemaleVoiceId}`,
     `ELEVENLABS_SCHOOL_FEMALE_VOICE_ID=${schoolFemaleVoiceId}`,
     `ELEVENLABS_TEEN_FEMALE_VOICE_ID=${teenFemaleVoiceId}`,
+    `ELEVENLABS_PAP_VOICE_ID=${kazakhVoiceId}`,
     '',
   ].join('\n'), { mode: 0o600 });
   const result = spawnSync(process.execPath, [supabaseCli, 'secrets', 'set', '--env-file', secretFile], {
