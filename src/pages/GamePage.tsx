@@ -3,7 +3,7 @@ import { AuthGate } from '../components/AuthGate';
 import { AnalysisBoard } from '../components/AnalysisBoard';
 import { MoveTable } from '../components/MoveTable';
 import { coachPersona, personaAdvice } from '../lib/coachPersona';
-import { speakCoachText } from '../lib/coachSpeech';
+import { createCoachSpeechAudio, speakCoachText } from '../lib/coachSpeech';
 import { labelText, localizeInsight, t } from '../lib/i18n';
 import { fenAfterPly, getMovesWithFens } from '../lib/pgn';
 import { supabase } from '../lib/supabase';
@@ -56,7 +56,8 @@ function GameContent({
     if (!nextReport) return;
 
     const advice = analysisCoachAdvice(nextReport, interfaceMode, gender, lang, userAge);
-    speakCoachText(advice, interfaceMode, gender)
+    const preparedAudio = createCoachSpeechAudio();
+    speakCoachText(advice, interfaceMode, gender, preparedAudio)
       .catch((error) => console.warn('Could not speak selected move advice.', error));
   }, [analysis, gender, interfaceMode, lang, userAge]);
 
@@ -134,8 +135,9 @@ function AnalysisCoachCard({
     if (speechBusy) return;
     setSpeechBusy(true);
     setSpeechNotice('');
+    const preparedAudio = createCoachSpeechAudio();
     try {
-      await speakCoachText(advice, interfaceMode, gender);
+      await speakCoachText(advice, interfaceMode, gender, preparedAudio);
     } catch (error) {
       console.warn('Could not speak analysis advice.', error);
       setSpeechNotice('Voice did not start. Press Audio again.');

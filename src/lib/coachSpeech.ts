@@ -1,4 +1,4 @@
-import { speakWithElevenLabsVoice, type ElevenLabsVoice } from './tts';
+import { createSpeechAudio, speakWithElevenLabsVoice, type ElevenLabsVoice } from './tts';
 import type { Gender, InterfaceMode } from './userOnboarding';
 
 let childVoiceUnavailableUntil = 0;
@@ -7,7 +7,16 @@ export function canSpeak() {
   return typeof window !== 'undefined' && 'Audio' in window;
 }
 
-export async function speakCoachText(text: string, interfaceMode: InterfaceMode, gender: Gender) {
+export function createCoachSpeechAudio() {
+  return canSpeak() ? createSpeechAudio() : undefined;
+}
+
+export async function speakCoachText(
+  text: string,
+  interfaceMode: InterfaceMode,
+  gender: Gender,
+  preparedAudio?: HTMLAudioElement,
+) {
   if (!canSpeak()) return 'unavailable';
   const cleanText = cleanSpeechText(text);
   const voice = elevenLabsVoice(interfaceMode, gender);
@@ -15,7 +24,7 @@ export async function speakCoachText(text: string, interfaceMode: InterfaceMode,
   if (voice === 'child' || voice === 'child_female') {
     if (Date.now() >= childVoiceUnavailableUntil) {
       try {
-        await speakWithElevenLabsVoice(cleanText, voice);
+        await speakWithElevenLabsVoice(cleanText, voice, preparedAudio);
         return 'elevenlabs';
       } catch (error) {
         childVoiceUnavailableUntil = Date.now() + 5 * 60 * 1_000;
@@ -25,7 +34,7 @@ export async function speakCoachText(text: string, interfaceMode: InterfaceMode,
     return 'elevenlabs-unavailable';
   }
 
-  await speakWithElevenLabsVoice(cleanText, voice);
+  await speakWithElevenLabsVoice(cleanText, voice, preparedAudio);
   return 'elevenlabs';
 }
 

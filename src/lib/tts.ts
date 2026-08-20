@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 
 let activeAudio: HTMLAudioElement | null = null;
 let activeRequestId = 0;
+const silentAudio = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=';
 
 export type ElevenLabsVoice =
   | 'child'
@@ -12,10 +13,23 @@ export type ElevenLabsVoice =
   | 'school_female'
   | 'teen_female';
 
-export async function speakWithElevenLabsVoice(text: string, voice: ElevenLabsVoice) {
+export function createSpeechAudio() {
+  const audio = new Audio(silentAudio);
+  audio.preload = 'auto';
+  activeAudio?.pause();
+  activeAudio = audio;
+  void audio.play().catch(() => undefined);
+  return audio;
+}
+
+export async function speakWithElevenLabsVoice(
+  text: string,
+  voice: ElevenLabsVoice,
+  preparedAudio?: HTMLAudioElement,
+) {
   const requestId = activeRequestId + 1;
   activeRequestId = requestId;
-  activeAudio?.pause();
+  if (activeAudio && activeAudio !== preparedAudio) activeAudio.pause();
   activeAudio = null;
 
   const { data, error } = await supabase.functions.invoke('tts', {
@@ -27,7 +41,8 @@ export async function speakWithElevenLabsVoice(text: string, voice: ElevenLabsVo
   if (!audio) throw new Error('TTS returned no audio.');
   if (requestId !== activeRequestId) return;
 
-  const nextAudio = new Audio(`data:audio/mpeg;base64,${audio}`);
+  const nextAudio = preparedAudio ?? new Audio();
+  nextAudio.src = `data:audio/mpeg;base64,${audio}`;
   activeAudio = nextAudio;
   await playOnce(nextAudio);
   if (activeAudio === nextAudio) activeAudio = null;
