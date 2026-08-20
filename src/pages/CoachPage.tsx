@@ -12,6 +12,7 @@ import { ageFromBirthDate, readOnboardingData, type Gender, type InterfaceMode }
 
 type CoachChat = {
   id: string;
+  lang: Lang;
   title: string;
   messages: CoachMessage[];
 };
@@ -70,7 +71,7 @@ function CoachContent({ lang }: { lang: Lang }) {
   function updateActiveChat(messages: CoachMessage[]) {
     setChats((items) => items.map((chat) => (
       chat.id === activeChat.id
-        ? { ...chat, title: chatTitle(messages, lang), messages }
+        ? { ...chat, lang, title: chatTitle(messages, lang), messages }
         : chat
     )));
   }
@@ -167,7 +168,7 @@ function loadChats(lang: Lang, interfaceMode: InterfaceMode, gender: Gender, use
   try {
     const stored = JSON.parse(window.localStorage.getItem(chatsStorageKey) ?? '[]') as unknown;
     if (!Array.isArray(stored)) return [createChat(lang, interfaceMode, gender, userAge)];
-    const chats = stored.filter(isCoachChat).slice(0, 12);
+    const chats = stored.filter(isCoachChat).filter((chat) => chat.lang === lang).slice(0, 12);
     return chats.length ? chats : [createChat(lang, interfaceMode, gender, userAge)];
   } catch {
     return [createChat(lang, interfaceMode, gender, userAge)];
@@ -182,6 +183,7 @@ function saveChats(chats: CoachChat[]) {
 function createChat(lang: Lang, interfaceMode: InterfaceMode, gender: Gender, userAge?: number): CoachChat {
   return {
     id: crypto.randomUUID(),
+    lang,
     title: chatCopy(lang).newChat,
     messages: [welcomeMessage(lang, interfaceMode, gender, userAge)],
   };
@@ -203,6 +205,7 @@ function isCoachChat(value: unknown): value is CoachChat {
   if (!value || typeof value !== 'object') return false;
   const chat = value as Record<string, unknown>;
   return typeof chat.id === 'string'
+    && isLang(chat.lang)
     && typeof chat.title === 'string'
     && Array.isArray(chat.messages)
     && chat.messages.every(isCoachMessage);
@@ -212,6 +215,10 @@ function isCoachMessage(value: unknown): value is CoachMessage {
   if (!value || typeof value !== 'object') return false;
   const message = value as Record<string, unknown>;
   return (message.role === 'user' || message.role === 'assistant') && typeof message.text === 'string';
+}
+
+function isLang(value: unknown): value is Lang {
+  return value === 'ru' || value === 'en' || value === 'kk';
 }
 
 async function askCoachAnswer(
