@@ -48,7 +48,8 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({
           text,
-          model_id: 'eleven_multilingual_v2',
+          model_id: modelIdFor(body.lang),
+          language_code: languageCodeFor(body.lang),
           voice_settings: voiceSettingsFor(body.lang),
         }),
       },
@@ -93,6 +94,17 @@ function voiceSettingsFor(lang: unknown) {
     style: 0.48,
     use_speaker_boost: true,
   };
+}
+
+function modelIdFor(lang: unknown) {
+  return lang === 'kk' ? 'eleven_v3' : 'eleven_multilingual_v2';
+}
+
+function languageCodeFor(lang: unknown) {
+  if (lang === 'kk') return 'kaz';
+  if (lang === 'ru') return 'ru';
+  if (lang === 'en') return 'en';
+  return undefined;
 }
 
 function base64(buffer: ArrayBuffer) {
