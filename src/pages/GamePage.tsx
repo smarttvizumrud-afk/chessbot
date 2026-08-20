@@ -3,7 +3,7 @@ import { AuthGate } from '../components/AuthGate';
 import { AnalysisBoard } from '../components/AnalysisBoard';
 import { MoveTable } from '../components/MoveTable';
 import { coachPersona, personaAdvice } from '../lib/coachPersona';
-import { canSpeak, speakCoachText } from '../lib/coachSpeech';
+import { speakCoachText } from '../lib/coachSpeech';
 import { labelText, localizeInsight, t } from '../lib/i18n';
 import { fenAfterPly, getMovesWithFens } from '../lib/pgn';
 import { supabase } from '../lib/supabase';
@@ -124,6 +124,7 @@ function AnalysisCoachCard({
   userAge?: number;
 }) {
   const [speechBusy, setSpeechBusy] = useState(false);
+  const [speechNotice, setSpeechNotice] = useState('');
   const persona = coachPersona(interfaceMode, gender, lang, userAge);
   const advice = report
     ? analysisCoachAdvice(report, interfaceMode, gender, lang, userAge)
@@ -132,8 +133,12 @@ function AnalysisCoachCard({
   async function playAdvice() {
     if (speechBusy) return;
     setSpeechBusy(true);
+    setSpeechNotice('');
     try {
       await speakCoachText(advice, interfaceMode, gender);
+    } catch (error) {
+      console.warn('Could not speak analysis advice.', error);
+      setSpeechNotice('Voice did not start. Press Audio again.');
     } finally {
       setSpeechBusy(false);
     }
@@ -143,21 +148,19 @@ function AnalysisCoachCard({
     <article className="persona-advice">
       <span className={`coach-avatar ${gender}`}>{persona.icon}</span>
       <div>
-        <strong>
-          {persona.name}
-          {canSpeak() && (
-            <button
-              className="speak-button"
-              type="button"
-              onClick={() => void playAdvice()}
-              disabled={speechBusy}
-              aria-label="Speak analysis advice"
-            >
-              🔊
-            </button>
-          )}
-        </strong>
+        <div className="persona-advice-head">
+          <strong>{persona.name}</strong>
+          <button
+            className="analysis-speak-button"
+            type="button"
+            onClick={() => void playAdvice()}
+            disabled={speechBusy}
+          >
+            {speechBusy ? '...' : 'Audio'}
+          </button>
+        </div>
         <p>{advice}</p>
+        {speechNotice && <p className="message">{speechNotice}</p>}
         {report && <MoveComment report={report} playerColor={playerColor} lang={lang} />}
       </div>
     </article>

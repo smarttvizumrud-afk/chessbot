@@ -273,7 +273,8 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .coach-avatar { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #ffd447, #e88722); color: #17120a; font-size: 28px; line-height: 1; }
 .coach-avatar.female { background: linear-gradient(135deg, #ffb8dc, #b86bff); }
 .coach-persona strong, .persona-advice strong { color: var(--gold); }
-.persona-advice strong { display: inline-flex; align-items: center; gap: 8px; }
+.persona-advice-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.analysis-speak-button { width: auto; min-height: 34px; border-radius: 8px; padding: 6px 12px; font-size: 14px; }
 .coach-persona p, .persona-advice p { color: var(--muted); margin-top: 3px; }
 .persona-advice { align-items: start; }
 .game-list, .table { display: grid; gap: 10px; margin-top: 14px; }
