@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AuthGate } from '../components/AuthGate';
 import { AnalysisBoard } from '../components/AnalysisBoard';
 import { MoveTable } from '../components/MoveTable';
@@ -114,10 +114,33 @@ function AnalysisCoachCard({
   userAge?: number;
 }) {
   const [speechBusy, setSpeechBusy] = useState(false);
+  const spokenAdviceRef = useRef('');
   const persona = coachPersona(interfaceMode, gender, lang, userAge);
   const advice = report
     ? personaAdvice(persona, lang, humanAdvice(report, lang))
     : idleAdvice(persona, lang);
+
+  useEffect(() => {
+    if (!report || !canSpeak()) return;
+    const key = `${report.ply}-${interfaceMode}-${gender}-${advice}`;
+    if (spokenAdviceRef.current === key) return;
+    spokenAdviceRef.current = key;
+
+    let cancelled = false;
+    setSpeechBusy(true);
+    const timer = window.setTimeout(() => {
+      speakCoachText(advice, interfaceMode, gender)
+        .catch((error) => console.warn('Could not speak analysis advice.', error))
+        .finally(() => {
+          if (!cancelled) setSpeechBusy(false);
+        });
+    }, 100);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [advice, gender, interfaceMode, report]);
 
   async function playAdvice() {
     if (speechBusy) return;
