@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AuthGate } from '../components/AuthGate';
 import { AnalysisBoard } from '../components/AnalysisBoard';
 import { MoveTable } from '../components/MoveTable';
-import { coachPersona, personaAdvice } from '../lib/coachPersona';
-import { createCoachSpeechAudio, speakCoachText } from '../lib/coachSpeech';
+import { coachPersona, personaAdvice, personaIntro } from '../lib/coachPersona';
+import { createCoachSpeechAudio, speakCoachText, speechErrorText } from '../lib/coachSpeech';
 import { labelText, localizeInsight, t } from '../lib/i18n';
 import { fenAfterPly, getMovesWithFens } from '../lib/pgn';
 import { supabase } from '../lib/supabase';
@@ -140,7 +140,7 @@ function AnalysisCoachCard({
       await speakCoachText(advice, interfaceMode, gender, preparedAudio);
     } catch (error) {
       console.warn('Could not speak analysis advice.', error);
-      setSpeechNotice('Voice did not start. Press Audio again.');
+      setSpeechNotice(speechErrorText(lang, error));
     } finally {
       setSpeechBusy(false);
     }
@@ -214,9 +214,9 @@ function humanAdvice(report: MoveReport, lang: Lang) {
 }
 
 function idleAdvice(persona: ReturnType<typeof coachPersona>, lang: Lang) {
-  if (lang === 'en') return personaAdvice(persona, lang, 'Pick a move from the table, and I will explain it in simple words.');
-  if (lang === 'kk') return personaAdvice(persona, lang, 'Кестеден жүрісті таңда, мен оны қарапайым тілмен түсіндіремін.');
-  return personaAdvice(persona, lang, 'Выбери ход в таблице, и я объясню его простыми словами.');
+  if (lang === 'en') return personaIntro(persona, lang, 'Pick a move from the table, and I will explain it in simple words.');
+  if (lang === 'kk') return personaIntro(persona, lang, 'Kesteden juristi tanda, men ony qarapaiym tilmen tusindiremin.');
+  return personaIntro(persona, lang, 'Выбери ход в таблице, и я объясню его простыми словами.');
 }
 
 function explainReport(report: MoveReport, lang: Lang) {

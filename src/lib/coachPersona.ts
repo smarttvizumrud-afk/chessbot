@@ -72,3 +72,9 @@ export function personaAdvice(persona: CoachPersona, lang: Lang, text: string) {
   if (lang === 'kk') return `${persona.name}: ${text}`;
   return `${persona.name}: ${text}`;
 }
+
+export function personaIntro(persona: CoachPersona, lang: Lang, nextText: string) {
+  if (lang === 'en') return `${persona.name}: Hi, I am ${persona.name}, your ${persona.role}. ${nextText}`;
+  if (lang === 'kk') return `${persona.name}: Salem, men ${persona.name}, senin ${persona.role}. ${nextText}`;
+  return `${persona.name}: Привет, я ${persona.name}, твой ${persona.role}. ${nextText}`;
+}

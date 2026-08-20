@@ -13,6 +13,13 @@ export type ElevenLabsVoice =
   | 'school_female'
   | 'teen_female';
 
+export class TtsError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'TtsError';
+  }
+}
+
 export function createSpeechAudio() {
   const audio = new Audio(silentAudio);
   audio.preload = 'auto';
@@ -36,6 +43,8 @@ export async function speakWithElevenLabsVoice(
     body: { text, voice },
   });
   if (error) throw new Error(error.message);
+  const responseError = readError(data);
+  if (responseError) throw new TtsError(responseError);
 
   const audio = readAudio(data);
   if (!audio) throw new Error('TTS returned no audio.');
@@ -60,5 +69,11 @@ function playOnce(audio: HTMLAudioElement) {
 function readAudio(data: unknown) {
   if (!data || typeof data !== 'object') return '';
   const value = (data as { audio?: unknown }).audio;
+  return typeof value === 'string' ? value : '';
+}
+
+function readError(data: unknown) {
+  if (!data || typeof data !== 'object') return '';
+  const value = (data as { error?: unknown }).error;
   return typeof value === 'string' ? value : '';
 }

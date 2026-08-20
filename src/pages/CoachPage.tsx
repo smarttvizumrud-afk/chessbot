@@ -3,8 +3,8 @@ import { AuthGate } from '../components/AuthGate';
 import { askCoach, type CoachMessage } from '../lib/aiCoach';
 import { NotEnoughCreditsError } from '../lib/credits';
 import { t } from '../lib/i18n';
-import { coachPersona } from '../lib/coachPersona';
-import { canSpeak, speakCoachText } from '../lib/coachSpeech';
+import { coachPersona, personaIntro } from '../lib/coachPersona';
+import { canSpeak, speakCoachText, speechErrorText } from '../lib/coachSpeech';
 import { supabase } from '../lib/supabase';
 import type { Lang } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
@@ -28,17 +28,17 @@ export function CoachPage({ lang }: { lang: Lang }) {
 
 function CoachContent({ lang }: { lang: Lang }) {
   const { games, analyses } = useChessData();
-  const [chats, setChats] = useState<CoachChat[]>(() => loadChats(lang));
+  const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>('main');
+  const [userAge, setUserAge] = useState<number>();
+  const [gender, setGender] = useState<Gender>('male');
+  const [chats, setChats] = useState<CoachChat[]>(() => loadChats(lang, 'main', 'male'));
   const [activeChatId, setActiveChatId] = useState('');
   const [question, setQuestion] = useState('');
   const [busy, setBusy] = useState(false);
   const [speechBusy, setSpeechBusy] = useState(false);
   const [speechNotice, setSpeechNotice] = useState('');
-  const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>('main');
-  const [userAge, setUserAge] = useState<number>();
-  const [gender, setGender] = useState<Gender>('male');
   const speechBusyRef = useRef(false);
-  const activeChat = chats.find((chat) => chat.id === activeChatId) ?? chats[0] ?? createChat(lang);
+  const activeChat = chats.find((chat) => chat.id === activeChatId) ?? chats[0] ?? createChat(lang, interfaceMode, gender, userAge);
   const messages = activeChat.messages;
 
   useEffect(() => {
@@ -61,7 +61,7 @@ function CoachContent({ lang }: { lang: Lang }) {
   }, [activeChatId, chats]);
 
   function startChat() {
-    const chat = createChat(lang);
+    const chat = createChat(lang, interfaceMode, gender, userAge);
     setChats((items) => [chat, ...items]);
     setActiveChatId(chat.id);
     setQuestion('');
@@ -99,6 +99,9 @@ function CoachContent({ lang }: { lang: Lang }) {
     try {
       const result = await speakCoachText(text, interfaceMode, gender);
       if (result === 'elevenlabs-unavailable') setSpeechNotice(childVoiceErrorText(lang));
+    } catch (error) {
+      console.warn('Could not speak coach answer.', error);
+      setSpeechNotice(speechErrorText(lang, error));
     } finally {
       speechBusyRef.current = false;
       setSpeechBusy(false);
@@ -159,15 +162,15 @@ function CoachContent({ lang }: { lang: Lang }) {
   );
 }
 
-function loadChats(lang: Lang): CoachChat[] {
-  if (typeof window === 'undefined') return [createChat(lang)];
+function loadChats(lang: Lang, interfaceMode: InterfaceMode, gender: Gender, userAge?: number): CoachChat[] {
+  if (typeof window === 'undefined') return [createChat(lang, interfaceMode, gender, userAge)];
   try {
     const stored = JSON.parse(window.localStorage.getItem(chatsStorageKey) ?? '[]') as unknown;
-    if (!Array.isArray(stored)) return [createChat(lang)];
+    if (!Array.isArray(stored)) return [createChat(lang, interfaceMode, gender, userAge)];
     const chats = stored.filter(isCoachChat).slice(0, 12);
-    return chats.length ? chats : [createChat(lang)];
+    return chats.length ? chats : [createChat(lang, interfaceMode, gender, userAge)];
   } catch {
-    return [createChat(lang)];
+    return [createChat(lang, interfaceMode, gender, userAge)];
   }
 }
 
@@ -176,11 +179,11 @@ function saveChats(chats: CoachChat[]) {
   window.localStorage.setItem(chatsStorageKey, JSON.stringify(chats.slice(0, 12)));
 }
 
-function createChat(lang: Lang): CoachChat {
+function createChat(lang: Lang, interfaceMode: InterfaceMode, gender: Gender, userAge?: number): CoachChat {
   return {
     id: crypto.randomUUID(),
     title: chatCopy(lang).newChat,
-    messages: [welcomeMessage(lang)],
+    messages: [welcomeMessage(lang, interfaceMode, gender, userAge)],
   };
 }
 
@@ -265,8 +268,13 @@ function CoachPersonaBadge({
 }
 
 
-function welcomeMessage(lang: Lang): CoachMessage {
-  if (lang === 'en') return { role: 'assistant', text: 'Ask me about your games, openings, mistakes, or training plan.' };
-  if (lang === 'kk') return { role: 'assistant', text: 'Партияларың, дебюттерің, қателерің немесе жаттығу жоспарың туралы сұра.' };
-  return { role: 'assistant', text: 'Спроси меня о партиях, дебютах, ошибках или плане тренировок.' };
+function welcomeMessage(lang: Lang, interfaceMode: InterfaceMode, gender: Gender, userAge?: number): CoachMessage {
+  const persona = coachPersona(interfaceMode, gender, lang, userAge);
+  if (lang === 'en') {
+    return { role: 'assistant', text: personaIntro(persona, lang, 'Ask me about your games, openings, mistakes, or training plan.') };
+  }
+  if (lang === 'kk') {
+    return { role: 'assistant', text: personaIntro(persona, lang, 'Partiyalaryn, debyutterin, qatelerin nemese jattygu josparyn turaly sura.') };
+  }
+  return { role: 'assistant', text: personaIntro(persona, lang, 'Спроси меня о партиях, дебютах, ошибках или плане тренировок.') };
 }
