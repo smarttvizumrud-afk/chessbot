@@ -31,13 +31,13 @@ export default function App() {
     supabase.auth.getSession().then(({ data }) => {
       const metadata = readOnboardingData(data.session?.user.user_metadata);
       const preferredLang = metadata.preferredLang;
-      if (preferredLang && !storedLang()) setLang(preferredLang);
+      if (preferredLang && !storedLang()) adoptProfileLang(preferredLang, setLang);
       if (data.session) setInterfaceMode(metadata.interfaceMode ?? 'main');
     });
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       const metadata = readOnboardingData(session?.user.user_metadata);
       const preferredLang = metadata.preferredLang;
-      if (preferredLang && !storedLang()) setLang(preferredLang);
+      if (preferredLang && !storedLang()) adoptProfileLang(preferredLang, setLang);
       setInterfaceMode(session ? metadata.interfaceMode ?? 'main' : 'main');
     });
     return () => data.subscription.unsubscribe();
@@ -101,6 +101,11 @@ function storedLang() {
 function saveLang(lang: Lang) {
   if (typeof window === 'undefined') return;
   window.localStorage.setItem(langStorageKey, lang);
+}
+
+function adoptProfileLang(lang: Lang, setLang: (lang: Lang) => void) {
+  setLang(lang);
+  saveLang(lang);
 }
 
 function isLang(value: unknown): value is Lang {
