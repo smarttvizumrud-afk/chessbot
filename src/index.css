@@ -321,6 +321,13 @@ input, select { background: #0d131d; padding: 12px 14px; }
 .move-note.blunder { color: #ff6767; }
 .critical { border-left: 3px solid var(--gold); padding-left: 14px; }
 .coach-panel { min-height: 520px; display: grid; gap: 16px; }
+.coach-header { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.coach-chat-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; min-height: 520px; }
+.coach-chat-main { display: grid; gap: 16px; grid-template-rows: minmax(0, 1fr) auto; min-width: 0; }
+.chat-list { display: grid; align-content: start; gap: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 14px; background: #0d131d; }
+.chat-list strong { color: var(--muted); font-size: 13px; text-transform: uppercase; }
+.chat-list button { overflow: hidden; width: 100%; border-color: transparent; background: transparent; color: var(--muted); text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+.chat-list button.active { border-color: var(--line); background: var(--panel-2); color: var(--ink); }
 .chat-window { display: grid; gap: 12px; max-height: 56vh; overflow: auto; padding-right: 4px; }
 .chat-message { max-width: 78%; border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; background: #0d131d; }
 .chat-message span { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; margin-bottom: 6px; }
@@ -833,6 +840,10 @@ input, select { background: #0d131d; padding: 12px 14px; }
   .puzzle-turn-card h1 { font-size: 26px; }
   .puzzle-move-list div { grid-template-columns: 1fr; gap: 3px; }
   .task-header { flex-direction: column; }
+  .coach-chat-layout { grid-template-columns: 1fr; }
+  .chat-list { display: flex; overflow-x: auto; }
+  .chat-list strong { align-self: center; white-space: nowrap; }
+  .chat-list button { width: auto; min-width: 150px; }
   .move-sheet-head, .move-row { grid-template-columns: 36px 1fr 1fr; }
   .profile-side, .profile-chart { border-right: 0; }
   .profile-actions-bar { justify-content: flex-start; }

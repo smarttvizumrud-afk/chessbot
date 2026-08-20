@@ -9,6 +9,14 @@ import type { Lang } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
 import { ageFromBirthDate, readOnboardingData, type InterfaceMode } from '../lib/userOnboarding';
 
+type CoachChat = {
+  id: string;
+  title: string;
+  messages: CoachMessage[];
+};
+
+const chatsStorageKey = 'chesa-coach-chats';
+
 export function CoachPage({ lang }: { lang: Lang }) {
   return (
     <AuthGate lang={lang}>
@@ -19,11 +27,14 @@ export function CoachPage({ lang }: { lang: Lang }) {
 
 function CoachContent({ lang }: { lang: Lang }) {
   const { games, analyses } = useChessData();
-  const [messages, setMessages] = useState<CoachMessage[]>(() => [welcomeMessage(lang)]);
+  const [chats, setChats] = useState<CoachChat[]>(() => loadChats(lang));
+  const [activeChatId, setActiveChatId] = useState('');
   const [question, setQuestion] = useState('');
   const [busy, setBusy] = useState(false);
   const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>('student');
   const [userAge, setUserAge] = useState<number>();
+  const activeChat = chats.find((chat) => chat.id === activeChatId) ?? chats[0] ?? createChat(lang);
+  const messages = activeChat.messages;
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -38,52 +49,147 @@ function CoachContent({ lang }: { lang: Lang }) {
     window.speechSynthesis.getVoices();
   }, []);
 
+  useEffect(() => {
+    saveChats(chats);
+  }, [chats]);
+
+  useEffect(() => {
+    if (!chats.some((chat) => chat.id === activeChatId)) setActiveChatId(chats[0]?.id ?? '');
+  }, [activeChatId, chats]);
+
+  function startChat() {
+    const chat = createChat(lang);
+    setChats((items) => [chat, ...items]);
+    setActiveChatId(chat.id);
+    setQuestion('');
+  }
+
+  function updateActiveChat(messages: CoachMessage[]) {
+    setChats((items) => items.map((chat) => (
+      chat.id === activeChat.id
+        ? { ...chat, title: chatTitle(messages, lang), messages }
+        : chat
+    )));
+  }
+
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     const text = question.trim();
     if (!text || busy) return;
 
     const nextMessages: CoachMessage[] = [...messages, { role: 'user', text }];
-    setMessages(nextMessages);
+    updateActiveChat(nextMessages);
     setQuestion('');
     setBusy(true);
     const answer = await askCoachAnswer(text, lang, games, analyses, nextMessages, interfaceMode, userAge);
     const assistantMessages = messages.filter((message) => message.role === 'assistant');
     const lastAnswer = assistantMessages[assistantMessages.length - 1]?.text;
-    setMessages(lastAnswer === answer ? nextMessages : [...nextMessages, { role: 'assistant', text: answer }]);
+    updateActiveChat(lastAnswer === answer ? nextMessages : [...nextMessages, { role: 'assistant', text: answer }]);
     setBusy(false);
   }
 
   return (
     <section className="panel coach-panel">
-      <h1>{t(lang, 'coach')}</h1>
-      <div className="chat-window">
-        {messages.map((message, index) => (
-          <article className={`chat-message ${message.role}`} key={`${message.role}-${index}`}>
-            <span>
-              {message.role === 'user' ? t(lang, 'you') : t(lang, 'coach')}
-              {message.role === 'assistant' && canSpeak(interfaceMode) && (
-                <button className="speak-button" type="button" onClick={() => void speak(message.text, lang, userAge, interfaceMode)} aria-label="Speak answer">
-                  🔊
-                </button>
-              )}
-            </span>
-            <p>{message.text}</p>
-          </article>
-        ))}
-        {busy && (
-          <article className="chat-message assistant">
-            <span>{t(lang, 'coach')}</span>
-            <p>{t(lang, 'coachTyping')}</p>
-          </article>
-        )}
+      <div className="coach-header">
+        <h1>{t(lang, 'coach')}</h1>
+        <button type="button" onClick={startChat}>{chatCopy(lang).newChat}</button>
       </div>
-      <form className="chat-form" onSubmit={submit}>
-        <input value={question} onChange={(event) => setQuestion(event.target.value)} placeholder={t(lang, 'ask')} required />
-        <button disabled={busy}>{busy ? '...' : t(lang, 'send')}</button>
-      </form>
+      <div className="coach-chat-layout">
+        <aside className="chat-list" aria-label={chatCopy(lang).chats}>
+          <strong>{chatCopy(lang).chats}</strong>
+          {chats.map((chat) => (
+            <button
+              className={chat.id === activeChat.id ? 'active' : ''}
+              type="button"
+              onClick={() => setActiveChatId(chat.id)}
+              key={chat.id}
+            >
+              {chat.title}
+            </button>
+          ))}
+        </aside>
+        <div className="coach-chat-main">
+          <div className="chat-window">
+            {messages.map((message, index) => (
+              <article className={`chat-message ${message.role}`} key={`${message.role}-${index}`}>
+                <span>
+                  {message.role === 'user' ? t(lang, 'you') : t(lang, 'coach')}
+                  {message.role === 'assistant' && canSpeak(interfaceMode) && (
+                    <button className="speak-button" type="button" onClick={() => void speak(message.text, lang, userAge, interfaceMode)} aria-label="Speak answer">
+                      🔊
+                    </button>
+                  )}
+                </span>
+                <p>{message.text}</p>
+              </article>
+            ))}
+            {busy && (
+              <article className="chat-message assistant">
+                <span>{t(lang, 'coach')}</span>
+                <p>{t(lang, 'coachTyping')}</p>
+              </article>
+            )}
+          </div>
+          <form className="chat-form" onSubmit={submit}>
+            <input value={question} onChange={(event) => setQuestion(event.target.value)} placeholder={t(lang, 'ask')} required />
+            <button disabled={busy}>{busy ? '...' : t(lang, 'send')}</button>
+          </form>
+        </div>
+      </div>
     </section>
   );
+}
+
+function loadChats(lang: Lang): CoachChat[] {
+  if (typeof window === 'undefined') return [createChat(lang)];
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(chatsStorageKey) ?? '[]') as unknown;
+    if (!Array.isArray(stored)) return [createChat(lang)];
+    const chats = stored.filter(isCoachChat).slice(0, 12);
+    return chats.length ? chats : [createChat(lang)];
+  } catch {
+    return [createChat(lang)];
+  }
+}
+
+function saveChats(chats: CoachChat[]) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(chatsStorageKey, JSON.stringify(chats.slice(0, 12)));
+}
+
+function createChat(lang: Lang): CoachChat {
+  return {
+    id: crypto.randomUUID(),
+    title: chatCopy(lang).newChat,
+    messages: [welcomeMessage(lang)],
+  };
+}
+
+function chatTitle(messages: CoachMessage[], lang: Lang) {
+  const userMessage = messages.find((message) => message.role === 'user')?.text.trim();
+  if (!userMessage) return chatCopy(lang).newChat;
+  return userMessage.length > 34 ? `${userMessage.slice(0, 34)}...` : userMessage;
+}
+
+function chatCopy(lang: Lang) {
+  if (lang === 'en') return { chats: 'Chats', newChat: 'New chat' };
+  if (lang === 'kk') return { chats: 'Chattar', newChat: 'Jana chat' };
+  return { chats: 'Чаты', newChat: 'Новый чат' };
+}
+
+function isCoachChat(value: unknown): value is CoachChat {
+  if (!value || typeof value !== 'object') return false;
+  const chat = value as Record<string, unknown>;
+  return typeof chat.id === 'string'
+    && typeof chat.title === 'string'
+    && Array.isArray(chat.messages)
+    && chat.messages.every(isCoachMessage);
+}
+
+function isCoachMessage(value: unknown): value is CoachMessage {
+  if (!value || typeof value !== 'object') return false;
+  const message = value as Record<string, unknown>;
+  return (message.role === 'user' || message.role === 'assistant') && typeof message.text === 'string';
 }
 
 async function askCoachAnswer(
