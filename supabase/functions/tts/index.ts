@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
 });
 
 function voiceIdFor(voice: unknown) {
-  if (voice === 'adult') return ADULT_VOICE_ID;
+  if (voice === 'adult') return TEEN_VOICE_ID;
   if (voice === 'teen') return TEEN_VOICE_ID;
   return CHILD_VOICE_ID;
 }

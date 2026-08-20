@@ -36,7 +36,6 @@ function CoachContent({ lang }: { lang: Lang }) {
   const [speechNotice, setSpeechNotice] = useState('');
   const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>('main');
   const [userAge, setUserAge] = useState<number>();
-  const [useTeenVoice, setUseTeenVoice] = useState(false);
   const speechBusyRef = useRef(false);
   const activeChat = chats.find((chat) => chat.id === activeChatId) ?? chats[0] ?? createChat(lang);
   const messages = activeChat.messages;
@@ -48,7 +47,6 @@ function CoachContent({ lang }: { lang: Lang }) {
       if (metadata.interfaceMode) setInterfaceMode(metadata.interfaceMode);
       const age = metadata.birthDate ? ageFromBirthDate(metadata.birthDate) : null;
       setUserAge(age ?? undefined);
-      setUseTeenVoice(isTeenAge(age) || hasLegacyStudentMode(rawMetadata));
     });
   }, []);
 
@@ -97,7 +95,7 @@ function CoachContent({ lang }: { lang: Lang }) {
     setSpeechNotice('');
     setSpeechBusy(true);
     try {
-      const result = await speak(text, interfaceMode, userAge, useTeenVoice);
+      const result = await speak(text, interfaceMode);
       if (result === 'elevenlabs-unavailable') setSpeechNotice(childVoiceErrorText(lang));
     } finally {
       speechBusyRef.current = false;
@@ -243,24 +241,14 @@ function canSpeak() {
   return typeof window !== 'undefined' && 'Audio' in window;
 }
 
-function elevenLabsVoice(interfaceMode: InterfaceMode, userAge: number | undefined, useTeenVoice: boolean): ElevenLabsVoice {
-  if (interfaceMode === 'child') return 'child';
-  if (useTeenVoice || isTeenAge(userAge)) return 'teen';
-  return 'adult';
+function elevenLabsVoice(interfaceMode: InterfaceMode): ElevenLabsVoice {
+  return interfaceMode === 'child' ? 'child' : 'teen';
 }
 
-function isTeenAge(age: number | null | undefined) {
-  return typeof age === 'number' && age >= 12 && age < 18;
-}
-
-function hasLegacyStudentMode(metadata: unknown) {
-  return Boolean(metadata && typeof metadata === 'object' && (metadata as { interface_mode?: unknown }).interface_mode === 'student');
-}
-
-async function speak(text: string, interfaceMode: InterfaceMode, userAge: number | undefined, useTeenVoice: boolean) {
+async function speak(text: string, interfaceMode: InterfaceMode) {
   if (!canSpeak()) return 'unavailable';
   const cleanText = cleanSpeechText(text);
-  const voice = elevenLabsVoice(interfaceMode, userAge, useTeenVoice);
+  const voice = elevenLabsVoice(interfaceMode);
   if (voice === 'child') {
     if (Date.now() >= childVoiceUnavailableUntil) {
       try {
