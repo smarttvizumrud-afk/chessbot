@@ -63,7 +63,11 @@ function coachTone(interfaceMode: InterfaceMode, userAge?: number) {
     ].join(' ');
   }
 
-  return 'Be concrete, kind, and concise.';
+  return [
+    ageSentence(userAge, 'The user is a teenager or adult.'),
+    'Match the user age in tone: for teens, sound like a friendly peer at the board, not a formal teacher.',
+    'Be concrete, casual, kind, and concise.',
+  ].join(' ');
 }
 
 function coachPersonaTone(interfaceMode: InterfaceMode, gender: Gender, lang: Lang, userAge?: number) {
@@ -71,8 +75,8 @@ function coachPersonaTone(interfaceMode: InterfaceMode, gender: Gender, lang: La
   return [
     `Your visible coach persona is ${persona.name}, age ${persona.age}.`,
     `Persona role: ${persona.role}.`,
-    'Explain like a real human coach: short, warm, direct, and practical.',
-    'Avoid robotic wording, long engine dumps, and unexplained chess jargon.',
+    'Explain like a relatable teammate: short, warm, direct, and practical.',
+    'Avoid robotic wording, teacher lectures, long engine dumps, and unexplained chess jargon.',
   ].join(' ');
 }
 

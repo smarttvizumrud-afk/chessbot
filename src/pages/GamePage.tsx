@@ -193,7 +193,7 @@ function analysisCoachAdvice(
   variant = 0,
 ) {
   const persona = coachPersona(interfaceMode, gender, lang, userAge);
-  return personaAdvice(persona, lang, humanAdvice(report, lang, variant));
+  return personaAdvice(persona, lang, humanAdvice(report, lang, variant, audienceStyle(interfaceMode, userAge)));
 }
 
 function analysisCoachSpeech(
@@ -205,7 +205,7 @@ function analysisCoachSpeech(
   variant = 0,
 ) {
   const persona = coachPersona(interfaceMode, gender, lang, userAge);
-  return `${persona.name}: ${spokenHumanAdvice(report, lang, variant)}`;
+  return `${persona.name}: ${spokenHumanAdvice(report, lang, variant, audienceStyle(interfaceMode, userAge))}`;
 }
 
 function MoveComment({ report, playerColor, lang }: {
@@ -230,12 +230,14 @@ function commentText(report: MoveReport, lang: Lang) {
   return `${t(lang, 'evalChanged')} ${Math.round(report.loss)} ${t(lang, 'centipawns')}. ${explainReport(report, lang)}`;
 }
 
-function humanAdvice(report: MoveReport, lang: Lang, variant = 0) {
-  return naturalHumanAdvice(report, lang, variant);
+type AudienceStyle = 'little' | 'kid' | 'teen' | 'adult';
+
+function humanAdvice(report: MoveReport, lang: Lang, variant = 0, style: AudienceStyle = 'teen') {
+  return naturalHumanAdvice(report, lang, variant, style);
 }
 
-function naturalHumanAdvice(report: MoveReport, lang: Lang, variant = 0) {
-  return variedWrittenAdvice(report, lang, variant);
+function naturalHumanAdvice(report: MoveReport, lang: Lang, variant = 0, style: AudienceStyle = 'teen') {
+  return variedWrittenAdvice(report, lang, variant, style);
 
   if (report.label === 'good') {
     if (lang === 'en') return 'Yeah, I like this move. It keeps your position steady and does not give away anything obvious. Now take one quick look at what your opponent may want next.';
@@ -247,8 +249,8 @@ function naturalHumanAdvice(report: MoveReport, lang: Lang, variant = 0) {
   return `Вот тут я бы чуть притормозил. После ${report.san} у соперника появляется шанс. Аккуратнее было ${report.bestMove}. Перед ходом быстро проверь шахи, взятия и угрозы.`;
 }
 
-function spokenHumanAdvice(report: MoveReport, lang: Lang, variant = 0) {
-  return variedSpokenAdvice(report, lang, variant);
+function spokenHumanAdvice(report: MoveReport, lang: Lang, variant = 0, style: AudienceStyle = 'teen') {
+  return variedSpokenAdvice(report, lang, variant, style);
 
   if (report.label === 'good') {
     if (lang === 'en') return 'Yeah, this is fine. I like it. You kept everything under control. Now just breathe for a second and check what your opponent wants next.';
@@ -260,19 +262,37 @@ function spokenHumanAdvice(report: MoveReport, lang: Lang, variant = 0) {
   return `Так, вот здесь давай на секунду остановимся. После ${report.san} позиция становится чуть неприятной. Спокойнее было ${report.bestMove}. Сначала посмотри шахи, взятия и угрозы.`;
 }
 
-function variedWrittenAdvice(report: MoveReport, lang: Lang, variant = 0) {
-  if (report.label !== 'good') return variedProblemAdvice(report, lang, variant);
-  const lines = writtenGoodLines(report, lang);
+function variedWrittenAdvice(report: MoveReport, lang: Lang, variant = 0, style: AudienceStyle = 'teen') {
+  if (report.label !== 'good') return variedProblemAdvice(report, lang, variant, style);
+  const lines = writtenGoodLines(report, lang, style);
   return lines[lineIndex(report, lines.length, variant)];
 }
 
-function variedSpokenAdvice(report: MoveReport, lang: Lang, variant = 0) {
-  if (report.label !== 'good') return variedProblemSpeech(report, lang, variant);
-  const lines = spokenGoodLines(report, lang);
+function variedSpokenAdvice(report: MoveReport, lang: Lang, variant = 0, style: AudienceStyle = 'teen') {
+  if (report.label !== 'good') return variedProblemSpeech(report, lang, variant, style);
+  const lines = spokenGoodLines(report, lang, style);
   return lines[lineIndex(report, lines.length, variant)];
 }
 
-function writtenGoodLines(report: MoveReport, lang: Lang) {
+function writtenGoodLines(report: MoveReport, lang: Lang, style: AudienceStyle) {
+  if (lang === 'ru') {
+    if (style === 'little') return [
+      'Класс, ход хороший. Фигурки стоят спокойно, ничего не теряем.',
+      `${report.san} подходит. Давай просто посмотрим, не хочет ли соперник нас напугать.`,
+      'Хорошо. Ты сделал спокойный ход, можно играть дальше.',
+    ];
+    if (style === 'kid') return [
+      'Да, нормальный ход. Он держит позицию, и это сейчас главное.',
+      `${report.san} выглядит по делу. Без паники, позиция живая.`,
+      'Хорошо сыграно. Теперь как напарник скажу: проверь идею соперника.',
+    ];
+    if (style === 'teen') return [
+      'Да, норм. Ход спокойный, позиция не разваливается.',
+      `${report.san} выглядит адекватно. Не вау-ход, но по позиции всё окей.`,
+      'Хорошее практическое решение. Без лишнего риска, можно продолжать.',
+      'Мне нравится. Такой ход реально можно сыграть за доской.',
+    ];
+  }
   if (lang === 'en') return [
     'Yeah, I like this move. It keeps your position steady, and now you can calmly check what your opponent wants next.',
     `${report.san} looks sensible. Nothing dramatic, just a clean move that keeps the game under control.`,
@@ -293,7 +313,25 @@ function writtenGoodLines(report: MoveReport, lang: Lang) {
   ];
 }
 
-function spokenGoodLines(report: MoveReport, lang: Lang) {
+function spokenGoodLines(report: MoveReport, lang: Lang, style: AudienceStyle) {
+  if (lang === 'ru') {
+    if (style === 'little') return [
+      'Класс. Хороший ход. Фигурки в порядке, можно играть дальше.',
+      'Да, так можно. Ты ничего не потерял. Теперь смотрим, что делает соперник.',
+      'Хорошо. Спокойный ход. Мне нравится.',
+    ];
+    if (style === 'kid') return [
+      'Да, нормально. Ты держишь позицию. Теперь глянь, что хочет соперник.',
+      `${report.san}. Да, по делу. Просто и аккуратно.`,
+      'Хорошо. Как напарник скажу: не спеши, проверь угрозы.',
+    ];
+    if (style === 'teen') return [
+      'Да, норм. Мне нравится. Ход спокойный, позиция не сыпется.',
+      `${report.san}. Логично. Не красота ради красоты, а просто здоровый ход.`,
+      'Хорошо. Без лишнего риска. Теперь быстро проверь, что соперник хочет в ответ.',
+      'Да, это похоже на ход живого игрока. Продолжай, только не спеши.',
+    ];
+  }
   if (lang === 'en') return [
     'Yeah, this is fine. I like it. You kept everything under control. Now just check what your opponent wants next.',
     `${report.san}. Yep, that makes sense. Nothing flashy, but it keeps the position healthy.`,
@@ -314,7 +352,7 @@ function spokenGoodLines(report: MoveReport, lang: Lang) {
   ];
 }
 
-function variedProblemAdvice(report: MoveReport, lang: Lang, variant = 0) {
+function variedProblemAdvice(report: MoveReport, lang: Lang, variant = 0, _style: AudienceStyle = 'teen') {
   const lines = lang === 'en'
     ? [
       `Here I would slow down. After ${report.san}, your opponent gets a chance. ${report.bestMove} was cleaner.`,
@@ -335,7 +373,7 @@ function variedProblemAdvice(report: MoveReport, lang: Lang, variant = 0) {
   return lines[lineIndex(report, lines.length, variant)];
 }
 
-function variedProblemSpeech(report: MoveReport, lang: Lang, variant = 0) {
+function variedProblemSpeech(report: MoveReport, lang: Lang, variant = 0, _style: AudienceStyle = 'teen') {
   const lines = lang === 'en'
     ? [
       `Okay, here I would stop for a moment. After ${report.san}, things get a little uncomfortable. ${report.bestMove} was calmer.`,
@@ -359,6 +397,13 @@ function variedProblemSpeech(report: MoveReport, lang: Lang, variant = 0) {
 function lineIndex(report: MoveReport, length: number, variant = 0) {
   const seed = [...report.san].reduce((sum, char) => sum + char.charCodeAt(0), report.ply + report.moveNumber);
   return (seed + variant) % length;
+}
+
+function audienceStyle(interfaceMode: InterfaceMode, userAge?: number): AudienceStyle {
+  if (interfaceMode === 'child' || (typeof userAge === 'number' && userAge < 6)) return 'little';
+  if (interfaceMode === 'preschool' || (typeof userAge === 'number' && userAge < 12)) return 'kid';
+  if (typeof userAge === 'number' && userAge < 18) return 'teen';
+  return 'adult';
 }
 
 function idleAdvice(persona: ReturnType<typeof coachPersona>, lang: Lang) {
