@@ -47,19 +47,21 @@ function GameContent({
   const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>('main');
   const [gender, setGender] = useState<Gender>('male');
   const [userAge, setUserAge] = useState<number>();
+  const [adviceTurn, setAdviceTurn] = useState(0);
   const report = analysis?.moveReports.find((item) => item.ply === ply);
   const totalPly = useMemo(() => game ? getMovesWithFens(game.pgn).length : 0, [game]);
   const fen = useMemo(() => game ? fenAfterPly(game.pgn, ply) : '', [game, ply]);
   const selectPly = useCallback((nextPly: number) => {
     setPly(nextPly);
+    setAdviceTurn((turn) => turn + 1);
     const nextReport = analysis?.moveReports.find((item) => item.ply === nextPly);
     if (!nextReport) return;
 
-    const advice = analysisCoachSpeech(nextReport, interfaceMode, gender, lang, userAge);
+    const advice = analysisCoachSpeech(nextReport, interfaceMode, gender, lang, userAge, adviceTurn + 1);
     const preparedAudio = createCoachSpeechAudio();
     speakCoachText(advice, interfaceMode, gender, lang, preparedAudio)
       .catch((error) => console.warn('Could not speak selected move advice.', error));
-  }, [analysis, gender, interfaceMode, lang, userAge]);
+  }, [adviceTurn, analysis, gender, interfaceMode, lang, userAge]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -103,6 +105,7 @@ function GameContent({
           interfaceMode={interfaceMode}
           gender={gender}
           userAge={userAge}
+          adviceTurn={adviceTurn}
         />
       </section>
     </div>
@@ -116,6 +119,7 @@ function AnalysisCoachCard({
   interfaceMode,
   gender,
   userAge,
+  adviceTurn,
 }: {
   report?: MoveReport;
   playerColor: PlayerColor;
@@ -123,22 +127,30 @@ function AnalysisCoachCard({
   interfaceMode: InterfaceMode;
   gender: Gender;
   userAge?: number;
+  adviceTurn: number;
 }) {
   const [speechBusy, setSpeechBusy] = useState(false);
   const [speechNotice, setSpeechNotice] = useState('');
+  const [speechTurn, setSpeechTurn] = useState(0);
   const persona = coachPersona(interfaceMode, gender, lang, userAge);
   const advice = report
-    ? analysisCoachAdvice(report, interfaceMode, gender, lang, userAge)
+    ? analysisCoachAdvice(report, interfaceMode, gender, lang, userAge, adviceTurn)
     : idleAdvice(persona, lang);
-  const spokenAdvice = report
-    ? analysisCoachSpeech(report, interfaceMode, gender, lang, userAge)
-    : idleSpeech(persona, lang);
+
+  useEffect(() => {
+    setSpeechTurn(0);
+  }, [report?.ply]);
 
   async function playAdvice() {
     if (speechBusy) return;
     setSpeechBusy(true);
     setSpeechNotice('');
     const preparedAudio = createCoachSpeechAudio();
+    const nextSpeechTurn = speechTurn + 1;
+    setSpeechTurn(nextSpeechTurn);
+    const spokenAdvice = report
+      ? analysisCoachSpeech(report, interfaceMode, gender, lang, userAge, adviceTurn + nextSpeechTurn)
+      : idleSpeech(persona, lang);
     try {
       await speakCoachText(spokenAdvice, interfaceMode, gender, lang, preparedAudio);
     } catch (error) {
@@ -178,9 +190,10 @@ function analysisCoachAdvice(
   gender: Gender,
   lang: Lang,
   userAge?: number,
+  variant = 0,
 ) {
   const persona = coachPersona(interfaceMode, gender, lang, userAge);
-  return personaAdvice(persona, lang, humanAdvice(report, lang));
+  return personaAdvice(persona, lang, humanAdvice(report, lang, variant));
 }
 
 function analysisCoachSpeech(
@@ -189,9 +202,10 @@ function analysisCoachSpeech(
   gender: Gender,
   lang: Lang,
   userAge?: number,
+  variant = 0,
 ) {
   const persona = coachPersona(interfaceMode, gender, lang, userAge);
-  return `${persona.name}: ${spokenHumanAdvice(report, lang)}`;
+  return `${persona.name}: ${spokenHumanAdvice(report, lang, variant)}`;
 }
 
 function MoveComment({ report, playerColor, lang }: {
@@ -216,12 +230,12 @@ function commentText(report: MoveReport, lang: Lang) {
   return `${t(lang, 'evalChanged')} ${Math.round(report.loss)} ${t(lang, 'centipawns')}. ${explainReport(report, lang)}`;
 }
 
-function humanAdvice(report: MoveReport, lang: Lang) {
-  return naturalHumanAdvice(report, lang);
+function humanAdvice(report: MoveReport, lang: Lang, variant = 0) {
+  return naturalHumanAdvice(report, lang, variant);
 }
 
-function naturalHumanAdvice(report: MoveReport, lang: Lang) {
-  return variedWrittenAdvice(report, lang);
+function naturalHumanAdvice(report: MoveReport, lang: Lang, variant = 0) {
+  return variedWrittenAdvice(report, lang, variant);
 
   if (report.label === 'good') {
     if (lang === 'en') return 'Yeah, I like this move. It keeps your position steady and does not give away anything obvious. Now take one quick look at what your opponent may want next.';
@@ -233,8 +247,8 @@ function naturalHumanAdvice(report: MoveReport, lang: Lang) {
   return `Вот тут я бы чуть притормозил. После ${report.san} у соперника появляется шанс. Аккуратнее было ${report.bestMove}. Перед ходом быстро проверь шахи, взятия и угрозы.`;
 }
 
-function spokenHumanAdvice(report: MoveReport, lang: Lang) {
-  return variedSpokenAdvice(report, lang);
+function spokenHumanAdvice(report: MoveReport, lang: Lang, variant = 0) {
+  return variedSpokenAdvice(report, lang, variant);
 
   if (report.label === 'good') {
     if (lang === 'en') return 'Yeah, this is fine. I like it. You kept everything under control. Now just breathe for a second and check what your opponent wants next.';
@@ -246,16 +260,16 @@ function spokenHumanAdvice(report: MoveReport, lang: Lang) {
   return `Так, вот здесь давай на секунду остановимся. После ${report.san} позиция становится чуть неприятной. Спокойнее было ${report.bestMove}. Сначала посмотри шахи, взятия и угрозы.`;
 }
 
-function variedWrittenAdvice(report: MoveReport, lang: Lang) {
-  if (report.label !== 'good') return variedProblemAdvice(report, lang);
+function variedWrittenAdvice(report: MoveReport, lang: Lang, variant = 0) {
+  if (report.label !== 'good') return variedProblemAdvice(report, lang, variant);
   const lines = writtenGoodLines(report, lang);
-  return lines[lineIndex(report, lines.length)];
+  return lines[lineIndex(report, lines.length, variant)];
 }
 
-function variedSpokenAdvice(report: MoveReport, lang: Lang) {
-  if (report.label !== 'good') return variedProblemSpeech(report, lang);
+function variedSpokenAdvice(report: MoveReport, lang: Lang, variant = 0) {
+  if (report.label !== 'good') return variedProblemSpeech(report, lang, variant);
   const lines = spokenGoodLines(report, lang);
-  return lines[lineIndex(report, lines.length)];
+  return lines[lineIndex(report, lines.length, variant)];
 }
 
 function writtenGoodLines(report: MoveReport, lang: Lang) {
@@ -300,7 +314,7 @@ function spokenGoodLines(report: MoveReport, lang: Lang) {
   ];
 }
 
-function variedProblemAdvice(report: MoveReport, lang: Lang) {
+function variedProblemAdvice(report: MoveReport, lang: Lang, variant = 0) {
   const lines = lang === 'en'
     ? [
       `Here I would slow down. After ${report.san}, your opponent gets a chance. ${report.bestMove} was cleaner.`,
@@ -318,10 +332,10 @@ function variedProblemAdvice(report: MoveReport, lang: Lang) {
         `${report.san} выглядит играбельно, но позиция немного проседает. Я бы сравнил с вариантом ${report.bestMove}.`,
         `Это момент, где лучше один раз спокойно перепроверить. ${report.bestMove} держало позицию увереннее.`,
       ];
-  return lines[lineIndex(report, lines.length)];
+  return lines[lineIndex(report, lines.length, variant)];
 }
 
-function variedProblemSpeech(report: MoveReport, lang: Lang) {
+function variedProblemSpeech(report: MoveReport, lang: Lang, variant = 0) {
   const lines = lang === 'en'
     ? [
       `Okay, here I would stop for a moment. After ${report.san}, things get a little uncomfortable. ${report.bestMove} was calmer.`,
@@ -339,12 +353,12 @@ function variedProblemSpeech(report: MoveReport, lang: Lang) {
         `Смотри, ${report.san} не выглядит ужасно, но сопернику появляется за что зацепиться. Я бы сначала посмотрел ${report.bestMove}.`,
         `Подожди секунду. Перед ${report.san} стоило проверить форсированные ходы. ${report.bestMove} держало больше контроля.`,
       ];
-  return lines[lineIndex(report, lines.length)];
+  return lines[lineIndex(report, lines.length, variant)];
 }
 
-function lineIndex(report: MoveReport, length: number) {
+function lineIndex(report: MoveReport, length: number, variant = 0) {
   const seed = [...report.san].reduce((sum, char) => sum + char.charCodeAt(0), report.ply + report.moveNumber);
-  return seed % length;
+  return (seed + variant) % length;
 }
 
 function idleAdvice(persona: ReturnType<typeof coachPersona>, lang: Lang) {

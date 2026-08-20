@@ -16,11 +16,12 @@ type MovePair = {
 
 export function MoveTable({ reports, selectedPly, lang, onSelect }: Props) {
   const pairs = pairMoves(reports);
+  const selectedReport = reports.find((report) => report.ply === selectedPly);
 
   return (
     <div className="move-table">
       <div className="move-table-head">
-        <strong>#{pairs.length}</strong>
+        <strong>{selectedReport ? formatEval(selectedReport.playedEval) : '-'}</strong>
         <span>Stockfish</span>
       </div>
       {pairs.map((pair) => (
@@ -87,6 +88,7 @@ function pairMoves(reports: MoveReport[]) {
 }
 
 function formatEval(value: number) {
+  if (Math.abs(value) >= 900) return `#${Math.max(1, Math.round(Math.abs(value) / 1000))}`;
   const pawns = value / 100;
   if (Math.abs(pawns) < 0.05) return '0.0';
   return `${pawns > 0 ? '+' : ''}${pawns.toFixed(1)}`;
