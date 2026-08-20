@@ -1,6 +1,7 @@
 const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
 const CHILD_VOICE_ID = Deno.env.get('ELEVENLABS_CHILD_VOICE_ID') ?? 'KGm9JQce2gqC2w6y4q3p';
 const ADULT_VOICE_ID = Deno.env.get('ELEVENLABS_ADULT_VOICE_ID') ?? CHILD_VOICE_ID;
+const TEEN_VOICE_ID = Deno.env.get('ELEVENLABS_TEEN_VOICE_ID') ?? ADULT_VOICE_ID;
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -23,7 +24,7 @@ Deno.serve(async (req) => {
 
     const body = (await req.json()) as { text?: unknown; voice?: unknown };
     const text = typeof body.text === 'string' ? body.text.trim() : '';
-    const voiceId = body.voice === 'adult' ? ADULT_VOICE_ID : CHILD_VOICE_ID;
+    const voiceId = voiceIdFor(body.voice);
     if (!text) return json({ error: 'Text is required.' }, 400);
     if (text.length > 2_000) return json({ error: 'Text is too long.' }, 400);
 
@@ -60,6 +61,12 @@ Deno.serve(async (req) => {
     return json({ error: 'Could not generate speech.' }, 500);
   }
 });
+
+function voiceIdFor(voice: unknown) {
+  if (voice === 'adult') return ADULT_VOICE_ID;
+  if (voice === 'teen') return TEEN_VOICE_ID;
+  return CHILD_VOICE_ID;
+}
 
 function base64(buffer: ArrayBuffer) {
   const bytes = new Uint8Array(buffer);

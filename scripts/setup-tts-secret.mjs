@@ -31,6 +31,7 @@ try {
 const apiKey = readValue(source, 'ELEVENLABS_API_KEY');
 const voiceId = readValue(source, 'ELEVENLABS_CHILD_VOICE_ID') || DEFAULT_CHILD_VOICE_ID;
 const adultVoiceId = readValue(source, 'ELEVENLABS_ADULT_VOICE_ID') || voiceId;
+const teenVoiceId = readValue(source, 'ELEVENLABS_TEEN_VOICE_ID') || adultVoiceId;
 if (!apiKey) fail('ELEVENLABS_API_KEY is missing in .env');
 
 const tempDirectory = await mkdtemp(join(tmpdir(), 'nfact-tts-secret-'));
@@ -45,6 +46,7 @@ try {
     `ELEVENLABS_API_KEY=${apiKey}`,
     `ELEVENLABS_CHILD_VOICE_ID=${voiceId}`,
     `ELEVENLABS_ADULT_VOICE_ID=${adultVoiceId}`,
+    `ELEVENLABS_TEEN_VOICE_ID=${teenVoiceId}`,
     '',
   ].join('\n'), { mode: 0o600 });
   const result = spawnSync(process.execPath, [supabaseCli, 'secrets', 'set', '--env-file', secretFile], {

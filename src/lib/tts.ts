@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 let activeAudio: HTMLAudioElement | null = null;
 let activeRequestId = 0;
 
-export type ElevenLabsVoice = 'child' | 'adult';
+export type ElevenLabsVoice = 'child' | 'teen' | 'adult';
 
 export async function speakWithElevenLabsVoice(text: string, voice: ElevenLabsVoice) {
   const requestId = activeRequestId + 1;
