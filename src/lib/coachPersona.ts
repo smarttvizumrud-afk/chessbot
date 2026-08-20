@@ -30,11 +30,11 @@ export function coachPersona(
 ): CoachPersona {
   const stage = personaStage(interfaceMode, userAge);
   const names = gender === 'female' ? femaleNames[lang] : maleNames[lang];
-  const icons = gender === 'female' ? ['👧', '🧒', '👩'] : ['👦', '🧑', '👨'];
+  const icon = names[stage.index]?.trim().charAt(0).toUpperCase() || 'A';
   return {
     gender,
     age: stage.age,
-    icon: icons[stage.index],
+    icon,
     name: names[stage.index],
     role: roleText(lang, stage.age),
     tone: toneText(lang, stage.age, gender),
