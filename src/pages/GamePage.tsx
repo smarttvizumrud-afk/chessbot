@@ -55,7 +55,7 @@ function GameContent({
     const nextReport = analysis?.moveReports.find((item) => item.ply === nextPly);
     if (!nextReport) return;
 
-    const advice = analysisCoachAdvice(nextReport, interfaceMode, gender, lang, userAge);
+    const advice = analysisCoachSpeech(nextReport, interfaceMode, gender, lang, userAge);
     const preparedAudio = createCoachSpeechAudio();
     speakCoachText(advice, interfaceMode, gender, preparedAudio)
       .catch((error) => console.warn('Could not speak selected move advice.', error));
@@ -130,6 +130,9 @@ function AnalysisCoachCard({
   const advice = report
     ? analysisCoachAdvice(report, interfaceMode, gender, lang, userAge)
     : idleAdvice(persona, lang);
+  const spokenAdvice = report
+    ? analysisCoachSpeech(report, interfaceMode, gender, lang, userAge)
+    : idleSpeech(persona, lang);
 
   async function playAdvice() {
     if (speechBusy) return;
@@ -137,7 +140,7 @@ function AnalysisCoachCard({
     setSpeechNotice('');
     const preparedAudio = createCoachSpeechAudio();
     try {
-      await speakCoachText(advice, interfaceMode, gender, preparedAudio);
+      await speakCoachText(spokenAdvice, interfaceMode, gender, preparedAudio);
     } catch (error) {
       console.warn('Could not speak analysis advice.', error);
       setSpeechNotice(speechErrorText(lang, error));
@@ -180,6 +183,17 @@ function analysisCoachAdvice(
   return personaAdvice(persona, lang, humanAdvice(report, lang));
 }
 
+function analysisCoachSpeech(
+  report: MoveReport,
+  interfaceMode: InterfaceMode,
+  gender: Gender,
+  lang: Lang,
+  userAge?: number,
+) {
+  const persona = coachPersona(interfaceMode, gender, lang, userAge);
+  return `${persona.name}: ${spokenHumanAdvice(report, lang)}`;
+}
+
 function MoveComment({ report, playerColor, lang }: {
   report: MoveReport;
   playerColor: PlayerColor;
@@ -217,10 +231,27 @@ function naturalHumanAdvice(report: MoveReport, lang: Lang) {
   return `Вот тут я бы чуть притормозил. После ${report.san} у соперника появляется шанс. Аккуратнее было ${report.bestMove}. Перед ходом быстро проверь шахи, взятия и угрозы.`;
 }
 
+function spokenHumanAdvice(report: MoveReport, lang: Lang) {
+  if (report.label === 'good') {
+    if (lang === 'en') return 'Yeah, this is fine. I like it. You kept everything under control. Now just breathe for a second and check what your opponent wants next.';
+    if (lang === 'kk') return 'Ia, jaqsy. Magan unaidy. Bari baqylauda. Endi bir satti toqtap, qarsylas ne qalaitynyn qarap al.';
+    return 'Да, нормально. Мне нравится. Ты тут всё держишь под контролем. Теперь просто на секунду остановись и посмотри, чего хочет соперник.';
+  }
+  if (lang === 'en') return `Okay, here I would stop for a moment. After ${report.san}, things get a little uncomfortable. ${report.bestMove} was the calmer move. Look for checks, captures, and threats first.`;
+  if (lang === 'kk') return `Jaqsy, munda bir satti toqtaiyq. ${report.san} keyin oiynda qiyndyq payda bolady. ${report.bestMove} tynyshyraq edi. Aldymen shah, alu jane qauipterdi qarap al.`;
+  return `Так, вот здесь давай на секунду остановимся. После ${report.san} позиция становится чуть неприятной. Спокойнее было ${report.bestMove}. Сначала посмотри шахи, взятия и угрозы.`;
+}
+
 function idleAdvice(persona: ReturnType<typeof coachPersona>, lang: Lang) {
   if (lang === 'en') return personaIntro(persona, lang, 'Pick a move from the table, and I will explain it in simple words.');
   if (lang === 'kk') return personaIntro(persona, lang, 'Kesteden juristi tanda, men ony qarapaiym tilmen tusindiremin.');
   return personaIntro(persona, lang, 'Выбери ход в таблице, и я объясню его простыми словами.');
+}
+
+function idleSpeech(persona: ReturnType<typeof coachPersona>, lang: Lang) {
+  if (lang === 'en') return `${persona.name}: Hi, I am ${persona.name}. Pick any move from the table and I will explain it like we are looking at the board together.`;
+  if (lang === 'kk') return `${persona.name}: Salem, men ${persona.name}. Kesteden kez kelgen juristi tanda, men ony taqtaga birge qarap otyrgandai tusindiremin.`;
+  return `${persona.name}: Привет, я ${persona.name}. Выбери любой ход из таблицы, и я объясню его так, будто мы вместе смотрим на доску.`;
 }
 
 function explainReport(report: MoveReport, lang: Lang) {
