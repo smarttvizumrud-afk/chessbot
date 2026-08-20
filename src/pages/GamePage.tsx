@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AuthGate } from '../components/AuthGate';
 import { AnalysisBoard } from '../components/AnalysisBoard';
 import { MoveTable } from '../components/MoveTable';
@@ -50,6 +50,15 @@ function GameContent({
   const report = analysis?.moveReports.find((item) => item.ply === ply);
   const totalPly = useMemo(() => game ? getMovesWithFens(game.pgn).length : 0, [game]);
   const fen = useMemo(() => game ? fenAfterPly(game.pgn, ply) : '', [game, ply]);
+  const selectPly = useCallback((nextPly: number) => {
+    setPly(nextPly);
+    const nextReport = analysis?.moveReports.find((item) => item.ply === nextPly);
+    if (!nextReport) return;
+
+    const advice = analysisCoachAdvice(nextReport, interfaceMode, gender, lang, userAge);
+    speakCoachText(advice, interfaceMode, gender)
+      .catch((error) => console.warn('Could not speak selected move advice.', error));
+  }, [analysis, gender, interfaceMode, lang, userAge]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -64,14 +73,15 @@ function GameContent({
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
       event.preventDefault();
-      setPly((currentPly) => event.key === 'ArrowLeft'
-        ? Math.max(currentPly - 1, 0)
-        : Math.min(currentPly + 1, totalPly));
+      const nextPly = event.key === 'ArrowLeft'
+        ? Math.max(ply - 1, 0)
+        : Math.min(ply + 1, totalPly);
+      selectPly(nextPly);
     }
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [totalPly]);
+  }, [ply, selectPly, totalPly]);
 
   if (loading) return <section className="panel">{t(lang, 'loading')}</section>;
   if (!game || !analysis || !fen) return <section className="panel">{t(lang, 'notFound')}</section>;
@@ -84,7 +94,7 @@ function GameContent({
       <section className="panel">
         <h1>{t(lang, 'gameAnalysis')}</h1>
         <p>{game.username} {t(lang, 'versus')} {game.opponent} · {analysis.accuracy}% {t(lang, 'accuracy').toLowerCase()}</p>
-        <MoveTable reports={analysis.moveReports} selectedPly={ply} lang={lang} onSelect={setPly} />
+        <MoveTable reports={analysis.moveReports} selectedPly={ply} lang={lang} onSelect={selectPly} />
         <AnalysisCoachCard
           report={report}
           playerColor={game.color}
@@ -114,33 +124,10 @@ function AnalysisCoachCard({
   userAge?: number;
 }) {
   const [speechBusy, setSpeechBusy] = useState(false);
-  const spokenAdviceRef = useRef('');
   const persona = coachPersona(interfaceMode, gender, lang, userAge);
   const advice = report
-    ? personaAdvice(persona, lang, humanAdvice(report, lang))
+    ? analysisCoachAdvice(report, interfaceMode, gender, lang, userAge)
     : idleAdvice(persona, lang);
-
-  useEffect(() => {
-    if (!report || !canSpeak()) return;
-    const key = `${report.ply}-${interfaceMode}-${gender}-${advice}`;
-    if (spokenAdviceRef.current === key) return;
-    spokenAdviceRef.current = key;
-
-    let cancelled = false;
-    setSpeechBusy(true);
-    const timer = window.setTimeout(() => {
-      speakCoachText(advice, interfaceMode, gender)
-        .catch((error) => console.warn('Could not speak analysis advice.', error))
-        .finally(() => {
-          if (!cancelled) setSpeechBusy(false);
-        });
-    }, 100);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [advice, gender, interfaceMode, report]);
 
   async function playAdvice() {
     if (speechBusy) return;
@@ -175,6 +162,17 @@ function AnalysisCoachCard({
       </div>
     </article>
   );
+}
+
+function analysisCoachAdvice(
+  report: MoveReport,
+  interfaceMode: InterfaceMode,
+  gender: Gender,
+  lang: Lang,
+  userAge?: number,
+) {
+  const persona = coachPersona(interfaceMode, gender, lang, userAge);
+  return personaAdvice(persona, lang, humanAdvice(report, lang));
 }
 
 function MoveComment({ report, playerColor, lang }: {
