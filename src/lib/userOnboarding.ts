@@ -16,12 +16,13 @@ export function readOnboardingData(metadata: unknown): Partial<OnboardingData> {
   const displayName = getDisplayName(values);
   const birthDate = typeof values.birth_date === 'string' ? values.birth_date : '';
   const preferredLang = isLang(values.preferred_lang) ? values.preferred_lang : undefined;
-  const isAdult = typeof values.is_adult === 'boolean' ? values.is_adult : getIsAdult(birthDate);
   const interfaceMode = isValidBirthDate(birthDate)
     ? interfaceModeForBirthDate(birthDate)
     : isInterfaceMode(values.interface_mode)
-      ? values.interface_mode
-      : 'student';
+      ? normalizeInterfaceMode(values.interface_mode)
+      : 'main';
+  const isAdult = interfaceMode === 'main'
+    || (typeof values.is_adult === 'boolean' ? values.is_adult : getIsAdult(birthDate));
 
   return { displayName, birthDate, preferredLang, isAdult, interfaceMode };
 }
@@ -33,11 +34,10 @@ export function isOnboardingComplete(metadata: unknown) {
 
 export function interfaceModeForBirthDate(birthDate: string): InterfaceMode {
   const age = ageFromBirthDate(birthDate);
-  if (age === null) return 'student';
+  if (age === null) return 'main';
   if (age >= 3 && age < 6) return 'child';
   if (age >= 6 && age < 12) return 'preschool';
-  if (age >= 12 && age < 18) return 'student';
-  return age >= 18 ? 'main' : 'student';
+  return 'main';
 }
 
 export function ageFromBirthDate(birthDate: string) {
@@ -88,6 +88,10 @@ function isLang(value: unknown): value is Lang {
 
 function isInterfaceMode(value: unknown): value is InterfaceMode {
   return value === 'main' || value === 'student' || value === 'preschool' || value === 'child';
+}
+
+function normalizeInterfaceMode(value: InterfaceMode): InterfaceMode {
+  return value === 'student' ? 'main' : value;
 }
 
 function getDisplayName(values: Record<string, unknown>) {

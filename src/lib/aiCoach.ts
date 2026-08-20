@@ -22,7 +22,7 @@ export async function askCoach(
   games: StoredGame[],
   analyses: StoredAnalysis[],
   history: CoachMessage[] = [],
-  interfaceMode: InterfaceMode = 'student',
+  interfaceMode: InterfaceMode = 'main',
   userAge?: number,
 ) {
   await spendCredits(1, 'ai_coach', { feature: 'coach_request', userAge });
@@ -57,16 +57,6 @@ function coachTone(interfaceMode: InterfaceMode, userAge?: number) {
       'Explain chess like one friendly child talking to another child.',
       'Use very short sentences, simple words, playful encouragement, and one tiny step at a time.',
       'Do not use scary pressure, long analysis, notation-heavy explanations, or adult coaching language.',
-    ].join(' ');
-  }
-
-  if (interfaceMode === 'student') {
-    return [
-      ageSentence(userAge, 'The user is a teenager from 12 to 18 years old.'),
-      'Talk like a smart peer-coach for a teenager, not like a teacher lecturing a small child.',
-      'Use chess examples connected to online games, ratings, tournaments, school schedule, focus, and improvement streaks.',
-      'If the user is around 16, assume they may care about progress, competition, independence, fast feedback, and practical training.',
-      'Keep the tone confident, direct, motivating, and not childish.',
     ].join(' ');
   }
 

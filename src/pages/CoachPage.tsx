@@ -34,7 +34,7 @@ function CoachContent({ lang }: { lang: Lang }) {
   const [busy, setBusy] = useState(false);
   const [speechBusy, setSpeechBusy] = useState(false);
   const [speechNotice, setSpeechNotice] = useState('');
-  const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>('student');
+  const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>('main');
   const [userAge, setUserAge] = useState<number>();
   const speechBusyRef = useRef(false);
   const activeChat = chats.find((chat) => chat.id === activeChatId) ?? chats[0] ?? createChat(lang);

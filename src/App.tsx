@@ -30,13 +30,13 @@ export default function App() {
       const metadata = readOnboardingData(data.session?.user.user_metadata);
       const preferredLang = metadata.preferredLang;
       if (preferredLang) setLang(preferredLang);
-      if (data.session) setInterfaceMode(metadata.interfaceMode ?? 'student');
+      if (data.session) setInterfaceMode(metadata.interfaceMode ?? 'main');
     });
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       const metadata = readOnboardingData(session?.user.user_metadata);
       const preferredLang = metadata.preferredLang;
       if (preferredLang) setLang(preferredLang);
-      setInterfaceMode(session ? metadata.interfaceMode ?? 'student' : 'main');
+      setInterfaceMode(session ? metadata.interfaceMode ?? 'main' : 'main');
     });
     return () => data.subscription.unsubscribe();
   }, []);

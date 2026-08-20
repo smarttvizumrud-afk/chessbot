@@ -65,9 +65,6 @@ function Dashboard({ lang, interfaceMode }: { lang: Lang; interfaceMode: Interfa
 
 function HomeHero({ lang, interfaceMode }: { lang: Lang; interfaceMode: InterfaceMode }) {
   const isKidsMode = interfaceMode === 'preschool';
-  const isStudentMode = interfaceMode === 'student';
-  const title = isStudentMode ? studentHeroTitle(lang) : t(lang, 'app');
-  const kicker = isStudentMode ? studentHeroKicker(lang) : t(lang, 'heroKicker');
 
   return (
     <section className="hero">
@@ -77,21 +74,9 @@ function HomeHero({ lang, interfaceMode }: { lang: Lang; interfaceMode: Interfac
         </video>
       )}
       <div className="hero-copy">
-        <p>{kicker}</p>
-        <h1>{title}</h1>
+        <p>{t(lang, 'heroKicker')}</p>
+        <h1>{t(lang, 'app')}</h1>
       </div>
     </section>
   );
-}
-
-function studentHeroTitle(lang: Lang) {
-  if (lang === 'en') return 'Play chess. Become a champion.';
-  if (lang === 'kk') return 'Shakhmat oina. Chempion bol.';
-  return 'Играй в шахматы. Становись чемпионом.';
-}
-
-function studentHeroKicker(lang: Lang) {
-  if (lang === 'en') return 'Train, analyse, win more games.';
-  if (lang === 'kk') return 'Uiren, oina, zheniske zhet.';
-  return 'Учись, играй, побеждай.';
 }
