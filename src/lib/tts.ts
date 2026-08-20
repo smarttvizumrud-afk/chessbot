@@ -3,14 +3,16 @@ import { supabase } from './supabase';
 let activeAudio: HTMLAudioElement | null = null;
 let activeRequestId = 0;
 
-export async function speakWithChildVoice(text: string) {
+export type ElevenLabsVoice = 'child' | 'adult';
+
+export async function speakWithElevenLabsVoice(text: string, voice: ElevenLabsVoice) {
   const requestId = activeRequestId + 1;
   activeRequestId = requestId;
   activeAudio?.pause();
   activeAudio = null;
 
   const { data, error } = await supabase.functions.invoke('tts', {
-    body: { text },
+    body: { text, voice },
   });
   if (error) throw new Error(error.message);
 

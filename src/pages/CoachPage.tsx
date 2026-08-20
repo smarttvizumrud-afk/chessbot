@@ -4,7 +4,7 @@ import { askCoach, type CoachMessage } from '../lib/aiCoach';
 import { NotEnoughCreditsError } from '../lib/credits';
 import { t } from '../lib/i18n';
 import { supabase } from '../lib/supabase';
-import { speakWithChildVoice } from '../lib/tts';
+import { speakWithElevenLabsVoice, type ElevenLabsVoice } from '../lib/tts';
 import type { Lang } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
 import { ageFromBirthDate, readOnboardingData, type InterfaceMode } from '../lib/userOnboarding';
@@ -46,11 +46,6 @@ function CoachContent({ lang }: { lang: Lang }) {
       if (metadata.interfaceMode) setInterfaceMode(metadata.interfaceMode);
       if (metadata.birthDate) setUserAge(ageFromBirthDate(metadata.birthDate) ?? undefined);
     });
-  }, []);
-
-  useEffect(() => {
-    if (!canSpeak()) return;
-    window.speechSynthesis.getVoices();
   }, []);
 
   useEffect(() => {
@@ -98,7 +93,7 @@ function CoachContent({ lang }: { lang: Lang }) {
     setSpeechNotice('');
     setSpeechBusy(true);
     try {
-      const result = await speak(text, lang, userAge, interfaceMode);
+      const result = await speak(text, interfaceMode);
       if (result === 'elevenlabs-unavailable') setSpeechNotice(childVoiceErrorText(lang));
     } finally {
       speechBusyRef.current = false;
@@ -132,7 +127,7 @@ function CoachContent({ lang }: { lang: Lang }) {
               <article className={`chat-message ${message.role}`} key={`${message.role}-${index}`}>
                 <span>
                   {message.role === 'user' ? t(lang, 'you') : t(lang, 'coach')}
-                  {message.role === 'assistant' && canSpeak(interfaceMode) && (
+                  {message.role === 'assistant' && canSpeak() && (
                     <button className="speak-button" type="button" onClick={() => void playAnswer(message.text)} disabled={speechBusy} aria-label="Speak answer">
                       🔊
                     </button>
@@ -240,22 +235,22 @@ function childVoiceErrorText(lang: Lang) {
   return 'Голос ElevenLabs сейчас недоступен. Попробуй ещё раз позже.';
 }
 
-function canSpeak(interfaceMode?: InterfaceMode) {
-  if (interfaceMode === 'child') {
-    return typeof window !== 'undefined'
-      && ('Audio' in window || ('speechSynthesis' in window && 'SpeechSynthesisUtterance' in window));
-  }
-  return typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+function canSpeak() {
+  return typeof window !== 'undefined' && 'Audio' in window;
 }
 
-async function speak(text: string, lang: Lang, userAge: number | undefined, interfaceMode: InterfaceMode) {
-  if (!canSpeak(interfaceMode)) return 'unavailable';
+function elevenLabsVoice(interfaceMode: InterfaceMode): ElevenLabsVoice {
+  return interfaceMode === 'child' ? 'child' : 'adult';
+}
+
+async function speak(text: string, interfaceMode: InterfaceMode) {
+  if (!canSpeak()) return 'unavailable';
   const cleanText = cleanSpeechText(text);
-  const isChildMode = interfaceMode === 'child';
-  if (isChildMode) {
+  const voice = elevenLabsVoice(interfaceMode);
+  if (voice === 'child') {
     if (Date.now() >= childVoiceUnavailableUntil) {
       try {
-        await speakWithChildVoice(cleanText);
+        await speakWithElevenLabsVoice(cleanText, voice);
         return 'elevenlabs';
       } catch (error) {
         childVoiceUnavailableUntil = Date.now() + 5 * 60 * 1_000;
@@ -265,100 +260,8 @@ async function speak(text: string, lang: Lang, userAge: number | undefined, inte
     return 'elevenlabs-unavailable';
   }
 
-  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return 'unavailable';
-  window.speechSynthesis.cancel();
-  const voice = await bestVoice(lang);
-  const voiceStyle = speechStyle(userAge);
-  const chunks = speechChunks(cleanText);
-  if (!chunks.length) return 'unavailable';
-  await new Promise<void>((resolve) => {
-    let completed = 0;
-    const finishChunk = () => {
-      completed += 1;
-      if (completed >= chunks.length) resolve();
-    };
-    chunks.forEach((chunk) => {
-      const utterance = new SpeechSynthesisUtterance(chunk);
-      utterance.lang = speechLang(lang);
-      utterance.volume = 1;
-      utterance.rate = voiceStyle.rate;
-      utterance.pitch = voiceStyle.pitch;
-      if (voice) utterance.voice = voice;
-      utterance.onend = finishChunk;
-      utterance.onerror = finishChunk;
-      window.speechSynthesis.speak(utterance);
-    });
-  });
-  return 'browser';
-}
-
-function speechStyle(userAge?: number) {
-  if (typeof userAge !== 'number') return { rate: 0.96, pitch: 1 };
-  if (userAge < 12) return { rate: 0.9, pitch: 1.08 };
-  if (userAge <= 15) return { rate: 0.98, pitch: 1.02 };
-  if (userAge <= 18) return { rate: 1.02, pitch: 0.98 };
-  return { rate: 0.96, pitch: 0.96 };
-}
-
-async function bestVoice(lang: Lang) {
-  const voices = await loadVoices();
-  const prefix = speechLang(lang).slice(0, 2).toLowerCase();
-  const matching = voices.filter((voice) => voice.lang.toLowerCase().startsWith(prefix));
-  return matching.sort((left, right) => voiceScore(right) - voiceScore(left))[0]
-    ?? voices.find((voice) => voice.default)
-    ?? matching[0]
-    ?? null;
-}
-
-function loadVoices() {
-  const voices = window.speechSynthesis.getVoices();
-  if (voices.length) return Promise.resolve(voices);
-
-  return new Promise<SpeechSynthesisVoice[]>((resolve) => {
-    const timer = window.setTimeout(() => resolve(window.speechSynthesis.getVoices()), 800);
-    window.speechSynthesis.onvoiceschanged = () => {
-      window.clearTimeout(timer);
-      resolve(window.speechSynthesis.getVoices());
-    };
-  });
-}
-
-function voiceScore(voice: SpeechSynthesisVoice) {
-  const name = voice.name.toLowerCase();
-  let score = voice.default ? 4 : 0;
-  if (name.includes('natural')) score += 8;
-  if (name.includes('neural')) score += 8;
-  if (name.includes('online')) score += 5;
-  if (name.includes('google')) score += 5;
-  if (name.includes('microsoft')) score += 5;
-  if (name.includes('apple')) score += 4;
-  if (name.includes('yandex')) score += 4;
-  if (name.includes('premium')) score += 3;
-  return score;
-}
-
-function speechChunks(text: string) {
-  return cleanSpeechText(text)
-    .split(/(?<=[.!?])\s+/)
-    .flatMap((sentence) => splitLongSpeech(sentence, 180))
-    .filter(Boolean);
-}
-
-function splitLongSpeech(text: string, maxLength: number) {
-  if (text.length <= maxLength) return [text];
-  const chunks: string[] = [];
-  let current = '';
-  text.split(/,\s+|\s+-\s+/).forEach((part) => {
-    const next = current ? `${current}, ${part}` : part;
-    if (next.length > maxLength && current) {
-      chunks.push(current);
-      current = part;
-    } else {
-      current = next;
-    }
-  });
-  if (current) chunks.push(current);
-  return chunks;
+  await speakWithElevenLabsVoice(cleanText, voice);
+  return 'elevenlabs';
 }
 
 function cleanSpeechText(text: string) {
@@ -368,12 +271,6 @@ function cleanSpeechText(text: string) {
     .replace(/\bAI\b/g, 'эй ай')
     .replace(/[^\p{L}\p{N}\s.,!?;:()\-+/%]/gu, '')
     .trim();
-}
-
-function speechLang(lang: Lang) {
-  if (lang === 'en') return 'en-US';
-  if (lang === 'kk') return 'kk-KZ';
-  return 'ru-RU';
 }
 
 function welcomeMessage(lang: Lang): CoachMessage {

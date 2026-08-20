@@ -1,5 +1,6 @@
 const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
 const CHILD_VOICE_ID = Deno.env.get('ELEVENLABS_CHILD_VOICE_ID') ?? 'KGm9JQce2gqC2w6y4q3p';
+const ADULT_VOICE_ID = Deno.env.get('ELEVENLABS_ADULT_VOICE_ID') ?? CHILD_VOICE_ID;
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -20,13 +21,14 @@ Deno.serve(async (req) => {
   try {
     if (!ELEVENLABS_API_KEY) return json({ error: 'ElevenLabs key is not configured.' }, 503);
 
-    const body = (await req.json()) as { text?: unknown };
+    const body = (await req.json()) as { text?: unknown; voice?: unknown };
     const text = typeof body.text === 'string' ? body.text.trim() : '';
+    const voiceId = body.voice === 'adult' ? ADULT_VOICE_ID : CHILD_VOICE_ID;
     if (!text) return json({ error: 'Text is required.' }, 400);
     if (text.length > 2_000) return json({ error: 'Text is too long.' }, 400);
 
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${CHILD_VOICE_ID}?output_format=mp3_44100_128`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
       {
         method: 'POST',
         headers: {
