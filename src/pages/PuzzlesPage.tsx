@@ -18,14 +18,14 @@ const text: Record<Lang, {
   generated: string;
 }> = {
   ru: {
-    title: 'Chess puzzles',
-    empty: 'No puzzles yet. Import and analyse games first.',
-    solve: 'Solve',
-    source: 'Source',
-    rating: 'Rating',
-    generate: 'Generate from my mistakes',
-    generating: 'Generating...',
-    generated: 'Generated puzzles from your game mistakes.',
+    title: 'Шахматные задачи',
+    empty: 'Задач пока нет. Сначала загрузи и проанализируй партии.',
+    solve: 'Решить',
+    source: 'Источник',
+    rating: 'Рейтинг',
+    generate: 'Создать из моих ошибок',
+    generating: 'Создаю...',
+    generated: 'Задачи по ошибкам из твоих партий созданы.',
   },
   en: {
     title: 'Chess puzzles',
@@ -38,14 +38,14 @@ const text: Record<Lang, {
     generated: 'Generated puzzles from your game mistakes.',
   },
   kk: {
-    title: 'Chess puzzles',
-    empty: 'No puzzles yet. Import and analyse games first.',
-    solve: 'Solve',
-    source: 'Source',
-    rating: 'Rating',
-    generate: 'Generate from my mistakes',
-    generating: 'Generating...',
-    generated: 'Generated puzzles from your game mistakes.',
+    title: 'Шахмат есептері',
+    empty: 'Әзірге есеп жоқ. Алдымен партияларды жүктеп, талдау жаса.',
+    solve: 'Шешу',
+    source: 'Дереккөз',
+    rating: 'Рейтинг',
+    generate: 'Қателерімнен жасау',
+    generating: 'Жасалып жатыр...',
+    generated: 'Партияларыңдағы қателерден есептер жасалды.',
   },
 };
 
@@ -83,7 +83,7 @@ function PuzzlesContent({ lang }: { lang: Lang }) {
       setMessage(labels.generated);
     } catch (error) {
       console.warn('Could not generate puzzles from mistakes.', error);
-      setMessage('Could not generate puzzles from saved analyses.');
+      setMessage(errorText(lang));
     } finally {
       setBusy(false);
     }
@@ -108,8 +108,8 @@ function PuzzlesContent({ lang }: { lang: Lang }) {
         {puzzles.map((puzzle) => (
           <article className="table-row" key={puzzle.id}>
             <div>
-              <strong>{puzzle.theme}</strong>
-              <p>{labels.source}: {puzzle.sourceMove} · {puzzle.sideToMove}</p>
+              <strong>{themeText(puzzle.theme, lang)}</strong>
+              <p>{labels.source}: {puzzle.sourceMove} · {sideText(puzzle.sideToMove, lang)}</p>
             </div>
             <span>{labels.rating}: {puzzle.rating}</span>
             <Link href={`/puzzle/${puzzle.id}`} className="account-link">{labels.solve}</Link>
@@ -118,4 +118,31 @@ function PuzzlesContent({ lang }: { lang: Lang }) {
       </div>
     </section>
   );
+}
+
+function errorText(lang: Lang) {
+  if (lang === 'kk') return 'Сақталған талдаулардан есеп жасау мүмкін болмады.';
+  if (lang === 'ru') return 'Не удалось создать задачи из сохранённых анализов.';
+  return 'Could not generate puzzles from saved analyses.';
+}
+
+function themeText(theme: string, lang: Lang) {
+  const themes: Record<string, Record<Lang, string>> = {
+    'tactical vision': { ru: 'тактическое зрение', en: 'tactical vision', kk: 'тактикалық көру' },
+    'win material': { ru: 'выигрыш материала', en: 'win material', kk: 'материал ұту' },
+    'forcing moves': { ru: 'форсированные ходы', en: 'forcing moves', kk: 'мәжбүрлейтін жүрістер' },
+  };
+  return themes[theme]?.[lang] ?? theme;
+}
+
+function sideText(side: string, lang: Lang) {
+  if (side === 'white') {
+    if (lang === 'kk') return 'ақтар';
+    if (lang === 'ru') return 'белые';
+  }
+  if (side === 'black') {
+    if (lang === 'kk') return 'қаралар';
+    if (lang === 'ru') return 'чёрные';
+  }
+  return side;
 }
