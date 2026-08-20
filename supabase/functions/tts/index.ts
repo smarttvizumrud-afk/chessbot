@@ -11,7 +11,10 @@ const KAZAKH_VOICE_ID =
   Deno.env.get('ELEVENLABS_PAP_VOICE_ID') ??
   Deno.env.get('ELEVENLABS_KAZAKH_VOICE_ID') ??
   'eCXtdAm4Y1qWFZvJePPF';
-const KAZAKH_FEMALE_VOICE_ID = Deno.env.get('ELEVENLABS_KAZAKH_FEMALE_VOICE_ID') ?? KAZAKH_VOICE_ID;
+const KAZAKH_FEMALE_VOICE_ID =
+  Deno.env.get('ELEVENLABS_MOM_VOICE_ID') ??
+  Deno.env.get('ELEVENLABS_KAZAKH_FEMALE_VOICE_ID') ??
+  KAZAKH_VOICE_ID;
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -38,23 +41,14 @@ Deno.serve(async (req) => {
     if (!text) return json({ error: 'Text is required.' }, 400);
     if (text.length > 2_000) return json({ error: 'Text is too long.' }, 400);
 
-    const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
-      {
-        method: 'POST',
-        headers: {
-          'xi-api-key': ELEVENLABS_API_KEY,
-          'Content-Type': 'application/json',
-          Accept: 'audio/mpeg',
-        },
-        body: JSON.stringify({
-          text,
-          model_id: modelIdFor(body.lang),
-          language_code: languageCodeFor(body.lang),
-          voice_settings: voiceSettingsFor(body.lang),
-        }),
-      },
-    );
+    const requestBody = {
+      text,
+      model_id: modelIdFor(body.lang),
+      language_code: languageCodeFor(body.lang),
+      voice_settings: voiceSettingsFor(body.lang),
+    };
+    const response = await elevenLabsSpeech(voiceId, requestBody, 'mp3_44100_192')
+      .then((result) => result.ok ? result : elevenLabsSpeech(voiceId, requestBody, 'mp3_44100_128'));
 
     if (!response.ok) {
       console.error('ElevenLabs request failed', response.status, await response.text());
@@ -86,19 +80,34 @@ function isFemaleVoice(voice: unknown) {
 function voiceSettingsFor(lang: unknown) {
   if (lang === 'kk') {
     return {
-      stability: 0.34,
-      similarity_boost: 0.9,
-      style: 0.58,
+      stability: 0.56,
+      similarity_boost: 0.84,
+      style: 0.18,
       use_speaker_boost: true,
     };
   }
 
   return {
-    stability: 0.38,
-    similarity_boost: 0.86,
-    style: 0.48,
+    stability: 0.5,
+    similarity_boost: 0.82,
+    style: 0.24,
     use_speaker_boost: true,
   };
+}
+
+function elevenLabsSpeech(voiceId: string, body: object, outputFormat: string) {
+  return fetch(
+    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=${outputFormat}`,
+    {
+      method: 'POST',
+      headers: {
+        'xi-api-key': ELEVENLABS_API_KEY ?? '',
+        'Content-Type': 'application/json',
+        Accept: 'audio/mpeg',
+      },
+      body: JSON.stringify(body),
+    },
+  );
 }
 
 function modelIdFor(lang: unknown) {
