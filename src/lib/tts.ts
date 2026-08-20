@@ -27,6 +27,7 @@ export async function speakWithChildVoice(text: string) {
 function playOnce(audio: HTMLAudioElement) {
   return new Promise<void>((resolve, reject) => {
     audio.onended = () => resolve();
+    audio.onpause = () => resolve();
     audio.onerror = () => reject(new Error('Could not play TTS audio.'));
     audio.play().catch(reject);
   });

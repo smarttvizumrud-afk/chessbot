@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AuthGate } from '../components/AuthGate';
 import { askCoach, type CoachMessage } from '../lib/aiCoach';
 import { NotEnoughCreditsError } from '../lib/credits';
@@ -36,6 +36,7 @@ function CoachContent({ lang }: { lang: Lang }) {
   const [speechNotice, setSpeechNotice] = useState('');
   const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>('student');
   const [userAge, setUserAge] = useState<number>();
+  const speechBusyRef = useRef(false);
   const activeChat = chats.find((chat) => chat.id === activeChatId) ?? chats[0] ?? createChat(lang);
   const messages = activeChat.messages;
 
@@ -92,13 +93,15 @@ function CoachContent({ lang }: { lang: Lang }) {
   }
 
   async function playAnswer(text: string) {
-    if (speechBusy) return;
+    if (speechBusyRef.current) return;
+    speechBusyRef.current = true;
     setSpeechNotice('');
     setSpeechBusy(true);
     try {
       const result = await speak(text, lang, userAge, interfaceMode);
       if (result === 'browser-fallback') setSpeechNotice(speechNoticeText(lang));
     } finally {
+      speechBusyRef.current = false;
       setSpeechBusy(false);
     }
   }
