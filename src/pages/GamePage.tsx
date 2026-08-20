@@ -203,14 +203,18 @@ function commentText(report: MoveReport, lang: Lang) {
 }
 
 function humanAdvice(report: MoveReport, lang: Lang) {
+  return naturalHumanAdvice(report, lang);
+}
+
+function naturalHumanAdvice(report: MoveReport, lang: Lang) {
   if (report.label === 'good') {
-    if (lang === 'en') return 'Nice move. Keep asking what your opponent wants next.';
-    if (lang === 'kk') return 'Жақсы жүріс. Енді қарсылас не істегісі келетінін тексер.';
-    return 'Хороший ход. Теперь просто проверь, что хочет соперник следующим ходом.';
+    if (lang === 'en') return 'Yeah, I like this move. It keeps your position steady and does not give away anything obvious. Now take one quick look at what your opponent may want next.';
+    if (lang === 'kk') return 'Ia, magan bul juris unaidy. Pozitsiyan turaqty, artyq eshtene berip turgan joq. Endi qarsylas kelesi ne isteui mumkin ekenin bir qarap al.';
+    return 'Да, мне нравится этот ход. Он спокойный: ты ничего лишнего не отдаёшь и держишь позицию под контролем. Теперь просто посмотри, что соперник может захотеть следующим ходом.';
   }
-  if (lang === 'en') return `Pause here. ${report.san} missed ${report.bestMove}. First check checks, captures, and threats.`;
-  if (lang === 'kk') return `Осы жерде тоқта. ${report.san} орнына ${report.bestMove} жақсы еді. Алдымен шах, алу және қауіптерді тексер.`;
-  return `Вот здесь остановись. Вместо ${report.san} сильнее было ${report.bestMove}. Сначала проверь шахи, взятия и угрозы.`;
+  if (lang === 'en') return `Here I would slow down a bit. After ${report.san}, your opponent gets a chance. ${report.bestMove} was cleaner. Before moving, quickly check checks, captures, and threats.`;
+  if (lang === 'kk') return `Bul jerde salgynqandyraq oinaigan durys. ${report.san} keyin qarsylasta mumkinshilik payda bolady. ${report.bestMove} tazalau edi. Juris jasamas buryn shah, alu jane qauipterdi tekser.`;
+  return `Вот тут я бы чуть притормозил. После ${report.san} у соперника появляется шанс. Аккуратнее было ${report.bestMove}. Перед ходом быстро проверь шахи, взятия и угрозы.`;
 }
 
 function idleAdvice(persona: ReturnType<typeof coachPersona>, lang: Lang) {
