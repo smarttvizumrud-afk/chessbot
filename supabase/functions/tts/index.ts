@@ -49,12 +49,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           text,
           model_id: 'eleven_multilingual_v2',
-          voice_settings: {
-            stability: 0.48,
-            similarity_boost: 0.72,
-            style: 0.22,
-            use_speaker_boost: false,
-          },
+          voice_settings: voiceSettingsFor(body.lang),
         }),
       },
     );
@@ -80,6 +75,24 @@ function voiceIdFor(voice: unknown, lang: unknown) {
   if (voice === 'school') return SCHOOL_MALE_VOICE_ID;
   if (voice === 'teen') return TEEN_VOICE_ID;
   return CHILD_VOICE_ID;
+}
+
+function voiceSettingsFor(lang: unknown) {
+  if (lang === 'kk') {
+    return {
+      stability: 0.34,
+      similarity_boost: 0.9,
+      style: 0.58,
+      use_speaker_boost: true,
+    };
+  }
+
+  return {
+    stability: 0.38,
+    similarity_boost: 0.86,
+    style: 0.48,
+    use_speaker_boost: true,
+  };
 }
 
 function base64(buffer: ArrayBuffer) {
