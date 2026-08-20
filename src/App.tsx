@@ -17,8 +17,10 @@ import { TrainingPage } from './pages/TrainingPage';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
 import { readOnboardingData, type InterfaceMode } from './lib/userOnboarding';
 
+const langStorageKey = 'chesa_lang';
+
 export default function App() {
-  const [lang, setLang] = useState<Lang>('ru');
+  const [lang, setLang] = useState<Lang>(() => storedLang() ?? 'ru');
   const [theme, setTheme] = useState<AppTheme>('dark');
   const [boardStyle, setBoardStyle] = useState<BoardStyle>('classic');
   const [pieceStyle, setPieceStyle] = useState<PieceStyle>('classic');
@@ -29,13 +31,13 @@ export default function App() {
     supabase.auth.getSession().then(({ data }) => {
       const metadata = readOnboardingData(data.session?.user.user_metadata);
       const preferredLang = metadata.preferredLang;
-      if (preferredLang) setLang(preferredLang);
+      if (preferredLang && !storedLang()) setLang(preferredLang);
       if (data.session) setInterfaceMode(metadata.interfaceMode ?? 'main');
     });
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       const metadata = readOnboardingData(session?.user.user_metadata);
       const preferredLang = metadata.preferredLang;
-      if (preferredLang) setLang(preferredLang);
+      if (preferredLang && !storedLang()) setLang(preferredLang);
       setInterfaceMode(session ? metadata.interfaceMode ?? 'main' : 'main');
     });
     return () => data.subscription.unsubscribe();
@@ -43,6 +45,13 @@ export default function App() {
 
   function changeLang(nextLang: Lang) {
     setLang(nextLang);
+    saveLang(nextLang);
+    if (isSupabaseConfigured) {
+      supabase.auth.updateUser({ data: { preferred_lang: nextLang } })
+        .then(({ error }) => {
+          if (error) console.warn('Could not save language preference.', error);
+        });
+    }
   }
 
   return (
@@ -61,14 +70,14 @@ export default function App() {
         <Route path="/">
           {() => hasAuthCallbackParams()
             ? <AuthCallbackPage lang={lang} />
-            : <HomePage lang={lang} interfaceMode={interfaceMode} onLangChange={setLang} />}
+            : <HomePage lang={lang} interfaceMode={interfaceMode} onLangChange={changeLang} />}
         </Route>
-        <Route path="/auth">{() => <AuthPage lang={lang} onLangChange={setLang} />}</Route>
+        <Route path="/auth">{() => <AuthPage lang={lang} onLangChange={changeLang} />}</Route>
         <Route path="/auth/callback">{() => <AuthCallbackPage lang={lang} />}</Route>
         <Route path="/openings">{() => <OpeningsPage lang={lang} boardStyle={boardStyle} pieceStyle={pieceStyle} />}</Route>
         <Route path="/puzzles">{() => <PuzzlesPage lang={lang} />}</Route>
         <Route path="/endgames">{() => <EndgamesPage lang={lang} />}</Route>
-        <Route path="/pricing">{() => <PricingPage lang={lang} onLangChange={setLang} />}</Route>
+        <Route path="/pricing">{() => <PricingPage lang={lang} onLangChange={changeLang} />}</Route>
         <Route path="/training">{() => <TrainingPage lang={lang} />}</Route>
         <Route path="/coach">{() => <CoachPage lang={lang} />}</Route>
         <Route path="/game/:id">
@@ -81,6 +90,21 @@ export default function App() {
       </Switch>
     </Layout>
   );
+}
+
+function storedLang() {
+  if (typeof window === 'undefined') return null;
+  const value = window.localStorage.getItem(langStorageKey);
+  return isLang(value) ? value : null;
+}
+
+function saveLang(lang: Lang) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(langStorageKey, lang);
+}
+
+function isLang(value: unknown): value is Lang {
+  return value === 'ru' || value === 'en' || value === 'kk';
 }
 
 function hasAuthCallbackParams() {
