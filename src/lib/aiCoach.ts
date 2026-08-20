@@ -1,8 +1,9 @@
 import { supabase } from './supabase';
 import type { Lang, StoredAnalysis, StoredGame } from './types';
+import { coachPersona } from './coachPersona';
 import { combinedPlan, dashboardStats, openingStats } from './insights';
 import { localizeInsight } from './i18n';
-import type { InterfaceMode } from './userOnboarding';
+import type { Gender, InterfaceMode } from './userOnboarding';
 import { spendCredits } from './credits';
 
 export type CoachMessage = {
@@ -24,6 +25,7 @@ export async function askCoach(
   history: CoachMessage[] = [],
   interfaceMode: InterfaceMode = 'main',
   userAge?: number,
+  gender: Gender = 'male',
 ) {
   await spendCredits(1, 'ai_coach', { feature: 'coach_request', userAge });
   const context = buildContext(games, analyses);
@@ -31,6 +33,7 @@ export async function askCoach(
     `You are a personal chess coach powered by Gemini. Answer in ${languageName[lang]}.`,
     'Use only the supplied player data, Stockfish results, openings, weaknesses, and chat history.',
     coachTone(interfaceMode, userAge),
+    coachPersonaTone(interfaceMode, gender, lang, userAge),
   ].join(' ');
   const prompt = trimPrompt(`${context}\n\nChat history:\n${formatHistory(history)}\n\nUser question: ${question}`);
   const { data, error } = await supabase.functions.invoke('ai', { body: { prompt, system } });
@@ -61,6 +64,16 @@ function coachTone(interfaceMode: InterfaceMode, userAge?: number) {
   }
 
   return 'Be concrete, kind, and concise.';
+}
+
+function coachPersonaTone(interfaceMode: InterfaceMode, gender: Gender, lang: Lang, userAge?: number) {
+  const persona = coachPersona(interfaceMode, gender, lang, userAge);
+  return [
+    `Your visible coach persona is ${persona.name}, age ${persona.age}.`,
+    `Persona role: ${persona.role}.`,
+    'Explain like a real human coach: short, warm, direct, and practical.',
+    'Avoid robotic wording, long engine dumps, and unexplained chess jargon.',
+  ].join(' ');
 }
 
 function ageSentence(userAge: number | undefined, fallback: string) {

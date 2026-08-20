@@ -2,9 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { AuthGate } from '../components/AuthGate';
 import { AnalysisBoard } from '../components/AnalysisBoard';
 import { MoveTable } from '../components/MoveTable';
+import { coachPersona, personaAdvice } from '../lib/coachPersona';
 import { labelText, localizeInsight, t } from '../lib/i18n';
 import { fenAfterPly, getMovesWithFens } from '../lib/pgn';
+import { supabase } from '../lib/supabase';
 import type { BoardStyle, Lang, MoveReport, PieceStyle, PlayerColor } from '../lib/types';
+import { ageFromBirthDate, readOnboardingData, type Gender, type InterfaceMode } from '../lib/userOnboarding';
 import { useChessData } from '../lib/useChessData';
 
 export function GamePage({
@@ -40,9 +43,21 @@ function GameContent({
   const game = games.find((item) => item.id === id);
   const analysis = analyses.find((item) => item.gameId === id);
   const [ply, setPly] = useState(0);
+  const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>('main');
+  const [gender, setGender] = useState<Gender>('male');
+  const [userAge, setUserAge] = useState<number>();
   const report = analysis?.moveReports.find((item) => item.ply === ply);
   const totalPly = useMemo(() => game ? getMovesWithFens(game.pgn).length : 0, [game]);
   const fen = useMemo(() => game ? fenAfterPly(game.pgn, ply) : '', [game, ply]);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const metadata = readOnboardingData(data.user?.user_metadata);
+      if (metadata.interfaceMode) setInterfaceMode(metadata.interfaceMode);
+      if (metadata.gender) setGender(metadata.gender);
+      if (metadata.birthDate) setUserAge(ageFromBirthDate(metadata.birthDate) ?? undefined);
+    });
+  }, []);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -69,9 +84,48 @@ function GameContent({
         <h1>{t(lang, 'gameAnalysis')}</h1>
         <p>{game.username} {t(lang, 'versus')} {game.opponent} · {analysis.accuracy}% {t(lang, 'accuracy').toLowerCase()}</p>
         <MoveTable reports={analysis.moveReports} selectedPly={ply} lang={lang} onSelect={setPly} />
-        {report && <MoveComment report={report} playerColor={game.color} lang={lang} />}
+        <AnalysisCoachCard
+          report={report}
+          playerColor={game.color}
+          lang={lang}
+          interfaceMode={interfaceMode}
+          gender={gender}
+          userAge={userAge}
+        />
       </section>
     </div>
+  );
+}
+
+function AnalysisCoachCard({
+  report,
+  playerColor,
+  lang,
+  interfaceMode,
+  gender,
+  userAge,
+}: {
+  report?: MoveReport;
+  playerColor: PlayerColor;
+  lang: Lang;
+  interfaceMode: InterfaceMode;
+  gender: Gender;
+  userAge?: number;
+}) {
+  const persona = coachPersona(interfaceMode, gender, lang, userAge);
+  const advice = report
+    ? personaAdvice(persona, lang, humanAdvice(report, lang))
+    : idleAdvice(persona, lang);
+
+  return (
+    <article className="persona-advice">
+      <span className={`coach-avatar ${gender}`}>{persona.icon}</span>
+      <div>
+        <strong>{persona.name}</strong>
+        <p>{advice}</p>
+        {report && <MoveComment report={report} playerColor={playerColor} lang={lang} />}
+      </div>
+    </article>
   );
 }
 
@@ -95,6 +149,23 @@ function MoveComment({ report, playerColor, lang }: {
 
 function commentText(report: MoveReport, lang: Lang) {
   return `${t(lang, 'evalChanged')} ${Math.round(report.loss)} ${t(lang, 'centipawns')}. ${explainReport(report, lang)}`;
+}
+
+function humanAdvice(report: MoveReport, lang: Lang) {
+  if (report.label === 'good') {
+    if (lang === 'en') return 'Nice move. Keep asking what your opponent wants next.';
+    if (lang === 'kk') return 'Жақсы жүріс. Енді қарсылас не істегісі келетінін тексер.';
+    return 'Хороший ход. Теперь просто проверь, что хочет соперник следующим ходом.';
+  }
+  if (lang === 'en') return `Pause here. ${report.san} missed ${report.bestMove}. First check checks, captures, and threats.`;
+  if (lang === 'kk') return `Осы жерде тоқта. ${report.san} орнына ${report.bestMove} жақсы еді. Алдымен шах, алу және қауіптерді тексер.`;
+  return `Вот здесь остановись. Вместо ${report.san} сильнее было ${report.bestMove}. Сначала проверь шахи, взятия и угрозы.`;
+}
+
+function idleAdvice(persona: ReturnType<typeof coachPersona>, lang: Lang) {
+  if (lang === 'en') return personaAdvice(persona, lang, 'Pick a move from the table, and I will explain it in simple words.');
+  if (lang === 'kk') return personaAdvice(persona, lang, 'Кестеден жүрісті таңда, мен оны қарапайым тілмен түсіндіремін.');
+  return personaAdvice(persona, lang, 'Выбери ход в таблице, и я объясню его простыми словами.');
 }
 
 function explainReport(report: MoveReport, lang: Lang) {

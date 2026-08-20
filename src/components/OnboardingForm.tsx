@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { interfaceModeForBirthDate, readOnboardingData } from '../lib/userOnboarding';
+import { interfaceModeForBirthDate, readOnboardingData, type Gender } from '../lib/userOnboarding';
 import type { Lang } from '../lib/types';
 
 type Props = {
@@ -15,6 +15,7 @@ type Labels = {
   intro: string;
   nickname: string;
   birthDate: string;
+  gender: string;
   language: string;
   save: string;
   error: string;
@@ -26,6 +27,7 @@ const text: Record<Lang, Labels> = {
     intro: 'После регистрации укажи ник, дату рождения и язык интерфейса.',
     nickname: 'Ник',
     birthDate: 'Дата рождения',
+    gender: 'Пол тренера',
     language: 'Язык',
     save: 'Сохранить',
     error: 'Не получилось сохранить данные. Попробуй еще раз.',
@@ -35,6 +37,7 @@ const text: Record<Lang, Labels> = {
     intro: 'After registration, add your nickname, birth date, and interface language.',
     nickname: 'Nickname',
     birthDate: 'Birth date',
+    gender: 'Coach gender',
     language: 'Language',
     save: 'Save',
     error: 'Could not save the data. Try again.',
@@ -44,6 +47,7 @@ const text: Record<Lang, Labels> = {
     intro: 'Тіркелгеннен кейін ник, туған күніңді және интерфейс тілін таңда.',
     nickname: 'Ник',
     birthDate: 'Туған күн',
+    gender: 'Жаттықтырушы жынысы',
     language: 'Тіл',
     save: 'Сақтау',
     error: 'Деректер сақталмады. Қайта көр.',
@@ -55,6 +59,7 @@ export function OnboardingForm({ lang, metadata, onComplete, onLangChange }: Pro
   const initial = readOnboardingData(metadata);
   const [displayName, setDisplayName] = useState(initial.displayName ?? '');
   const [birthDate, setBirthDate] = useState(initial.birthDate ?? '');
+  const [gender, setGender] = useState<Gender>(initial.gender ?? 'male');
   const [preferredLang, setPreferredLang] = useState<Lang>(initial.preferredLang ?? lang);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
@@ -72,6 +77,7 @@ export function OnboardingForm({ lang, metadata, onComplete, onLangChange }: Pro
         display_name: cleanName,
         full_name: cleanName,
         birth_date: birthDate,
+        gender,
         preferred_lang: preferredLang,
         is_adult: interfaceMode === 'main',
         interface_mode: interfaceMode,
@@ -108,6 +114,13 @@ export function OnboardingForm({ lang, metadata, onComplete, onLangChange }: Pro
         <label>
           <span>{labels.birthDate}</span>
           <input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} required />
+        </label>
+        <label>
+          <span>{labels.gender}</span>
+          <select value={gender} onChange={(event) => setGender(event.target.value as Gender)}>
+            <option value="male">Мальчик / парень</option>
+            <option value="female">Девочка / девушка</option>
+          </select>
         </label>
         <label>
           <span>{labels.language}</span>

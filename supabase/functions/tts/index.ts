@@ -3,6 +3,9 @@ const CHILD_VOICE_ID = Deno.env.get('ELEVENLABS_CHILD_VOICE_ID') ?? 'KGm9JQce2gq
 const SCHOOL_VOICE_ID = Deno.env.get('ELEVENLABS_SCHOOL_VOICE_ID') ?? CHILD_VOICE_ID;
 const ADULT_VOICE_ID = Deno.env.get('ELEVENLABS_ADULT_VOICE_ID') ?? CHILD_VOICE_ID;
 const TEEN_VOICE_ID = Deno.env.get('ELEVENLABS_TEEN_VOICE_ID') ?? ADULT_VOICE_ID;
+const CHILD_FEMALE_VOICE_ID = Deno.env.get('ELEVENLABS_CHILD_FEMALE_VOICE_ID') ?? CHILD_VOICE_ID;
+const SCHOOL_FEMALE_VOICE_ID = Deno.env.get('ELEVENLABS_SCHOOL_FEMALE_VOICE_ID') ?? SCHOOL_VOICE_ID;
+const TEEN_FEMALE_VOICE_ID = Deno.env.get('ELEVENLABS_TEEN_FEMALE_VOICE_ID') ?? TEEN_VOICE_ID;
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -65,6 +68,9 @@ Deno.serve(async (req) => {
 
 function voiceIdFor(voice: unknown) {
   if (voice === 'adult') return TEEN_VOICE_ID;
+  if (voice === 'child_female') return CHILD_FEMALE_VOICE_ID;
+  if (voice === 'school_female') return SCHOOL_FEMALE_VOICE_ID;
+  if (voice === 'teen_female') return TEEN_FEMALE_VOICE_ID;
   if (voice === 'school') return SCHOOL_VOICE_ID;
   if (voice === 'teen') return TEEN_VOICE_ID;
   return CHILD_VOICE_ID;

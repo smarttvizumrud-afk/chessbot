@@ -3,11 +3,12 @@ import { AuthGate } from '../components/AuthGate';
 import { askCoach, type CoachMessage } from '../lib/aiCoach';
 import { NotEnoughCreditsError } from '../lib/credits';
 import { t } from '../lib/i18n';
+import { coachPersona } from '../lib/coachPersona';
 import { supabase } from '../lib/supabase';
 import { speakWithElevenLabsVoice, type ElevenLabsVoice } from '../lib/tts';
 import type { Lang } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
-import { ageFromBirthDate, readOnboardingData, type InterfaceMode } from '../lib/userOnboarding';
+import { ageFromBirthDate, readOnboardingData, type Gender, type InterfaceMode } from '../lib/userOnboarding';
 
 type CoachChat = {
   id: string;
@@ -36,6 +37,7 @@ function CoachContent({ lang }: { lang: Lang }) {
   const [speechNotice, setSpeechNotice] = useState('');
   const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>('main');
   const [userAge, setUserAge] = useState<number>();
+  const [gender, setGender] = useState<Gender>('male');
   const speechBusyRef = useRef(false);
   const activeChat = chats.find((chat) => chat.id === activeChatId) ?? chats[0] ?? createChat(lang);
   const messages = activeChat.messages;
@@ -45,6 +47,7 @@ function CoachContent({ lang }: { lang: Lang }) {
       const rawMetadata = data.user?.user_metadata;
       const metadata = readOnboardingData(rawMetadata);
       if (metadata.interfaceMode) setInterfaceMode(metadata.interfaceMode);
+      if (metadata.gender) setGender(metadata.gender);
       const age = metadata.birthDate ? ageFromBirthDate(metadata.birthDate) : null;
       setUserAge(age ?? undefined);
     });
@@ -82,7 +85,7 @@ function CoachContent({ lang }: { lang: Lang }) {
     updateActiveChat(nextMessages);
     setQuestion('');
     setBusy(true);
-    const answer = await askCoachAnswer(text, lang, games, analyses, nextMessages, interfaceMode, userAge);
+    const answer = await askCoachAnswer(text, lang, games, analyses, nextMessages, interfaceMode, userAge, gender);
     const assistantMessages = messages.filter((message) => message.role === 'assistant');
     const lastAnswer = assistantMessages[assistantMessages.length - 1]?.text;
     updateActiveChat(lastAnswer === answer ? nextMessages : [...nextMessages, { role: 'assistant', text: answer }]);
@@ -95,7 +98,7 @@ function CoachContent({ lang }: { lang: Lang }) {
     setSpeechNotice('');
     setSpeechBusy(true);
     try {
-      const result = await speak(text, interfaceMode);
+      const result = await speak(text, interfaceMode, gender);
       if (result === 'elevenlabs-unavailable') setSpeechNotice(childVoiceErrorText(lang));
     } finally {
       speechBusyRef.current = false;
@@ -109,6 +112,7 @@ function CoachContent({ lang }: { lang: Lang }) {
         <h1>{t(lang, 'coach')}</h1>
         <button type="button" onClick={startChat}>{chatCopy(lang).newChat}</button>
       </div>
+      <CoachPersonaBadge lang={lang} interfaceMode={interfaceMode} gender={gender} userAge={userAge} />
       <div className="coach-chat-layout">
         <aside className="chat-list" aria-label={chatCopy(lang).chats}>
           <strong>{chatCopy(lang).chats}</strong>
@@ -216,9 +220,10 @@ async function askCoachAnswer(
   messages: CoachMessage[],
   interfaceMode: InterfaceMode,
   userAge?: number,
+  gender: Gender = 'male',
 ) {
   try {
-    return await askCoach(text, lang, games, analyses, messages, interfaceMode, userAge);
+    return await askCoach(text, lang, games, analyses, messages, interfaceMode, userAge, gender);
   } catch (error) {
     if (error instanceof NotEnoughCreditsError) return noCreditsText(lang);
     throw error;
@@ -241,17 +246,41 @@ function canSpeak() {
   return typeof window !== 'undefined' && 'Audio' in window;
 }
 
-function elevenLabsVoice(interfaceMode: InterfaceMode): ElevenLabsVoice {
-  if (interfaceMode === 'child') return 'child';
-  if (interfaceMode === 'preschool') return 'school';
-  return 'teen';
+function CoachPersonaBadge({
+  lang,
+  interfaceMode,
+  gender,
+  userAge,
+}: {
+  lang: Lang;
+  interfaceMode: InterfaceMode;
+  gender: Gender;
+  userAge?: number;
+}) {
+  const persona = coachPersona(interfaceMode, gender, lang, userAge);
+  return (
+    <div className="coach-persona">
+      <span className={`coach-avatar ${gender}`}>{persona.icon}</span>
+      <div>
+        <strong>{persona.name}</strong>
+        <p>{persona.role}. {persona.tone}</p>
+      </div>
+    </div>
+  );
 }
 
-async function speak(text: string, interfaceMode: InterfaceMode) {
+function elevenLabsVoice(interfaceMode: InterfaceMode, gender: Gender): ElevenLabsVoice {
+  const female = gender === 'female';
+  if (interfaceMode === 'child') return female ? 'child_female' : 'child';
+  if (interfaceMode === 'preschool') return female ? 'school_female' : 'school';
+  return female ? 'teen_female' : 'teen';
+}
+
+async function speak(text: string, interfaceMode: InterfaceMode, gender: Gender) {
   if (!canSpeak()) return 'unavailable';
   const cleanText = cleanSpeechText(text);
-  const voice = elevenLabsVoice(interfaceMode);
-  if (voice === 'child') {
+  const voice = elevenLabsVoice(interfaceMode, gender);
+  if (voice === 'child' || voice === 'child_female') {
     if (Date.now() >= childVoiceUnavailableUntil) {
       try {
         await speakWithElevenLabsVoice(cleanText, voice);

@@ -4,11 +4,13 @@ export type OnboardingData = {
   displayName: string;
   birthDate: string;
   preferredLang: Lang;
+  gender: Gender;
   isAdult: boolean;
   interfaceMode: InterfaceMode;
 };
 
 export type InterfaceMode = 'main' | 'student' | 'preschool' | 'child';
+export type Gender = 'male' | 'female';
 
 export function readOnboardingData(metadata: unknown): Partial<OnboardingData> {
   if (!metadata || typeof metadata !== 'object') return {};
@@ -16,6 +18,7 @@ export function readOnboardingData(metadata: unknown): Partial<OnboardingData> {
   const displayName = getDisplayName(values);
   const birthDate = typeof values.birth_date === 'string' ? values.birth_date : '';
   const preferredLang = isLang(values.preferred_lang) ? values.preferred_lang : undefined;
+  const gender = isGender(values.gender) ? values.gender : 'male';
   const interfaceMode = isValidBirthDate(birthDate)
     ? interfaceModeForBirthDate(birthDate)
     : isInterfaceMode(values.interface_mode)
@@ -24,7 +27,7 @@ export function readOnboardingData(metadata: unknown): Partial<OnboardingData> {
   const isAdult = interfaceMode === 'main'
     || (typeof values.is_adult === 'boolean' ? values.is_adult : getIsAdult(birthDate));
 
-  return { displayName, birthDate, preferredLang, isAdult, interfaceMode };
+  return { displayName, birthDate, preferredLang, gender, isAdult, interfaceMode };
 }
 
 export function isOnboardingComplete(metadata: unknown) {
@@ -84,6 +87,10 @@ function parseBirthDate(value: string) {
 
 function isLang(value: unknown): value is Lang {
   return value === 'ru' || value === 'en' || value === 'kk';
+}
+
+function isGender(value: unknown): value is Gender {
+  return value === 'male' || value === 'female';
 }
 
 function isInterfaceMode(value: unknown): value is InterfaceMode {
