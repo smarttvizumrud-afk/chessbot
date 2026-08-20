@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import type { Lang } from './types';
 
 let activeAudio: HTMLAudioElement | null = null;
 let activeRequestId = 0;
@@ -32,6 +33,7 @@ export function createSpeechAudio() {
 export async function speakWithElevenLabsVoice(
   text: string,
   voice: ElevenLabsVoice,
+  lang: Lang,
   preparedAudio?: HTMLAudioElement,
 ) {
   const requestId = activeRequestId + 1;
@@ -40,7 +42,7 @@ export async function speakWithElevenLabsVoice(
   activeAudio = null;
 
   const { data, error } = await supabase.functions.invoke('tts', {
-    body: { text, voice },
+    body: { text, voice, lang },
   });
   if (error) throw new Error(error.message);
   const responseError = readError(data);

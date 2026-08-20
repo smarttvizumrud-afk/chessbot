@@ -57,7 +57,7 @@ function GameContent({
 
     const advice = analysisCoachSpeech(nextReport, interfaceMode, gender, lang, userAge);
     const preparedAudio = createCoachSpeechAudio();
-    speakCoachText(advice, interfaceMode, gender, preparedAudio)
+    speakCoachText(advice, interfaceMode, gender, lang, preparedAudio)
       .catch((error) => console.warn('Could not speak selected move advice.', error));
   }, [analysis, gender, interfaceMode, lang, userAge]);
 
@@ -140,7 +140,7 @@ function AnalysisCoachCard({
     setSpeechNotice('');
     const preparedAudio = createCoachSpeechAudio();
     try {
-      await speakCoachText(spokenAdvice, interfaceMode, gender, preparedAudio);
+      await speakCoachText(spokenAdvice, interfaceMode, gender, lang, preparedAudio);
     } catch (error) {
       console.warn('Could not speak analysis advice.', error);
       setSpeechNotice(speechErrorText(lang, error));
@@ -221,6 +221,8 @@ function humanAdvice(report: MoveReport, lang: Lang) {
 }
 
 function naturalHumanAdvice(report: MoveReport, lang: Lang) {
+  return variedWrittenAdvice(report, lang);
+
   if (report.label === 'good') {
     if (lang === 'en') return 'Yeah, I like this move. It keeps your position steady and does not give away anything obvious. Now take one quick look at what your opponent may want next.';
     if (lang === 'kk') return 'Ia, magan bul juris unaidy. Pozitsiyan turaqty, artyq eshtene berip turgan joq. Endi qarsylas kelesi ne isteui mumkin ekenin bir qarap al.';
@@ -232,6 +234,8 @@ function naturalHumanAdvice(report: MoveReport, lang: Lang) {
 }
 
 function spokenHumanAdvice(report: MoveReport, lang: Lang) {
+  return variedSpokenAdvice(report, lang);
+
   if (report.label === 'good') {
     if (lang === 'en') return 'Yeah, this is fine. I like it. You kept everything under control. Now just breathe for a second and check what your opponent wants next.';
     if (lang === 'kk') return 'Ia, jaqsy. Magan unaidy. Bari baqylauda. Endi bir satti toqtap, qarsylas ne qalaitynyn qarap al.';
@@ -240,6 +244,107 @@ function spokenHumanAdvice(report: MoveReport, lang: Lang) {
   if (lang === 'en') return `Okay, here I would stop for a moment. After ${report.san}, things get a little uncomfortable. ${report.bestMove} was the calmer move. Look for checks, captures, and threats first.`;
   if (lang === 'kk') return `Jaqsy, munda bir satti toqtaiyq. ${report.san} keyin oiynda qiyndyq payda bolady. ${report.bestMove} tynyshyraq edi. Aldymen shah, alu jane qauipterdi qarap al.`;
   return `Так, вот здесь давай на секунду остановимся. После ${report.san} позиция становится чуть неприятной. Спокойнее было ${report.bestMove}. Сначала посмотри шахи, взятия и угрозы.`;
+}
+
+function variedWrittenAdvice(report: MoveReport, lang: Lang) {
+  if (report.label !== 'good') return variedProblemAdvice(report, lang);
+  const lines = writtenGoodLines(report, lang);
+  return lines[lineIndex(report, lines.length)];
+}
+
+function variedSpokenAdvice(report: MoveReport, lang: Lang) {
+  if (report.label !== 'good') return variedProblemSpeech(report, lang);
+  const lines = spokenGoodLines(report, lang);
+  return lines[lineIndex(report, lines.length)];
+}
+
+function writtenGoodLines(report: MoveReport, lang: Lang) {
+  if (lang === 'en') return [
+    'Yeah, I like this move. It keeps your position steady, and now you can calmly check what your opponent wants next.',
+    `${report.san} looks sensible. Nothing dramatic, just a clean move that keeps the game under control.`,
+    'Good practical choice. You did not force anything too early, and that is often exactly right.',
+    'This is a normal human move: solid, calm, and close to what the position asks for.',
+  ];
+  if (lang === 'kk') return [
+    'Ia, magan bul juris unaidy. Pozitsiya turaqty, endi qarsylas ne qalaitynyn qarap al.',
+    `${report.san} oryndy korinedi. Qauipsiz, tynysh, oiyndy baqylauda ustap turady.`,
+    'Jaqsy praktikalyq tandau. Asyqpaidyn, pozitsiyany buzbaidyn.',
+    'Bul tynysh ari durys juris. Qazir en bastysy - qarsylastyn ideyasyn tusinu.',
+  ];
+  return [
+    'Да, мне нравится этот ход. Он спокойный: ты ничего лишнего не отдаёшь и держишь позицию под контролем.',
+    `${report.san} выглядит нормально. Без лишней суеты, просто аккуратный ход по позиции.`,
+    'Хорошее практическое решение. Ты не форсируешь события и оставляешь позицию здоровой.',
+    'Вот это похоже на человеческий ход: спокойно, надёжно и без лишнего риска.',
+  ];
+}
+
+function spokenGoodLines(report: MoveReport, lang: Lang) {
+  if (lang === 'en') return [
+    'Yeah, this is fine. I like it. You kept everything under control. Now just check what your opponent wants next.',
+    `${report.san}. Yep, that makes sense. Nothing flashy, but it keeps the position healthy.`,
+    'Good, this is a calm move. You are not giving anything away. Now take one more look at their threats.',
+    'Nice. That is a very normal human decision here. Keep going, but do not rush the next move.',
+  ];
+  if (lang === 'kk') return [
+    'Ia, jaqsy. Magan unaidy. Bari baqylauda. Endi qarsylas ne qalaitynyn qarap al.',
+    `${report.san}. Ia, bul tusinikti. Erekshe emes, biraq pozitsiyany saqtap tur.`,
+    'Jaqsy, bul tynysh juris. Artyq eshtene berip turgan joqsyng. Endi qauipterdi qarap al.',
+    'Jaqsy. Munda adamsha durys sheshim. Kelesi juriske asyqpa.',
+  ];
+  return [
+    'Да, нормально. Мне нравится. Ты тут всё держишь под контролем. Теперь просто посмотри, чего хочет соперник.',
+    `${report.san}. Да, логично. Не блестяще ради красоты, а просто здоровый ход по позиции.`,
+    'Хорошо, это спокойный ход. Ты ничего не отдаёшь. Теперь ещё раз глянь, нет ли у соперника угроз.',
+    'Нормально. Вот это уже похоже на человеческое решение за доской. Продолжай, только не спеши со следующим ходом.',
+  ];
+}
+
+function variedProblemAdvice(report: MoveReport, lang: Lang) {
+  const lines = lang === 'en'
+    ? [
+      `Here I would slow down. After ${report.san}, your opponent gets a chance. ${report.bestMove} was cleaner.`,
+      `${report.san} is playable-looking, but it lets the position slip a bit. I would compare it with ${report.bestMove}.`,
+      `This is the kind of moment where one quiet check helps. ${report.bestMove} kept things under better control.`,
+    ]
+    : lang === 'kk'
+      ? [
+        `Bul jerde biraz toqtagan durys. ${report.san} keyin qarsylasta mumkinshilik payda bolady. ${report.bestMove} tazalau edi.`,
+        `${report.san} oynalatyndai korinedi, biraq pozitsiya azdap nasharlaidy. ${report.bestMove} men salystyr.`,
+        `Munday satta bir ret tekserip algan jaqsy. ${report.bestMove} pozitsiyany jaqsyraq ustap turady.`,
+      ]
+      : [
+        `Вот тут я бы чуть притормозил. После ${report.san} у соперника появляется шанс. Аккуратнее было ${report.bestMove}.`,
+        `${report.san} выглядит играбельно, но позиция немного проседает. Я бы сравнил с вариантом ${report.bestMove}.`,
+        `Это момент, где лучше один раз спокойно перепроверить. ${report.bestMove} держало позицию увереннее.`,
+      ];
+  return lines[lineIndex(report, lines.length)];
+}
+
+function variedProblemSpeech(report: MoveReport, lang: Lang) {
+  const lines = lang === 'en'
+    ? [
+      `Okay, here I would stop for a moment. After ${report.san}, things get a little uncomfortable. ${report.bestMove} was calmer.`,
+      `Hmm, ${report.san} is not crazy, but it gives your opponent something to use. I would look at ${report.bestMove} first.`,
+      `Wait a second here. Before playing ${report.san}, check the forcing moves. ${report.bestMove} kept more control.`,
+    ]
+    : lang === 'kk'
+      ? [
+        `Jaqsy, munda bir satti toqtaiyq. ${report.san} keyin oiynda qiyndyq payda bolady. ${report.bestMove} tynyshyraq edi.`,
+        `${report.san} ote jaman emes, biraq qarsylasqa mumkindik beredi. Men aldymen ${report.bestMove} qarardym.`,
+        `Bir satti toqta. ${report.san} aldynda majburlei tin juristerdi tekser. ${report.bestMove} baqylaudy kobirek saqtaidy.`,
+      ]
+      : [
+        `Так, вот здесь давай на секунду остановимся. После ${report.san} позиция становится чуть неприятной. Спокойнее было ${report.bestMove}.`,
+        `Смотри, ${report.san} не выглядит ужасно, но сопернику появляется за что зацепиться. Я бы сначала посмотрел ${report.bestMove}.`,
+        `Подожди секунду. Перед ${report.san} стоило проверить форсированные ходы. ${report.bestMove} держало больше контроля.`,
+      ];
+  return lines[lineIndex(report, lines.length)];
+}
+
+function lineIndex(report: MoveReport, length: number) {
+  const seed = [...report.san].reduce((sum, char) => sum + char.charCodeAt(0), report.ply + report.moveNumber);
+  return seed % length;
 }
 
 function idleAdvice(persona: ReturnType<typeof coachPersona>, lang: Lang) {

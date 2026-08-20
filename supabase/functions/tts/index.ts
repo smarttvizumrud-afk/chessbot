@@ -7,6 +7,7 @@ const SCHOOL_MALE_VOICE_ID = Deno.env.get('ELEVENLABS_SCHOOL_MALE_VOICE_ID') ?? 
 const CHILD_FEMALE_VOICE_ID = Deno.env.get('ELEVENLABS_CHILD_FEMALE_VOICE_ID') ?? CHILD_VOICE_ID;
 const SCHOOL_FEMALE_VOICE_ID = Deno.env.get('ELEVENLABS_SCHOOL_FEMALE_VOICE_ID') ?? SCHOOL_VOICE_ID;
 const TEEN_FEMALE_VOICE_ID = Deno.env.get('ELEVENLABS_TEEN_FEMALE_VOICE_ID') ?? TEEN_VOICE_ID;
+const KAZAKH_VOICE_ID = Deno.env.get('ELEVENLABS_KAZAKH_VOICE_ID') ?? 'eCXtdAm4Y1qWFZvJePPF';
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -27,9 +28,9 @@ Deno.serve(async (req) => {
   try {
     if (!ELEVENLABS_API_KEY) return json({ error: 'ElevenLabs key is not configured.' }, 503);
 
-    const body = (await req.json()) as { text?: unknown; voice?: unknown };
+    const body = (await req.json()) as { text?: unknown; voice?: unknown; lang?: unknown };
     const text = typeof body.text === 'string' ? body.text.trim() : '';
-    const voiceId = voiceIdFor(body.voice);
+    const voiceId = voiceIdFor(body.voice, body.lang);
     if (!text) return json({ error: 'Text is required.' }, 400);
     if (text.length > 2_000) return json({ error: 'Text is too long.' }, 400);
 
@@ -67,7 +68,8 @@ Deno.serve(async (req) => {
   }
 });
 
-function voiceIdFor(voice: unknown) {
+function voiceIdFor(voice: unknown, lang: unknown) {
+  if (lang === 'kk') return KAZAKH_VOICE_ID;
   if (voice === 'adult') return TEEN_VOICE_ID;
   if (voice === 'child_female') return CHILD_FEMALE_VOICE_ID;
   if (voice === 'school_female') return SCHOOL_FEMALE_VOICE_ID;

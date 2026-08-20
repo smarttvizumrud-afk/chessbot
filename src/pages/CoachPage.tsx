@@ -97,7 +97,7 @@ function CoachContent({ lang }: { lang: Lang }) {
     setSpeechNotice('');
     setSpeechBusy(true);
     try {
-      const result = await speakCoachText(text, interfaceMode, gender);
+      const result = await speakCoachText(text, interfaceMode, gender, lang);
       if (result === 'elevenlabs-unavailable') setSpeechNotice(childVoiceErrorText(lang));
     } catch (error) {
       console.warn('Could not speak coach answer.', error);

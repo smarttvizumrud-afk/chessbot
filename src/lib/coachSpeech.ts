@@ -16,6 +16,7 @@ export async function speakCoachText(
   text: string,
   interfaceMode: InterfaceMode,
   gender: Gender,
+  lang: Lang,
   preparedAudio?: HTMLAudioElement,
 ) {
   if (!canSpeak()) return 'unavailable';
@@ -25,7 +26,7 @@ export async function speakCoachText(
   if (voice === 'child' || voice === 'child_female') {
     if (Date.now() >= childVoiceUnavailableUntil) {
       try {
-        await speakWithElevenLabsVoice(cleanText, voice, preparedAudio);
+        await speakWithElevenLabsVoice(cleanText, voice, lang, preparedAudio);
         return 'elevenlabs';
       } catch (error) {
         childVoiceUnavailableUntil = Date.now() + 5 * 60 * 1_000;
@@ -35,7 +36,7 @@ export async function speakCoachText(
     return 'elevenlabs-unavailable';
   }
 
-  await speakWithElevenLabsVoice(cleanText, voice, preparedAudio);
+  await speakWithElevenLabsVoice(cleanText, voice, lang, preparedAudio);
   return 'elevenlabs';
 }
 
