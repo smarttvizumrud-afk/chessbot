@@ -30,6 +30,7 @@ try {
 
 const apiKey = readValue(source, 'ELEVENLABS_API_KEY');
 const voiceId = readValue(source, 'ELEVENLABS_CHILD_VOICE_ID') || DEFAULT_CHILD_VOICE_ID;
+const schoolVoiceId = readValue(source, 'ELEVENLABS_SCHOOL_VOICE_ID') || voiceId;
 const adultVoiceId = readValue(source, 'ELEVENLABS_ADULT_VOICE_ID') || voiceId;
 const teenVoiceId = readValue(source, 'ELEVENLABS_TEEN_VOICE_ID') || adultVoiceId;
 if (!apiKey) fail('ELEVENLABS_API_KEY is missing in .env');
@@ -45,6 +46,7 @@ try {
   await writeFile(secretFile, [
     `ELEVENLABS_API_KEY=${apiKey}`,
     `ELEVENLABS_CHILD_VOICE_ID=${voiceId}`,
+    `ELEVENLABS_SCHOOL_VOICE_ID=${schoolVoiceId}`,
     `ELEVENLABS_ADULT_VOICE_ID=${adultVoiceId}`,
     `ELEVENLABS_TEEN_VOICE_ID=${teenVoiceId}`,
     '',

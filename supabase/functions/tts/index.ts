@@ -1,5 +1,6 @@
 const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
 const CHILD_VOICE_ID = Deno.env.get('ELEVENLABS_CHILD_VOICE_ID') ?? 'KGm9JQce2gqC2w6y4q3p';
+const SCHOOL_VOICE_ID = Deno.env.get('ELEVENLABS_SCHOOL_VOICE_ID') ?? CHILD_VOICE_ID;
 const ADULT_VOICE_ID = Deno.env.get('ELEVENLABS_ADULT_VOICE_ID') ?? CHILD_VOICE_ID;
 const TEEN_VOICE_ID = Deno.env.get('ELEVENLABS_TEEN_VOICE_ID') ?? ADULT_VOICE_ID;
 
@@ -64,6 +65,7 @@ Deno.serve(async (req) => {
 
 function voiceIdFor(voice: unknown) {
   if (voice === 'adult') return TEEN_VOICE_ID;
+  if (voice === 'school') return SCHOOL_VOICE_ID;
   if (voice === 'teen') return TEEN_VOICE_ID;
   return CHILD_VOICE_ID;
 }

@@ -242,7 +242,9 @@ function canSpeak() {
 }
 
 function elevenLabsVoice(interfaceMode: InterfaceMode): ElevenLabsVoice {
-  return interfaceMode === 'child' ? 'child' : 'teen';
+  if (interfaceMode === 'child') return 'child';
+  if (interfaceMode === 'preschool') return 'school';
+  return 'teen';
 }
 
 async function speak(text: string, interfaceMode: InterfaceMode) {
