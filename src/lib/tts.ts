@@ -1,8 +1,11 @@
 import { supabase } from './supabase';
 
 let activeAudio: HTMLAudioElement | null = null;
+let activeRequestId = 0;
 
 export async function speakWithChildVoice(text: string) {
+  const requestId = activeRequestId + 1;
+  activeRequestId = requestId;
   activeAudio?.pause();
   activeAudio = null;
 
@@ -13,9 +16,20 @@ export async function speakWithChildVoice(text: string) {
 
   const audio = readAudio(data);
   if (!audio) throw new Error('TTS returned no audio.');
+  if (requestId !== activeRequestId) return;
 
-  activeAudio = new Audio(`data:audio/mpeg;base64,${audio}`);
-  await activeAudio.play();
+  const nextAudio = new Audio(`data:audio/mpeg;base64,${audio}`);
+  activeAudio = nextAudio;
+  await playOnce(nextAudio);
+  if (activeAudio === nextAudio) activeAudio = null;
+}
+
+function playOnce(audio: HTMLAudioElement) {
+  return new Promise<void>((resolve, reject) => {
+    audio.onended = () => resolve();
+    audio.onerror = () => reject(new Error('Could not play TTS audio.'));
+    audio.play().catch(reject);
+  });
 }
 
 function readAudio(data: unknown) {

@@ -32,6 +32,7 @@ function CoachContent({ lang }: { lang: Lang }) {
   const [activeChatId, setActiveChatId] = useState('');
   const [question, setQuestion] = useState('');
   const [busy, setBusy] = useState(false);
+  const [speechBusy, setSpeechBusy] = useState(false);
   const [speechNotice, setSpeechNotice] = useState('');
   const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>('student');
   const [userAge, setUserAge] = useState<number>();
@@ -91,9 +92,15 @@ function CoachContent({ lang }: { lang: Lang }) {
   }
 
   async function playAnswer(text: string) {
+    if (speechBusy) return;
     setSpeechNotice('');
-    const result = await speak(text, lang, userAge, interfaceMode);
-    if (result === 'browser-fallback') setSpeechNotice(speechNoticeText(lang));
+    setSpeechBusy(true);
+    try {
+      const result = await speak(text, lang, userAge, interfaceMode);
+      if (result === 'browser-fallback') setSpeechNotice(speechNoticeText(lang));
+    } finally {
+      setSpeechBusy(false);
+    }
   }
 
   return (
@@ -123,7 +130,7 @@ function CoachContent({ lang }: { lang: Lang }) {
                 <span>
                   {message.role === 'user' ? t(lang, 'you') : t(lang, 'coach')}
                   {message.role === 'assistant' && canSpeak(interfaceMode) && (
-                    <button className="speak-button" type="button" onClick={() => void playAnswer(message.text)} aria-label="Speak answer">
+                    <button className="speak-button" type="button" onClick={() => void playAnswer(message.text)} disabled={speechBusy} aria-label="Speak answer">
                       🔊
                     </button>
                   )}
@@ -257,14 +264,25 @@ async function speak(text: string, lang: Lang, userAge: number | undefined, inte
   window.speechSynthesis.cancel();
   const voice = await bestVoice(lang);
   const voiceStyle = speechStyle(userAge);
-  speechChunks(cleanText).forEach((chunk) => {
-    const utterance = new SpeechSynthesisUtterance(chunk);
-    utterance.lang = speechLang(lang);
-    utterance.volume = 1;
-    utterance.rate = voiceStyle.rate;
-    utterance.pitch = voiceStyle.pitch;
-    if (voice) utterance.voice = voice;
-    window.speechSynthesis.speak(utterance);
+  const chunks = speechChunks(cleanText);
+  if (!chunks.length) return 'unavailable';
+  await new Promise<void>((resolve) => {
+    let completed = 0;
+    const finishChunk = () => {
+      completed += 1;
+      if (completed >= chunks.length) resolve();
+    };
+    chunks.forEach((chunk) => {
+      const utterance = new SpeechSynthesisUtterance(chunk);
+      utterance.lang = speechLang(lang);
+      utterance.volume = 1;
+      utterance.rate = voiceStyle.rate;
+      utterance.pitch = voiceStyle.pitch;
+      if (voice) utterance.voice = voice;
+      utterance.onend = finishChunk;
+      utterance.onerror = finishChunk;
+      window.speechSynthesis.speak(utterance);
+    });
   });
   return interfaceMode === 'child' ? 'browser-fallback' : 'browser';
 }
