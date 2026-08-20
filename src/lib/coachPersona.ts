@@ -13,13 +13,13 @@ export type CoachPersona = {
 const maleNames: Record<Lang, string[]> = {
   ru: ['Тимур', 'Арман', 'Данил'],
   en: ['Timur', 'Arman', 'Daniel'],
-  kk: ['Timur', 'Arman', 'Danil'],
+  kk: ['Тимур', 'Арман', 'Данил'],
 };
 
 const femaleNames: Record<Lang, string[]> = {
   ru: ['Амина', 'Айша', 'София'],
   en: ['Amina', 'Aisha', 'Sofia'],
-  kk: ['Amina', 'Aisha', 'Sofiya'],
+  kk: ['Әмина', 'Айша', 'София'],
 };
 
 export function coachPersona(
@@ -50,7 +50,7 @@ function personaStage(interfaceMode: InterfaceMode, userAge?: number) {
 
 function roleText(lang: Lang, age: number) {
   if (lang === 'en') return age < 12 ? 'chess teammate' : 'chess buddy';
-  if (lang === 'kk') return age < 12 ? 'shakhmat serigin' : 'taqtadagy dosyn';
+  if (lang === 'kk') return age < 12 ? 'шахмат серігің' : 'тақтадағы досың';
   return age < 12 ? 'шахматный напарник' : 'свой человек за доской';
   if (lang === 'en') return age < 12 ? 'kind chess helper' : 'analysis partner';
   if (lang === 'kk') return age < 12 ? 'мейірімді көмекші' : 'талдау серігі';
@@ -78,9 +78,9 @@ export function personaAdvice(persona: CoachPersona, lang: Lang, text: string) {
 
 export function personaIntro(persona: CoachPersona, lang: Lang, nextText: string) {
   if (lang === 'en') return `${persona.name}: Hey, I am ${persona.name}. I will look at the game with you like we are sitting at the same board. ${nextText}`;
-  if (lang === 'kk') return `${persona.name}: Salem, men ${persona.name}. Oiyndy taqtada birge otyrgandai qaraiyq. ${nextText}`;
+  if (lang === 'kk') return `${persona.name}: Сәлем, мен ${persona.name}. Ойынды тақтада бірге отырғандай қарайық. ${nextText}`;
   return `${persona.name}: Привет, я ${persona.name}. Давай смотреть партию вместе, как будто сидим за одной доской. ${nextText}`;
   if (lang === 'en') return `${persona.name}: Hi, I am ${persona.name}, your ${persona.role}. ${nextText}`;
-  if (lang === 'kk') return `${persona.name}: Salem, men ${persona.name}, senin ${persona.role}. ${nextText}`;
+  if (lang === 'kk') return `${persona.name}: Сәлем, мен ${persona.name}, сенің ${persona.role}. ${nextText}`;
   return `${persona.name}: Привет, я ${persona.name}, твой ${persona.role}. ${nextText}`;
 }

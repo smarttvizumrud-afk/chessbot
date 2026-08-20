@@ -97,7 +97,7 @@ export function AiGeneratedTasks({ games, analyses, lang }: Props) {
 
 function noCreditsText(lang: Lang) {
   if (lang === 'en') return 'Credits are empty. Two AI tasks cost 1 credit.';
-  if (lang === 'kk') return 'Kreditter bittti. Eki AI tapsyrma 1 kredit turady.';
+  if (lang === 'kk') return 'Кредиттер бітті. Екі AI тапсырма 1 кредит тұрады.';
   return 'Кредиты закончились. Две AI-задачи стоят 1 кредит.';
 }
 

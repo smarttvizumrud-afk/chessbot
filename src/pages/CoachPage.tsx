@@ -17,7 +17,7 @@ type CoachChat = {
   messages: CoachMessage[];
 };
 
-const chatsStorageKey = 'chesa-coach-chats';
+const chatsStorageKey = 'chesa-coach-chats-v2';
 
 export function CoachPage({ lang }: { lang: Lang }) {
   return (
@@ -197,7 +197,7 @@ function chatTitle(messages: CoachMessage[], lang: Lang) {
 
 function chatCopy(lang: Lang) {
   if (lang === 'en') return { chats: 'Chats', newChat: 'New chat' };
-  if (lang === 'kk') return { chats: 'Chattar', newChat: 'Jana chat' };
+  if (lang === 'kk') return { chats: 'Чаттар', newChat: 'Жаңа чат' };
   return { chats: 'Чаты', newChat: 'Новый чат' };
 }
 
@@ -241,13 +241,13 @@ async function askCoachAnswer(
 
 function noCreditsText(lang: Lang) {
   if (lang === 'en') return 'Credits are empty. One AI coach request costs 1 credit. Open Credits to buy more.';
-  if (lang === 'kk') return 'Kreditter bittti. AI trenerge bir suraq 1 kredit turady. Kreditter bolimine otip, tagy satyp al.';
+  if (lang === 'kk') return 'Кредиттер бітті. AI-тренерге бір сұрақ 1 кредит тұрады. Кредиттер бөліміне өтіп, тағы сатып ал.';
   return 'Кредиты закончились. Один запрос к AI-тренеру стоит 1 кредит. Открой раздел «Кредиты», чтобы купить ещё.';
 }
 
 function childVoiceErrorText(lang: Lang) {
   if (lang === 'en') return 'ElevenLabs voice is unavailable now. Try again later.';
-  if (lang === 'kk') return 'ElevenLabs dausy qazir qosyldap turgan joq. Keinirek qaitalap kor.';
+  if (lang === 'kk') return 'ElevenLabs дауысы қазір қосылып тұрған жоқ. Кейінірек қайталап көр.';
   return 'Голос ElevenLabs сейчас недоступен. Попробуй ещё раз позже.';
 }
 

@@ -408,13 +408,13 @@ function audienceStyle(interfaceMode: InterfaceMode, userAge?: number): Audience
 
 function idleAdvice(persona: ReturnType<typeof coachPersona>, lang: Lang) {
   if (lang === 'en') return personaIntro(persona, lang, 'Pick a move from the table, and I will explain it in simple words.');
-  if (lang === 'kk') return personaIntro(persona, lang, 'Kesteden juristi tanda, men ony qarapaiym tilmen tusindiremin.');
+  if (lang === 'kk') return personaIntro(persona, lang, 'Кестеден жүрісті таңда, мен оны қарапайым тілмен түсіндіремін.');
   return personaIntro(persona, lang, 'Выбери ход в таблице, и я объясню его простыми словами.');
 }
 
 function idleSpeech(persona: ReturnType<typeof coachPersona>, lang: Lang) {
   if (lang === 'en') return `${persona.name}: Hi, I am ${persona.name}. Pick any move from the table and I will explain it like we are looking at the board together.`;
-  if (lang === 'kk') return `${persona.name}: Salem, men ${persona.name}. Kesteden kez kelgen juristi tanda, men ony taqtaga birge qarap otyrgandai tusindiremin.`;
+  if (lang === 'kk') return `${persona.name}: Сәлем, мен ${persona.name}. Кестеден кез келген жүрісті таңда, мен оны тақтаға бірге қарап отырғандай түсіндіремін.`;
   return `${persona.name}: Привет, я ${persona.name}. Выбери любой ход из таблицы, и я объясню его так, будто мы вместе смотрим на доску.`;
 }
 
