@@ -38,6 +38,7 @@ function CoachContent({ lang }: { lang: Lang }) {
   const [busy, setBusy] = useState(false);
   const [speechBusy, setSpeechBusy] = useState(false);
   const [speechNotice, setSpeechNotice] = useState('');
+  const [profileReady, setProfileReady] = useState(false);
   const speechBusyRef = useRef(false);
   const activeChat = chats.find((chat) => chat.id === activeChatId) ?? chats[0] ?? createChat(lang, interfaceMode, gender, userAge);
   const messages = activeChat.messages;
@@ -50,8 +51,20 @@ function CoachContent({ lang }: { lang: Lang }) {
       if (metadata.gender) setGender(metadata.gender);
       const age = metadata.birthDate ? ageFromBirthDate(metadata.birthDate) : null;
       setUserAge(age ?? undefined);
-    });
+    }).finally(() => setProfileReady(true));
   }, []);
+
+  useEffect(() => {
+    if (!profileReady) return;
+    setChats((items) => {
+      const currentChats = items.length ? items : [createChat(lang, interfaceMode, gender, userAge)];
+      return currentChats.map((chat) => (
+        isIntroOnlyChat(chat)
+          ? createChat(lang, interfaceMode, gender, userAge, chat.id)
+          : chat
+      ));
+    });
+  }, [gender, interfaceMode, lang, profileReady, userAge]);
 
   useEffect(() => {
     saveChats(chats);
@@ -180,13 +193,23 @@ function saveChats(chats: CoachChat[]) {
   window.localStorage.setItem(chatsStorageKey, JSON.stringify(chats.slice(0, 12)));
 }
 
-function createChat(lang: Lang, interfaceMode: InterfaceMode, gender: Gender, userAge?: number): CoachChat {
+function createChat(
+  lang: Lang,
+  interfaceMode: InterfaceMode,
+  gender: Gender,
+  userAge?: number,
+  id: string = crypto.randomUUID(),
+): CoachChat {
   return {
-    id: crypto.randomUUID(),
+    id,
     lang,
     title: chatCopy(lang).newChat,
     messages: [welcomeMessage(lang, interfaceMode, gender, userAge)],
   };
+}
+
+function isIntroOnlyChat(chat: CoachChat) {
+  return chat.messages.length === 1 && chat.messages[0]?.role === 'assistant';
 }
 
 function chatTitle(messages: CoachMessage[], lang: Lang) {
