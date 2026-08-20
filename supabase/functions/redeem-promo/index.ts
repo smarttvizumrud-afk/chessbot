@@ -7,6 +7,8 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '
 type RedeemResult = {
   ok?: unknown;
   credits?: unknown;
+  subscription?: unknown;
+  subscription_days?: unknown;
   reason?: unknown;
 };
 
@@ -57,7 +59,11 @@ Deno.serve(async (req) => {
 
 function redeemResponse(result: RedeemResult | null) {
   if (result?.ok === true) {
-    return json({ credits: Number(result.credits) || 0 });
+    return json({
+      credits: Number(result.credits) || 0,
+      subscription: result.subscription === true,
+      subscriptionDays: Number(result.subscription_days) || 0,
+    });
   }
 
   return json({ error: messageForReason(result?.reason) }, 400);

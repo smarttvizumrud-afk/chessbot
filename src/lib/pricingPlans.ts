@@ -29,6 +29,7 @@ export type PricingText = {
   promoPlaceholder: string;
   promoAction: string;
   promoSuccess: string;
+  promoSubscriptionSuccess: string;
   loadError: string;
   checkoutError: string;
   plans: Record<PricingPlanKey, PlanText>;
@@ -57,6 +58,7 @@ export const pricingText: Record<Lang, PricingText> = {
     promoPlaceholder: 'CHESA2026',
     promoAction: 'Применить',
     promoSuccess: '+{credits} кредитов',
+    promoSubscriptionSuccess: 'Годовая подписка включена на аккаунте.',
     loadError: 'Не удалось загрузить данные оплаты.',
     checkoutError: 'Не удалось открыть оплату.',
     plans: {
@@ -81,6 +83,7 @@ export const pricingText: Record<Lang, PricingText> = {
     promoPlaceholder: 'CHESA2026',
     promoAction: 'Apply',
     promoSuccess: '+{credits} credits',
+    promoSubscriptionSuccess: 'Yearly subscription is active on this account.',
     loadError: 'Could not load billing data.',
     checkoutError: 'Could not open checkout.',
     plans: {
@@ -105,6 +108,7 @@ export const pricingText: Record<Lang, PricingText> = {
     promoPlaceholder: 'CHESA2026',
     promoAction: 'Қолдану',
     promoSuccess: '+{credits} кредит',
+    promoSubscriptionSuccess: 'Жылдық жазылым аккаунтта қосылды.',
     loadError: 'Төлем деректерін жүктеу мүмкін болмады.',
     checkoutError: 'Төлемді ашу мүмкін болмады.',
     plans: {

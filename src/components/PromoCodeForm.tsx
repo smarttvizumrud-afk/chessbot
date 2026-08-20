@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { redeemPromoCode } from '../lib/promos';
+import { redeemPromoCode, type PromoRedeemResult } from '../lib/promos';
 
 type Props = {
   title: string;
   placeholder: string;
   action: string;
-  success: (credits: number) => string;
+  success: (result: PromoRedeemResult) => string;
   onApplied: () => Promise<void>;
 };
 
@@ -24,9 +24,9 @@ export function PromoCodeForm({ title, placeholder, action, success, onApplied }
     setBusy(true);
     setMessage('');
     try {
-      const credits = await redeemPromoCode(cleanCode);
+      const result = await redeemPromoCode(cleanCode);
       setCode('');
-      setMessage(success(credits));
+      setMessage(success(result));
       await onApplied();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Could not apply promo code.');

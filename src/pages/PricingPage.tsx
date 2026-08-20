@@ -87,7 +87,9 @@ function PricingContent({ lang }: { lang: Lang }) {
             title={copy.promoTitle}
             placeholder={copy.promoPlaceholder}
             action={copy.promoAction}
-            success={(credits) => copy.promoSuccess.replace('{credits}', String(credits))}
+            success={(result) => result.subscription
+              ? copy.promoSubscriptionSuccess
+              : copy.promoSuccess.replace('{credits}', String(result.credits))}
             onApplied={refreshBilling}
           />
           <div className="credit-status">
