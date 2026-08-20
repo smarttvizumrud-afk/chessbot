@@ -16,6 +16,7 @@ type CoachChat = {
 };
 
 const chatsStorageKey = 'chesa-coach-chats';
+let childVoiceUnavailableUntil = 0;
 
 export function CoachPage({ lang }: { lang: Lang }) {
   return (
@@ -31,6 +32,7 @@ function CoachContent({ lang }: { lang: Lang }) {
   const [activeChatId, setActiveChatId] = useState('');
   const [question, setQuestion] = useState('');
   const [busy, setBusy] = useState(false);
+  const [speechNotice, setSpeechNotice] = useState('');
   const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>('student');
   const [userAge, setUserAge] = useState<number>();
   const activeChat = chats.find((chat) => chat.id === activeChatId) ?? chats[0] ?? createChat(lang);
@@ -88,6 +90,12 @@ function CoachContent({ lang }: { lang: Lang }) {
     setBusy(false);
   }
 
+  async function playAnswer(text: string) {
+    setSpeechNotice('');
+    const result = await speak(text, lang, userAge, interfaceMode);
+    if (result === 'browser-fallback') setSpeechNotice(speechNoticeText(lang));
+  }
+
   return (
     <section className="panel coach-panel">
       <div className="coach-header">
@@ -115,7 +123,7 @@ function CoachContent({ lang }: { lang: Lang }) {
                 <span>
                   {message.role === 'user' ? t(lang, 'you') : t(lang, 'coach')}
                   {message.role === 'assistant' && canSpeak(interfaceMode) && (
-                    <button className="speak-button" type="button" onClick={() => void speak(message.text, lang, userAge, interfaceMode)} aria-label="Speak answer">
+                    <button className="speak-button" type="button" onClick={() => void playAnswer(message.text)} aria-label="Speak answer">
                       🔊
                     </button>
                   )}
@@ -134,6 +142,7 @@ function CoachContent({ lang }: { lang: Lang }) {
             <input value={question} onChange={(event) => setQuestion(event.target.value)} placeholder={t(lang, 'ask')} required />
             <button disabled={busy}>{busy ? '...' : t(lang, 'send')}</button>
           </form>
+          {speechNotice && <p className="message">{speechNotice}</p>}
         </div>
       </div>
     </section>
@@ -215,6 +224,12 @@ function noCreditsText(lang: Lang) {
   return 'Кредиты закончились. Один запрос к AI-тренеру стоит 1 кредит. Открой раздел «Кредиты», чтобы купить ещё.';
 }
 
+function speechNoticeText(lang: Lang) {
+  if (lang === 'en') return 'ElevenLabs voice is unavailable now, so I used the browser voice.';
+  if (lang === 'kk') return 'ElevenLabs dausy qazir qosyldap turgan joq, sondyqtan browser dausy qosyldy.';
+  return 'Голос ElevenLabs сейчас недоступен, поэтому включился голос браузера.';
+}
+
 function canSpeak(interfaceMode?: InterfaceMode) {
   if (interfaceMode === 'child') {
     return typeof window !== 'undefined'
@@ -224,18 +239,21 @@ function canSpeak(interfaceMode?: InterfaceMode) {
 }
 
 async function speak(text: string, lang: Lang, userAge: number | undefined, interfaceMode: InterfaceMode) {
-  if (!canSpeak(interfaceMode)) return;
+  if (!canSpeak(interfaceMode)) return 'unavailable';
   const cleanText = cleanSpeechText(text);
   if (interfaceMode === 'child') {
-    try {
-      await speakWithChildVoice(cleanText);
-      return;
-    } catch (error) {
-      console.warn('Could not use child ElevenLabs voice. Falling back to browser speech.', error);
+    if (Date.now() >= childVoiceUnavailableUntil) {
+      try {
+        await speakWithChildVoice(cleanText);
+        return 'elevenlabs';
+      } catch (error) {
+        childVoiceUnavailableUntil = Date.now() + 5 * 60 * 1_000;
+        console.warn('Could not use child ElevenLabs voice. Falling back to browser speech.', error);
+      }
     }
   }
 
-  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return;
+  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return 'unavailable';
   window.speechSynthesis.cancel();
   const voice = await bestVoice(lang);
   const voiceStyle = speechStyle(userAge);
@@ -248,6 +266,7 @@ async function speak(text: string, lang: Lang, userAge: number | undefined, inte
     if (voice) utterance.voice = voice;
     window.speechSynthesis.speak(utterance);
   });
+  return interfaceMode === 'child' ? 'browser-fallback' : 'browser';
 }
 
 function speechStyle(userAge?: number) {
