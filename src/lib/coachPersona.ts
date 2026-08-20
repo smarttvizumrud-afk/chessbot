@@ -30,7 +30,7 @@ export function coachPersona(
 ): CoachPersona {
   const stage = personaStage(interfaceMode, userAge);
   const names = gender === 'female' ? femaleNames[lang] : maleNames[lang];
-  const icon = names[stage.index]?.trim().charAt(0).toUpperCase() || 'A';
+  const icon = gender === 'female' ? '\u{1F467}' : '\u{1F466}';
   return {
     gender,
     age: stage.age,
