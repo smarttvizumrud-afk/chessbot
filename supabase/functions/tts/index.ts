@@ -101,7 +101,6 @@ function modelIdFor(lang: unknown) {
 }
 
 function languageCodeFor(lang: unknown) {
-  if (lang === 'kk') return 'kaz';
   if (lang === 'ru') return 'ru';
   if (lang === 'en') return 'en';
   return undefined;
