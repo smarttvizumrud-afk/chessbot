@@ -49,14 +49,14 @@ const copy: Record<Lang, {
     engineError: 'The computer could not reply. Try resetting the position.',
   },
   kk: {
-    yourMove: 'Kompiuterge qarsy oina',
-    computer: 'Kompiuter oynady',
-    thinking: 'Kompiuter oilanyp jatyr...',
-    wrong: 'Bul juris bolmaidy.',
-    hint: 'Komek',
-    reset: 'Qaita bastau',
-    gameOver: 'Partia ayaqtaldy.',
-    engineError: 'Kompiuter jauap bere almady. Pozitsiany qaita basta.',
+    yourMove: 'Компьютерге қарсы ойна',
+    computer: 'Компьютер ойнады',
+    thinking: 'Компьютер ойланып жатыр...',
+    wrong: 'Бұл жүріс болмайды.',
+    hint: 'Көмек',
+    reset: 'Қайта бастау',
+    gameOver: 'Партия аяқталды.',
+    engineError: 'Компьютер жауап бере алмады. Позицияны қайта баста.',
   },
 };
 

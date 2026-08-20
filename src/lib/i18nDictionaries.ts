@@ -100,7 +100,7 @@ export const dictionaries: Record<Lang, Dict> = {
   },
   kk: {
     app: 'CHESA', connect: 'Ойыншыны қосу', dashboard: 'Басты бет',
-    openings: 'Дебюттер', puzzles: 'Есептер', endgames: 'Endshpil', training: 'Жаттығу', pricing: 'Кредиттер', game: 'Партия', coach: 'AI-жаттықтырушы',
+    openings: 'Дебюттер', puzzles: 'Есептер', endgames: 'Эндшпиль', training: 'Жаттығу', pricing: 'Кредиттер', game: 'Партия', coach: 'AI-жаттықтырушы',
     you: 'Сен', coachTyping: 'Gemini жауап дайындап жатыр...', username: 'Ойыншы аты',
     import: 'Жүктеу және талдау', week: 'Апта', month: 'Ай', quarter: '3 ай',
     last10: '10 партия', last25: '25 партия', last50: '50 партия', last100: '100 партия',

@@ -241,11 +241,11 @@ function naturalHumanAdvice(report: MoveReport, lang: Lang, variant = 0, style: 
 
   if (report.label === 'good') {
     if (lang === 'en') return 'Yeah, I like this move. It keeps your position steady and does not give away anything obvious. Now take one quick look at what your opponent may want next.';
-    if (lang === 'kk') return 'Ia, magan bul juris unaidy. Pozitsiyan turaqty, artyq eshtene berip turgan joq. Endi qarsylas kelesi ne isteui mumkin ekenin bir qarap al.';
+    if (lang === 'kk') return 'Иә, маған бұл жүріс ұнайды. Позицияң тұрақты, артық ештеңе беріп тұрған жоқсың. Енді қарсылас келесіде не істей алатынын бір қарап ал.';
     return 'Да, мне нравится этот ход. Он спокойный: ты ничего лишнего не отдаёшь и держишь позицию под контролем. Теперь просто посмотри, что соперник может захотеть следующим ходом.';
   }
   if (lang === 'en') return `Here I would slow down a bit. After ${report.san}, your opponent gets a chance. ${report.bestMove} was cleaner. Before moving, quickly check checks, captures, and threats.`;
-  if (lang === 'kk') return `Bul jerde salgynqandyraq oinaigan durys. ${report.san} keyin qarsylasta mumkinshilik payda bolady. ${report.bestMove} tazalau edi. Juris jasamas buryn shah, alu jane qauipterdi tekser.`;
+  if (lang === 'kk') return `Бұл жерде сәл сабырлырақ ойнаған дұрыс. ${report.san} кейін қарсыласта мүмкіндік пайда болады. ${report.bestMove} тазарақ еді. Жүріс жасамас бұрын шах, алу және қауіптерді тексер.`;
   return `Вот тут я бы чуть притормозил. После ${report.san} у соперника появляется шанс. Аккуратнее было ${report.bestMove}. Перед ходом быстро проверь шахи, взятия и угрозы.`;
 }
 
@@ -254,11 +254,11 @@ function spokenHumanAdvice(report: MoveReport, lang: Lang, variant = 0, style: A
 
   if (report.label === 'good') {
     if (lang === 'en') return 'Yeah, this is fine. I like it. You kept everything under control. Now just breathe for a second and check what your opponent wants next.';
-    if (lang === 'kk') return 'Ia, jaqsy. Magan unaidy. Bari baqylauda. Endi bir satti toqtap, qarsylas ne qalaitynyn qarap al.';
+    if (lang === 'kk') return 'Иә, жақсы. Маған ұнайды. Бәрі бақылауда. Енді бір сәт тоқтап, қарсылас не қалайтынын қарап ал.';
     return 'Да, нормально. Мне нравится. Ты тут всё держишь под контролем. Теперь просто на секунду остановись и посмотри, чего хочет соперник.';
   }
   if (lang === 'en') return `Okay, here I would stop for a moment. After ${report.san}, things get a little uncomfortable. ${report.bestMove} was the calmer move. Look for checks, captures, and threats first.`;
-  if (lang === 'kk') return `Jaqsy, munda bir satti toqtaiyq. ${report.san} keyin oiynda qiyndyq payda bolady. ${report.bestMove} tynyshyraq edi. Aldymen shah, alu jane qauipterdi qarap al.`;
+  if (lang === 'kk') return `Жақсы, мұнда бір сәт тоқтайық. ${report.san} кейін ойында қиындық пайда болады. ${report.bestMove} тынышырақ еді. Алдымен шах, алу және қауіптерді қарап ал.`;
   return `Так, вот здесь давай на секунду остановимся. После ${report.san} позиция становится чуть неприятной. Спокойнее было ${report.bestMove}. Сначала посмотри шахи, взятия и угрозы.`;
 }
 
@@ -300,10 +300,10 @@ function writtenGoodLines(report: MoveReport, lang: Lang, style: AudienceStyle) 
     'This is a normal human move: solid, calm, and close to what the position asks for.',
   ];
   if (lang === 'kk') return [
-    'Ia, magan bul juris unaidy. Pozitsiya turaqty, endi qarsylas ne qalaitynyn qarap al.',
-    `${report.san} oryndy korinedi. Qauipsiz, tynysh, oiyndy baqylauda ustap turady.`,
-    'Jaqsy praktikalyq tandau. Asyqpaidyn, pozitsiyany buzbaidyn.',
-    'Bul tynysh ari durys juris. Qazir en bastysy - qarsylastyn ideyasyn tusinu.',
+    'Иә, маған бұл жүріс ұнайды. Позиция тұрақты, енді қарсылас не қалайтынын қарап ал.',
+    `${report.san} орынды көрінеді. Қауіпсіз, тыныш, ойынды бақылауда ұстап тұр.`,
+    'Жақсы практикалық таңдау. Асықпадың, позицияны бұзбадың.',
+    'Бұл тыныш әрі дұрыс жүріс. Қазір ең бастысы - қарсыластың идеясын түсіну.',
   ];
   return [
     'Да, мне нравится этот ход. Он спокойный: ты ничего лишнего не отдаёшь и держишь позицию под контролем.',
@@ -339,10 +339,10 @@ function spokenGoodLines(report: MoveReport, lang: Lang, style: AudienceStyle) {
     'Nice. That is a very normal human decision here. Keep going, but do not rush the next move.',
   ];
   if (lang === 'kk') return [
-    'Ia, jaqsy. Magan unaidy. Bari baqylauda. Endi qarsylas ne qalaitynyn qarap al.',
-    `${report.san}. Ia, bul tusinikti. Erekshe emes, biraq pozitsiyany saqtap tur.`,
-    'Jaqsy, bul tynysh juris. Artyq eshtene berip turgan joqsyng. Endi qauipterdi qarap al.',
-    'Jaqsy. Munda adamsha durys sheshim. Kelesi juriske asyqpa.',
+    'Иә, жақсы. Маған ұнайды. Бәрі бақылауда. Енді қарсылас не қалайтынын қарап ал.',
+    `${report.san}. Иә, бұл түсінікті. Ерекше емес, бірақ позицияны сақтап тұр.`,
+    'Жақсы, бұл тыныш жүріс. Артық ештеңе беріп тұрған жоқсың. Енді қауіптерді қарап ал.',
+    'Жақсы. Мұнда адамша дұрыс шешім. Келесі жүріске асықпа.',
   ];
   return [
     'Да, нормально. Мне нравится. Ты тут всё держишь под контролем. Теперь просто посмотри, чего хочет соперник.',
@@ -361,9 +361,9 @@ function variedProblemAdvice(report: MoveReport, lang: Lang, variant = 0, _style
     ]
     : lang === 'kk'
       ? [
-        `Bul jerde biraz toqtagan durys. ${report.san} keyin qarsylasta mumkinshilik payda bolady. ${report.bestMove} tazalau edi.`,
-        `${report.san} oynalatyndai korinedi, biraq pozitsiya azdap nasharlaidy. ${report.bestMove} men salystyr.`,
-        `Munday satta bir ret tekserip algan jaqsy. ${report.bestMove} pozitsiyany jaqsyraq ustap turady.`,
+        `Бұл жерде біраз тоқтаған дұрыс. ${report.san} кейін қарсыласта мүмкіндік пайда болады. ${report.bestMove} тазарақ еді.`,
+        `${report.san} ойналатындай көрінеді, бірақ позиция аздап нашарлайды. ${report.bestMove} жүрісімен салыстыр.`,
+        `Мұндай сәтте бір рет тексеріп алған жақсы. ${report.bestMove} позицияны жақсырақ ұстап тұрады.`,
       ]
       : [
         `Вот тут я бы чуть притормозил. После ${report.san} у соперника появляется шанс. Аккуратнее было ${report.bestMove}.`,
@@ -382,9 +382,9 @@ function variedProblemSpeech(report: MoveReport, lang: Lang, variant = 0, _style
     ]
     : lang === 'kk'
       ? [
-        `Jaqsy, munda bir satti toqtaiyq. ${report.san} keyin oiynda qiyndyq payda bolady. ${report.bestMove} tynyshyraq edi.`,
-        `${report.san} ote jaman emes, biraq qarsylasqa mumkindik beredi. Men aldymen ${report.bestMove} qarardym.`,
-        `Bir satti toqta. ${report.san} aldynda majburlei tin juristerdi tekser. ${report.bestMove} baqylaudy kobirek saqtaidy.`,
+        `Жақсы, мұнда бір сәт тоқтайық. ${report.san} кейін ойында қиындық пайда болады. ${report.bestMove} тынышырақ еді.`,
+        `${report.san} өте жаман емес, бірақ қарсыласқа мүмкіндік береді. Мен алдымен ${report.bestMove} қарар едім.`,
+        `Бір сәт тоқта. ${report.san} алдында мәжбүрлейтін жүрістерді тексер. ${report.bestMove} бақылауды көбірек сақтайды.`,
       ]
       : [
         `Так, вот здесь давай на секунду остановимся. После ${report.san} позиция становится чуть неприятной. Спокойнее было ${report.bestMove}.`,

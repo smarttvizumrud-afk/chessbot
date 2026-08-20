@@ -88,9 +88,9 @@ export function speechErrorText(lang: Lang, error?: unknown) {
     return 'Voice did not start. Try pressing Audio again.';
   }
   if (lang === 'kk') {
-    if (message.includes('key is not configured')) return 'Dauys ali qosylmagan. npm run tts:secret jane npm run tts:deploy komandalaryn orynda.';
-    if (message.includes('generate speech')) return 'ElevenLabs audio jasai almady. Kilt, voice ID nemese account creditin tekser.';
-    return 'Dauys bastalmady. Audio batyrmasyn qaita basyp kor.';
+    if (message.includes('key is not configured')) return 'Дауыс әлі қосылмаған. npm run tts:secret және npm run tts:deploy командаларын орында.';
+    if (message.includes('generate speech')) return 'ElevenLabs аудио жасай алмады. Кілтті, voice ID немесе аккаунт кредитін тексер.';
+    return 'Дауыс басталмады. Audio батырмасын қайта басып көр.';
   }
   if (message.includes('key is not configured')) return 'Озвучка ещё не подключена. Запусти npm run tts:secret и npm run tts:deploy.';
   if (message.includes('generate speech')) return 'ElevenLabs не смог создать аудио. Проверь ключ, voice ID или кредиты аккаунта.';

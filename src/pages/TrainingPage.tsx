@@ -53,11 +53,11 @@ const text: Record<Lang, TrainingText> = {
     puzzlesText: '\u0422\u0430\u043b\u0434\u0430\u0443\u0434\u0430 \u0435\u04a3 \u043a\u04e9\u043f \u049b\u0430\u0442\u0435 \u0448\u044b\u049b\u049b\u0430\u043d \u0442\u0430\u049b\u044b\u0440\u044b\u043f\u0442\u0430\u0440.',
     openings: '\u0414\u0435\u0431\u044e\u0442\u0442\u0435\u0440\u0434\u0456 \u04af\u0439\u0440\u0435\u043d\u0443',
     openingsText: '\u049a\u0430\u0439 \u0434\u0435\u0431\u044e\u0442 \u0436\u0430\u049b\u0441\u044b \u043d\u04d9\u0442\u0438\u0436\u0435 \u0431\u0435\u0440\u0435\u0442\u0456\u043d\u0456\u043d \u043a\u04e9\u0440.',
-    endgames: 'Endshpil',
-    endgamesText: 'Oz partialaryndagy songy kezen qatelerin kara.',
+    endgames: 'Эндшпиль',
+    endgamesText: 'Өз партияларыңдағы соңғы кезең қателерін қара.',
     startPuzzles: '\u0415\u0441\u0435\u043f\u0442\u0435\u0440\u0434\u0456 \u0431\u0430\u0441\u0442\u0430\u0443',
     studyOpenings: '\u0414\u0435\u0431\u044e\u0442\u0442\u0435\u0440',
-    studyEndgames: 'Endshpil jattygu',
+    studyEndgames: 'Эндшпиль жаттығуы',
   },
 };
 

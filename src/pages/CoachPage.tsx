@@ -281,7 +281,7 @@ function welcomeMessage(lang: Lang, interfaceMode: InterfaceMode, gender: Gender
     return { role: 'assistant', text: personaIntro(persona, lang, 'Ask me about your games, openings, mistakes, or training plan.') };
   }
   if (lang === 'kk') {
-    return { role: 'assistant', text: personaIntro(persona, lang, 'Partiyalaryn, debyutterin, qatelerin nemese jattygu josparyn turaly sura.') };
+    return { role: 'assistant', text: personaIntro(persona, lang, 'Партияларың, дебюттерің, қателерің немесе жаттығу жоспарың туралы сұра.') };
   }
   return { role: 'assistant', text: personaIntro(persona, lang, 'Спроси меня о партиях, дебютах, ошибках или плане тренировок.') };
 }

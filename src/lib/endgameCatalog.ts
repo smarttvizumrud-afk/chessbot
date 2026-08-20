@@ -47,15 +47,15 @@ export const endgameCopy: Record<Lang, EndgameCopy> = {
     close: 'Close',
   },
   kk: {
-    title: 'Endshpil',
-    subtitle: 'Negizgi endshpil turleri: peshkadan ferzige jane mat ulgilerine deiin.',
-    drill: 'Jattygu',
-    fromGames: 'Partialaryndagy endshpil',
-    emptyFromGames: 'Taldauda endshpil qateleri azir joq. Endshpilge jetken kobirek partia jukte.',
-    played: 'Sen oynadyn',
-    best: 'Jaqsy',
-    open: 'Partiany ashu',
-    close: 'Jabu',
+    title: 'Эндшпиль',
+    subtitle: 'Негізгі эндшпиль түрлері: пешкадан ферзіге және мат үлгілеріне дейін.',
+    drill: 'Жаттығу',
+    fromGames: 'Партияларыңдағы эндшпиль',
+    emptyFromGames: 'Талдауда эндшпиль қателері әзір жоқ. Соңына дейін жеткен көбірек партия жүкте.',
+    played: 'Сен ойнадың',
+    best: 'Жақсырақ',
+    open: 'Партияны ашу',
+    close: 'Жабу',
   },
 };
 
@@ -121,33 +121,33 @@ export const endgameGroups: Record<Lang, EndgameGroup[]> = {
     ]),
   ],
   kk: [
-    group('Peshkaly endshpil', [
-      card('Korol jane peshka', 'Kvadrat, oppozitsia jane koroldin buzylyp kirui.', 'Peshkany e5-ke qoyyp, ferzige jol tap.'),
-      card('Peshka buzylysy', 'Peshka qurbany otpeli peshka jasaydy.', '2 ge 2 jane 3 ke 3 qurylymdardy kara.'),
-      card('Alystagy otpeli', 'Alystagy otpeli qarsy koroldi aldatady.', 'Koroldi aldatyp, ekinshi qanattagy peshkalardy al.'),
+    group('Пешкалы эндшпиль', [
+      card('Король және пешка', 'Квадрат ережесі, оппозиция және корольдің бұзып кіруі.', 'Пешканы e5-ке қойып, ферзіге өту жолын тап.'),
+      card('Пешка бұзып өтуі', 'Пешка құрбаны кейде шешуші өтпелі пешка жасайды.', '2-ге 2 және 3-ке 3 құрылымдарын қара.'),
+      card('Алыстағы өтпелі пешка', 'Алыстағы өтпелі пешка қарсы корольді алаңдатады.', 'Корольді алшақтатып, екінші қанаттағы пешкаларды ал.'),
     ]),
-    group('Ladia jane ferzi', [
-      card('Ladialy endshpil', 'Belsendi ladia passiv qorghanystan kushti.', 'Ladia peshka artinda jane janama shahtardy jattyq.'),
-      card('Ladia peshkalarga qarsy', 'Peshkalardy artinan nemese janinan toqtat.', 'Shah beru me, peshka alu ma - tauda.'),
-      card('Ferzilik endshpil', 'Mangilik shah, korol qauipsizdigi jane otpeli peshkalar.', 'Ashyq korolge mangilik shah tap.'),
-      card('Ferzi peshkaga qarsy', 'Shahtarmen koroldi qu, sodan son peshkany al.', '7-qatar peshka pozitsialaryn jattyq.'),
+    group('Ладья және ферзі', [
+      card('Ладьялы эндшпиль', 'Белсенді ладья пассив қорғаныстан күштірек.', 'Ладьяны өтпелі пешканың артына қойып, жанама шахтарды жаттықтыр.'),
+      card('Ладья пешкаларға қарсы', 'Пешкаларды артынан немесе жанынан тоқтат.', 'Шах беру керек пе, әлде пешканы алу керек пе - таңда.'),
+      card('Ферзилік эндшпиль', 'Мәңгі шах, король қауіпсіздігі және өтпелі пешкалар маңызды.', 'Ашық корольге мәңгі шах таб.'),
+      card('Ферзі пешкаға қарсы', 'Шахтармен корольді қуып, содан кейін пешканы ал.', '7-қатардағы пешка позицияларын жаттықтыр.'),
     ]),
-    group('Zhenil figuralar', [
-      card('Pil endshpili', 'Pil ashyk diagonalda kushti.', 'Pildi otpeli peshka artina qoyyp tekser.'),
-      card('At endshpili', 'At forpost pen vilka jaqsyrady.', 'At marshrutyn nemese vilkany tap.'),
-      card('Ar turli tusti pilder', 'Bir artyq peshka ekinshi alsizdiksiz jetpeui mumkin.', 'Eki qanatta eki alsizdik jasa.'),
-      card('Pil atqa qarsy', 'Pil ashyk oiynda, at blokadada kushti.', 'Ortalyq peshka almasu kimge paidaly ekenin tap.'),
+    group('Жеңіл фигуралар', [
+      card('Піл эндшпилі', 'Піл ашық диагональда күшті.', 'Пілді өтпелі пешканың артына қойып, оны тоқтата ала ма тексер.'),
+      card('Ат эндшпилі', 'Ат форпост пен айыр шабуылдарды жақсы көреді.', 'Аттың маршрутын немесе айыр шабуылды тап.'),
+      card('Әртүрлі түсті пілдер', 'Бір артық пешка екінші әлсіздіксіз жеңіске жетпеуі мүмкін.', 'Екі қанатта екі әлсіздік жаса.'),
+      card('Піл атқа қарсы', 'Піл ашық ойында, ат блокадада күштірек.', 'Орталық пешка алмасуы кімге пайдалы екенін тап.'),
     ]),
-    group('Figura jane peshkalar', [
-      card('Figura peshkalarga qarsy', 'Figura otpeli peshkalardy toqtata ala ma - esepte.', 'Korol men figura jolyn tekser.'),
-      card('Artyq figura', 'Aldymen qarsy oiyndy jane otpeli peshkany toqtat.', 'Songy qauipti peshkany qauipsiz almastyr.'),
-      card('Sapalyq artykshylyk', 'Ladia at nemese pilge qarsy tek belsendilikpen utady.', 'Ladia 7-qatargha kira ala ma tekser.'),
+    group('Фигура және пешкалар', [
+      card('Фигура пешкаларға қарсы', 'Фигура өтпелі пешкаларды тоқтата ала ма - есепте.', 'Король мен фигураның жолын тексер.'),
+      card('Артық фигура', 'Алдымен қарсы ойынды және өтпелі пешканы тоқтат.', 'Соңғы қауіпті пешканы қауіпсіз алмастыр.'),
+      card('Сапалық артықшылық', 'Ладья атқа немесе пілге қарсы тек белсенділікпен ұтады.', 'Ладья 7-қатарға кіре ала ма, тексер.'),
     ]),
-    group('Mat endshpilderi', [
-      card('Ferzimen mat', 'Koroldi qatarlar boiynsha kes jane pat jasama.', '10 juriste patsyz mat qoy.'),
-      card('Ladiamen mat', 'Ladiamen koroldi kes, oz korolinmen shetke iter.', 'Qarsy koroldi shetke aparyp mat qoy.'),
-      card('Eki pil', 'Pilder diagonaldy kesedi, korol shygu jolyn jabady.', 'Koroldi burysqa quyp, diagonaldy usta.'),
-      card('Pil jane at', 'En qiyn negizgi mat: koroldi pil tusindegi burysqa qu.', 'W ulgisin jane durys buryshty jattyq.'),
+    group('Мат эндшпильдері', [
+      card('Ферзімен мат', 'Корольді қатарлармен шектеп, пат жасап қойма.', '10 жүрісте патсыз мат қой.'),
+      card('Ладьямен мат', 'Ладьямен корольді кес, өз короліңмен шетке итер.', 'Қарсы корольді тақта шетіне апарып мат қой.'),
+      card('Екі піл', 'Пілдер диагональдарды кеседі, король шығу жолдарын жабады.', 'Корольді бұрышқа қуып, диагональдарды ұстап тұр.'),
+      card('Піл және ат', 'Ең қиын негізгі мат: корольді піл түсіндегі бұрышқа қу.', 'W үлгісін және дұрыс бұрышты жаттықтыр.'),
     ]),
   ],
 };
