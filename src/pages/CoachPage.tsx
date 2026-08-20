@@ -36,15 +36,19 @@ function CoachContent({ lang }: { lang: Lang }) {
   const [speechNotice, setSpeechNotice] = useState('');
   const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>('main');
   const [userAge, setUserAge] = useState<number>();
+  const [useTeenVoice, setUseTeenVoice] = useState(false);
   const speechBusyRef = useRef(false);
   const activeChat = chats.find((chat) => chat.id === activeChatId) ?? chats[0] ?? createChat(lang);
   const messages = activeChat.messages;
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      const metadata = readOnboardingData(data.user?.user_metadata);
+      const rawMetadata = data.user?.user_metadata;
+      const metadata = readOnboardingData(rawMetadata);
       if (metadata.interfaceMode) setInterfaceMode(metadata.interfaceMode);
-      if (metadata.birthDate) setUserAge(ageFromBirthDate(metadata.birthDate) ?? undefined);
+      const age = metadata.birthDate ? ageFromBirthDate(metadata.birthDate) : null;
+      setUserAge(age ?? undefined);
+      setUseTeenVoice(isTeenAge(age) || hasLegacyStudentMode(rawMetadata));
     });
   }, []);
 
@@ -93,7 +97,7 @@ function CoachContent({ lang }: { lang: Lang }) {
     setSpeechNotice('');
     setSpeechBusy(true);
     try {
-      const result = await speak(text, interfaceMode, userAge);
+      const result = await speak(text, interfaceMode, userAge, useTeenVoice);
       if (result === 'elevenlabs-unavailable') setSpeechNotice(childVoiceErrorText(lang));
     } finally {
       speechBusyRef.current = false;
@@ -239,16 +243,24 @@ function canSpeak() {
   return typeof window !== 'undefined' && 'Audio' in window;
 }
 
-function elevenLabsVoice(interfaceMode: InterfaceMode, userAge?: number): ElevenLabsVoice {
+function elevenLabsVoice(interfaceMode: InterfaceMode, userAge: number | undefined, useTeenVoice: boolean): ElevenLabsVoice {
   if (interfaceMode === 'child') return 'child';
-  if (typeof userAge === 'number' && userAge >= 12 && userAge < 18) return 'teen';
+  if (useTeenVoice || isTeenAge(userAge)) return 'teen';
   return 'adult';
 }
 
-async function speak(text: string, interfaceMode: InterfaceMode, userAge?: number) {
+function isTeenAge(age: number | null | undefined) {
+  return typeof age === 'number' && age >= 12 && age < 18;
+}
+
+function hasLegacyStudentMode(metadata: unknown) {
+  return Boolean(metadata && typeof metadata === 'object' && (metadata as { interface_mode?: unknown }).interface_mode === 'student');
+}
+
+async function speak(text: string, interfaceMode: InterfaceMode, userAge: number | undefined, useTeenVoice: boolean) {
   if (!canSpeak()) return 'unavailable';
   const cleanText = cleanSpeechText(text);
-  const voice = elevenLabsVoice(interfaceMode, userAge);
+  const voice = elevenLabsVoice(interfaceMode, userAge, useTeenVoice);
   if (voice === 'child') {
     if (Date.now() >= childVoiceUnavailableUntil) {
       try {
