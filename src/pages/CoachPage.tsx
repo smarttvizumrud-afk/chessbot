@@ -4,8 +4,8 @@ import { askCoach, type CoachMessage } from '../lib/aiCoach';
 import { NotEnoughCreditsError } from '../lib/credits';
 import { t } from '../lib/i18n';
 import { coachPersona } from '../lib/coachPersona';
+import { canSpeak, speakCoachText } from '../lib/coachSpeech';
 import { supabase } from '../lib/supabase';
-import { speakWithElevenLabsVoice, type ElevenLabsVoice } from '../lib/tts';
 import type { Lang } from '../lib/types';
 import { useChessData } from '../lib/useChessData';
 import { ageFromBirthDate, readOnboardingData, type Gender, type InterfaceMode } from '../lib/userOnboarding';
@@ -17,7 +17,6 @@ type CoachChat = {
 };
 
 const chatsStorageKey = 'chesa-coach-chats';
-let childVoiceUnavailableUntil = 0;
 
 export function CoachPage({ lang }: { lang: Lang }) {
   return (
@@ -98,7 +97,7 @@ function CoachContent({ lang }: { lang: Lang }) {
     setSpeechNotice('');
     setSpeechBusy(true);
     try {
-      const result = await speak(text, interfaceMode, gender);
+      const result = await speakCoachText(text, interfaceMode, gender);
       if (result === 'elevenlabs-unavailable') setSpeechNotice(childVoiceErrorText(lang));
     } finally {
       speechBusyRef.current = false;
@@ -242,10 +241,6 @@ function childVoiceErrorText(lang: Lang) {
   return 'Голос ElevenLabs сейчас недоступен. Попробуй ещё раз позже.';
 }
 
-function canSpeak() {
-  return typeof window !== 'undefined' && 'Audio' in window;
-}
-
 function CoachPersonaBadge({
   lang,
   interfaceMode,
@@ -269,42 +264,6 @@ function CoachPersonaBadge({
   );
 }
 
-function elevenLabsVoice(interfaceMode: InterfaceMode, gender: Gender): ElevenLabsVoice {
-  const female = gender === 'female';
-  if (interfaceMode === 'child') return female ? 'child_female' : 'child';
-  if (interfaceMode === 'preschool') return female ? 'school_female' : 'school';
-  return female ? 'teen_female' : 'teen';
-}
-
-async function speak(text: string, interfaceMode: InterfaceMode, gender: Gender) {
-  if (!canSpeak()) return 'unavailable';
-  const cleanText = cleanSpeechText(text);
-  const voice = elevenLabsVoice(interfaceMode, gender);
-  if (voice === 'child' || voice === 'child_female') {
-    if (Date.now() >= childVoiceUnavailableUntil) {
-      try {
-        await speakWithElevenLabsVoice(cleanText, voice);
-        return 'elevenlabs';
-      } catch (error) {
-        childVoiceUnavailableUntil = Date.now() + 5 * 60 * 1_000;
-        console.warn('Could not use child ElevenLabs voice.', error);
-      }
-    }
-    return 'elevenlabs-unavailable';
-  }
-
-  await speakWithElevenLabsVoice(cleanText, voice);
-  return 'elevenlabs';
-}
-
-function cleanSpeechText(text: string) {
-  return text
-    .replace(/[`*_#>]/g, '')
-    .replace(/\s+/g, ' ')
-    .replace(/\bAI\b/g, 'эй ай')
-    .replace(/[^\p{L}\p{N}\s.,!?;:()\-+/%]/gu, '')
-    .trim();
-}
 
 function welcomeMessage(lang: Lang): CoachMessage {
   if (lang === 'en') return { role: 'assistant', text: 'Ask me about your games, openings, mistakes, or training plan.' };

@@ -3,6 +3,7 @@ import { AuthGate } from '../components/AuthGate';
 import { AnalysisBoard } from '../components/AnalysisBoard';
 import { MoveTable } from '../components/MoveTable';
 import { coachPersona, personaAdvice } from '../lib/coachPersona';
+import { canSpeak, speakCoachText } from '../lib/coachSpeech';
 import { labelText, localizeInsight, t } from '../lib/i18n';
 import { fenAfterPly, getMovesWithFens } from '../lib/pgn';
 import { supabase } from '../lib/supabase';
@@ -112,16 +113,40 @@ function AnalysisCoachCard({
   gender: Gender;
   userAge?: number;
 }) {
+  const [speechBusy, setSpeechBusy] = useState(false);
   const persona = coachPersona(interfaceMode, gender, lang, userAge);
   const advice = report
     ? personaAdvice(persona, lang, humanAdvice(report, lang))
     : idleAdvice(persona, lang);
 
+  async function playAdvice() {
+    if (speechBusy) return;
+    setSpeechBusy(true);
+    try {
+      await speakCoachText(advice, interfaceMode, gender);
+    } finally {
+      setSpeechBusy(false);
+    }
+  }
+
   return (
     <article className="persona-advice">
       <span className={`coach-avatar ${gender}`}>{persona.icon}</span>
       <div>
-        <strong>{persona.name}</strong>
+        <strong>
+          {persona.name}
+          {canSpeak() && (
+            <button
+              className="speak-button"
+              type="button"
+              onClick={() => void playAdvice()}
+              disabled={speechBusy}
+              aria-label="Speak analysis advice"
+            >
+              🔊
+            </button>
+          )}
+        </strong>
         <p>{advice}</p>
         {report && <MoveComment report={report} playerColor={playerColor} lang={lang} />}
       </div>
