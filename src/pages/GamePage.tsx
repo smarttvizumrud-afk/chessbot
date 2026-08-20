@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AuthGate } from '../components/AuthGate';
 import { AnalysisBoard } from '../components/AnalysisBoard';
 import { MoveTable } from '../components/MoveTable';
 import { coachPersona, personaAdvice, personaIntro } from '../lib/coachPersona';
 import { createCoachSpeechAudio, speakCoachText, speechErrorText } from '../lib/coachSpeech';
 import { labelText, localizeInsight, t } from '../lib/i18n';
+import { generateMoveCoachAdvice } from '../lib/moveCoachAdvice';
 import { fenAfterPly, getMovesWithFens } from '../lib/pgn';
 import { supabase } from '../lib/supabase';
 import type { BoardStyle, Lang, MoveReport, PieceStyle, PlayerColor } from '../lib/types';
@@ -48,19 +49,47 @@ function GameContent({
   const [gender, setGender] = useState<Gender>('male');
   const [userAge, setUserAge] = useState<number>();
   const [adviceTurn, setAdviceTurn] = useState(0);
+  const [generatedAdvice, setGeneratedAdvice] = useState('');
+  const [adviceLoading, setAdviceLoading] = useState(false);
+  const adviceRequestRef = useRef(0);
   const report = analysis?.moveReports.find((item) => item.ply === ply);
   const totalPly = useMemo(() => game ? getMovesWithFens(game.pgn).length : 0, [game]);
   const fen = useMemo(() => game ? fenAfterPly(game.pgn, ply) : '', [game, ply]);
   const selectPly = useCallback((nextPly: number) => {
     setPly(nextPly);
-    setAdviceTurn((turn) => turn + 1);
+    const nextTurn = adviceTurn + 1;
+    setAdviceTurn(nextTurn);
+    setGeneratedAdvice('');
     const nextReport = analysis?.moveReports.find((item) => item.ply === nextPly);
-    if (!nextReport) return;
+    if (!nextReport) {
+      setAdviceLoading(false);
+      return;
+    }
 
-    const advice = analysisCoachSpeech(nextReport, interfaceMode, gender, lang, userAge, adviceTurn + 1);
+    const requestId = adviceRequestRef.current + 1;
+    adviceRequestRef.current = requestId;
     const preparedAudio = createCoachSpeechAudio();
-    speakCoachText(advice, interfaceMode, gender, lang, preparedAudio)
-      .catch((error) => console.warn('Could not speak selected move advice.', error));
+    setAdviceLoading(true);
+    generateMoveCoachAdvice(nextReport, lang, interfaceMode, gender, userAge, nextTurn)
+      .then((text) => {
+        if (adviceRequestRef.current !== requestId) return;
+        const persona = coachPersona(interfaceMode, gender, lang, userAge);
+        const displayAdvice = personaAdvice(persona, lang, text);
+        setGeneratedAdvice(displayAdvice);
+        speakCoachText(displayAdvice, interfaceMode, gender, lang, preparedAudio)
+          .catch((error) => console.warn('Could not speak generated move advice.', error));
+      })
+      .catch((error) => {
+        if (adviceRequestRef.current !== requestId) return;
+        console.warn('Could not generate move advice.', error);
+        const fallback = analysisCoachAdvice(nextReport, interfaceMode, gender, lang, userAge, nextTurn);
+        setGeneratedAdvice(fallback);
+        speakCoachText(fallback, interfaceMode, gender, lang, preparedAudio)
+          .catch((speechError) => console.warn('Could not speak selected move advice.', speechError));
+      })
+      .finally(() => {
+        if (adviceRequestRef.current === requestId) setAdviceLoading(false);
+      });
   }, [adviceTurn, analysis, gender, interfaceMode, lang, userAge]);
 
   useEffect(() => {
@@ -106,6 +135,8 @@ function GameContent({
           gender={gender}
           userAge={userAge}
           adviceTurn={adviceTurn}
+          generatedAdvice={generatedAdvice}
+          adviceLoading={adviceLoading}
         />
       </section>
     </div>
@@ -120,6 +151,8 @@ function AnalysisCoachCard({
   gender,
   userAge,
   adviceTurn,
+  generatedAdvice,
+  adviceLoading,
 }: {
   report?: MoveReport;
   playerColor: PlayerColor;
@@ -128,13 +161,15 @@ function AnalysisCoachCard({
   gender: Gender;
   userAge?: number;
   adviceTurn: number;
+  generatedAdvice: string;
+  adviceLoading: boolean;
 }) {
   const [speechBusy, setSpeechBusy] = useState(false);
   const [speechNotice, setSpeechNotice] = useState('');
   const [speechTurn, setSpeechTurn] = useState(0);
   const persona = coachPersona(interfaceMode, gender, lang, userAge);
   const advice = report
-    ? analysisCoachAdvice(report, interfaceMode, gender, lang, userAge, adviceTurn)
+    ? generatedAdvice || analysisCoachAdvice(report, interfaceMode, gender, lang, userAge, adviceTurn)
     : idleAdvice(persona, lang);
 
   useEffect(() => {
@@ -149,7 +184,7 @@ function AnalysisCoachCard({
     const nextSpeechTurn = speechTurn + 1;
     setSpeechTurn(nextSpeechTurn);
     const spokenAdvice = report
-      ? analysisCoachSpeech(report, interfaceMode, gender, lang, userAge, adviceTurn + nextSpeechTurn)
+      ? generatedAdvice || analysisCoachSpeech(report, interfaceMode, gender, lang, userAge, adviceTurn + nextSpeechTurn)
       : idleSpeech(persona, lang);
     try {
       await speakCoachText(spokenAdvice, interfaceMode, gender, lang, preparedAudio);
@@ -176,7 +211,7 @@ function AnalysisCoachCard({
             {speechBusy ? '...' : 'Audio'}
           </button>
         </div>
-        <p>{advice}</p>
+        <p>{adviceLoading ? loadingAdviceText(lang) : advice}</p>
         {speechNotice && <p className="message">{speechNotice}</p>}
         {report && <MoveComment report={report} playerColor={playerColor} lang={lang} />}
       </div>
@@ -206,6 +241,12 @@ function analysisCoachSpeech(
 ) {
   const persona = coachPersona(interfaceMode, gender, lang, userAge);
   return `${persona.name}: ${spokenHumanAdvice(report, lang, variant, audienceStyle(interfaceMode, userAge))}`;
+}
+
+function loadingAdviceText(lang: Lang) {
+  if (lang === 'en') return 'Thinking how to say this naturally...';
+  if (lang === 'kk') return 'Қалай адамша айтуға болатынын ойлап жатыр...';
+  return 'Думаю, как сказать это по-человечески...';
 }
 
 function MoveComment({ report, playerColor, lang }: {

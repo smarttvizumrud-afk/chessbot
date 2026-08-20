@@ -28,9 +28,10 @@ Deno.serve(async (req) => {
       return json({ error: 'Gemini key is not configured on the server.' }, 503);
     }
 
-    const body = (await req.json()) as { prompt?: unknown; system?: unknown };
+    const body = (await req.json()) as { prompt?: unknown; system?: unknown; temperature?: unknown };
     const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
     const system = typeof body.system === 'string' ? body.system.trim() : '';
+    const temperature = typeof body.temperature === 'number' ? clamp(body.temperature, 0, 2) : undefined;
 
     if (!prompt) return json({ error: 'Write a prompt for AI.' }, 400);
     if (prompt.length > 10_000 || system.length > 5_000) {
@@ -44,6 +45,7 @@ Deno.serve(async (req) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           systemInstruction: system ? { parts: [{ text: system }] } : undefined,
+          generationConfig: temperature === undefined ? undefined : { temperature },
           contents: [{ parts: [{ text: prompt }] }],
         }),
       },
@@ -67,3 +69,7 @@ Deno.serve(async (req) => {
     return json({ error: 'Could not call Gemini.' }, 500);
   }
 });
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
