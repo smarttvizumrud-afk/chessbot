@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
       text,
       model_id: modelIdFor(body.lang),
       language_code: languageCodeFor(body.lang),
-      voice_settings: voiceSettingsFor(body.lang),
+          voice_settings: voiceSettingsFor(body.lang, body.voice),
     };
     const response = await elevenLabsSpeech(voiceId, requestBody, 'mp3_44100_192')
       .then((result) => result.ok ? result : elevenLabsSpeech(voiceId, requestBody, 'mp3_44100_128'));
@@ -77,8 +77,17 @@ function isFemaleVoice(voice: unknown) {
   return voice === 'child_female' || voice === 'school_female' || voice === 'teen_female';
 }
 
-function voiceSettingsFor(lang: unknown) {
+function voiceSettingsFor(lang: unknown, voice: unknown) {
   if (lang === 'kk') {
+    if (isFemaleVoice(voice)) {
+      return {
+        stability: 0.68,
+        similarity_boost: 0.78,
+        style: 0.06,
+        use_speaker_boost: true,
+      };
+    }
+
     return {
       stability: 0.56,
       similarity_boost: 0.84,

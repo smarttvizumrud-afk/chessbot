@@ -168,8 +168,10 @@ function AnalysisCoachCard({
   const [speechNotice, setSpeechNotice] = useState('');
   const [speechTurn, setSpeechTurn] = useState(0);
   const persona = coachPersona(interfaceMode, gender, lang, userAge);
-  const advice = report
-    ? generatedAdvice || analysisCoachAdvice(report, interfaceMode, gender, lang, userAge, adviceTurn)
+  const advice = report && !generatedAdvice
+    ? loadingAdviceText(lang)
+    : report
+      ? generatedAdvice
     : idleAdvice(persona, lang);
 
   useEffect(() => {
@@ -183,10 +185,14 @@ function AnalysisCoachCard({
     const preparedAudio = createCoachSpeechAudio();
     const nextSpeechTurn = speechTurn + 1;
     setSpeechTurn(nextSpeechTurn);
-    const spokenAdvice = report
-      ? generatedAdvice || analysisCoachSpeech(report, interfaceMode, gender, lang, userAge, adviceTurn + nextSpeechTurn)
-      : idleSpeech(persona, lang);
     try {
+      const spokenAdvice = report
+        ? generatedAdvice || personaAdvice(
+          persona,
+          lang,
+          await generateMoveCoachAdvice(report, lang, interfaceMode, gender, userAge, adviceTurn + nextSpeechTurn),
+        )
+        : idleSpeech(persona, lang);
       await speakCoachText(spokenAdvice, interfaceMode, gender, lang, preparedAudio);
     } catch (error) {
       console.warn('Could not speak analysis advice.', error);
@@ -229,18 +235,6 @@ function analysisCoachAdvice(
 ) {
   const persona = coachPersona(interfaceMode, gender, lang, userAge);
   return personaAdvice(persona, lang, humanAdvice(report, lang, variant, audienceStyle(interfaceMode, userAge)));
-}
-
-function analysisCoachSpeech(
-  report: MoveReport,
-  interfaceMode: InterfaceMode,
-  gender: Gender,
-  lang: Lang,
-  userAge?: number,
-  variant = 0,
-) {
-  const persona = coachPersona(interfaceMode, gender, lang, userAge);
-  return `${persona.name}: ${spokenHumanAdvice(report, lang, variant, audienceStyle(interfaceMode, userAge))}`;
 }
 
 function loadingAdviceText(lang: Lang) {
@@ -290,28 +284,9 @@ function naturalHumanAdvice(report: MoveReport, lang: Lang, variant = 0, style: 
   return `Вот тут я бы чуть притормозил. После ${report.san} у соперника появляется шанс. Аккуратнее было ${report.bestMove}. Перед ходом быстро проверь шахи, взятия и угрозы.`;
 }
 
-function spokenHumanAdvice(report: MoveReport, lang: Lang, variant = 0, style: AudienceStyle = 'teen') {
-  return variedSpokenAdvice(report, lang, variant, style);
-
-  if (report.label === 'good') {
-    if (lang === 'en') return 'Yeah, this is fine. I like it. You kept everything under control. Now just breathe for a second and check what your opponent wants next.';
-    if (lang === 'kk') return 'Иә, жақсы. Маған ұнайды. Бәрі бақылауда. Енді бір сәт тоқтап, қарсылас не қалайтынын қарап ал.';
-    return 'Да, нормально. Мне нравится. Ты тут всё держишь под контролем. Теперь просто на секунду остановись и посмотри, чего хочет соперник.';
-  }
-  if (lang === 'en') return `Okay, here I would stop for a moment. After ${report.san}, things get a little uncomfortable. ${report.bestMove} was the calmer move. Look for checks, captures, and threats first.`;
-  if (lang === 'kk') return `Жақсы, мұнда бір сәт тоқтайық. ${report.san} кейін ойында қиындық пайда болады. ${report.bestMove} тынышырақ еді. Алдымен шах, алу және қауіптерді қарап ал.`;
-  return `Так, вот здесь давай на секунду остановимся. После ${report.san} позиция становится чуть неприятной. Спокойнее было ${report.bestMove}. Сначала посмотри шахи, взятия и угрозы.`;
-}
-
 function variedWrittenAdvice(report: MoveReport, lang: Lang, variant = 0, style: AudienceStyle = 'teen') {
   if (report.label !== 'good') return variedProblemAdvice(report, lang, variant, style);
   const lines = writtenGoodLines(report, lang, style);
-  return lines[lineIndex(report, lines.length, variant)];
-}
-
-function variedSpokenAdvice(report: MoveReport, lang: Lang, variant = 0, style: AudienceStyle = 'teen') {
-  if (report.label !== 'good') return variedProblemSpeech(report, lang, variant, style);
-  const lines = spokenGoodLines(report, lang, style);
   return lines[lineIndex(report, lines.length, variant)];
 }
 
@@ -354,45 +329,6 @@ function writtenGoodLines(report: MoveReport, lang: Lang, style: AudienceStyle) 
   ];
 }
 
-function spokenGoodLines(report: MoveReport, lang: Lang, style: AudienceStyle) {
-  if (lang === 'ru') {
-    if (style === 'little') return [
-      'Класс. Хороший ход. Фигурки в порядке, можно играть дальше.',
-      'Да, так можно. Ты ничего не потерял. Теперь смотрим, что делает соперник.',
-      'Хорошо. Спокойный ход. Мне нравится.',
-    ];
-    if (style === 'kid') return [
-      'Да, нормально. Ты держишь позицию. Теперь глянь, что хочет соперник.',
-      `${report.san}. Да, по делу. Просто и аккуратно.`,
-      'Хорошо. Как напарник скажу: не спеши, проверь угрозы.',
-    ];
-    if (style === 'teen') return [
-      'Да, норм. Мне нравится. Ход спокойный, позиция не сыпется.',
-      `${report.san}. Логично. Не красота ради красоты, а просто здоровый ход.`,
-      'Хорошо. Без лишнего риска. Теперь быстро проверь, что соперник хочет в ответ.',
-      'Да, это похоже на ход живого игрока. Продолжай, только не спеши.',
-    ];
-  }
-  if (lang === 'en') return [
-    'Yeah, this is fine. I like it. You kept everything under control. Now just check what your opponent wants next.',
-    `${report.san}. Yep, that makes sense. Nothing flashy, but it keeps the position healthy.`,
-    'Good, this is a calm move. You are not giving anything away. Now take one more look at their threats.',
-    'Nice. That is a very normal human decision here. Keep going, but do not rush the next move.',
-  ];
-  if (lang === 'kk') return [
-    'Иә, жақсы. Маған ұнайды. Бәрі бақылауда. Енді қарсылас не қалайтынын қарап ал.',
-    `${report.san}. Иә, бұл түсінікті. Ерекше емес, бірақ позицияны сақтап тұр.`,
-    'Жақсы, бұл тыныш жүріс. Артық ештеңе беріп тұрған жоқсың. Енді қауіптерді қарап ал.',
-    'Жақсы. Мұнда адамша дұрыс шешім. Келесі жүріске асықпа.',
-  ];
-  return [
-    'Да, нормально. Мне нравится. Ты тут всё держишь под контролем. Теперь просто посмотри, чего хочет соперник.',
-    `${report.san}. Да, логично. Не блестяще ради красоты, а просто здоровый ход по позиции.`,
-    'Хорошо, это спокойный ход. Ты ничего не отдаёшь. Теперь ещё раз глянь, нет ли у соперника угроз.',
-    'Нормально. Вот это уже похоже на человеческое решение за доской. Продолжай, только не спеши со следующим ходом.',
-  ];
-}
-
 function variedProblemAdvice(report: MoveReport, lang: Lang, variant = 0, _style: AudienceStyle = 'teen') {
   const lines = lang === 'en'
     ? [
@@ -410,27 +346,6 @@ function variedProblemAdvice(report: MoveReport, lang: Lang, variant = 0, _style
         `Вот тут я бы чуть притормозил. После ${report.san} у соперника появляется шанс. Аккуратнее было ${report.bestMove}.`,
         `${report.san} выглядит играбельно, но позиция немного проседает. Я бы сравнил с вариантом ${report.bestMove}.`,
         `Это момент, где лучше один раз спокойно перепроверить. ${report.bestMove} держало позицию увереннее.`,
-      ];
-  return lines[lineIndex(report, lines.length, variant)];
-}
-
-function variedProblemSpeech(report: MoveReport, lang: Lang, variant = 0, _style: AudienceStyle = 'teen') {
-  const lines = lang === 'en'
-    ? [
-      `Okay, here I would stop for a moment. After ${report.san}, things get a little uncomfortable. ${report.bestMove} was calmer.`,
-      `Hmm, ${report.san} is not crazy, but it gives your opponent something to use. I would look at ${report.bestMove} first.`,
-      `Wait a second here. Before playing ${report.san}, check the forcing moves. ${report.bestMove} kept more control.`,
-    ]
-    : lang === 'kk'
-      ? [
-        `Жақсы, мұнда бір сәт тоқтайық. ${report.san} кейін ойында қиындық пайда болады. ${report.bestMove} тынышырақ еді.`,
-        `${report.san} өте жаман емес, бірақ қарсыласқа мүмкіндік береді. Мен алдымен ${report.bestMove} қарар едім.`,
-        `Бір сәт тоқта. ${report.san} алдында мәжбүрлейтін жүрістерді тексер. ${report.bestMove} бақылауды көбірек сақтайды.`,
-      ]
-      : [
-        `Так, вот здесь давай на секунду остановимся. После ${report.san} позиция становится чуть неприятной. Спокойнее было ${report.bestMove}.`,
-        `Смотри, ${report.san} не выглядит ужасно, но сопернику появляется за что зацепиться. Я бы сначала посмотрел ${report.bestMove}.`,
-        `Подожди секунду. Перед ${report.san} стоило проверить форсированные ходы. ${report.bestMove} держало больше контроля.`,
       ];
   return lines[lineIndex(report, lines.length, variant)];
 }
