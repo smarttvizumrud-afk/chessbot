@@ -31,9 +31,9 @@ try {
 const apiKey = readValue(source, 'ELEVENLABS_API_KEY');
 const voiceId = readValue(source, 'ELEVENLABS_CHILD_VOICE_ID') || DEFAULT_CHILD_VOICE_ID;
 const schoolVoiceId = readValue(source, 'ELEVENLABS_SCHOOL_VOICE_ID') || voiceId;
-const schoolMaleVoiceId = readValue(source, 'ELEVENLABS_SCHOOL_MALE_VOICE_ID') || voiceId;
 const adultVoiceId = readValue(source, 'ELEVENLABS_ADULT_VOICE_ID') || voiceId;
 const teenVoiceId = readValue(source, 'ELEVENLABS_TEEN_VOICE_ID') || adultVoiceId;
+const schoolMaleVoiceId = readValue(source, 'ELEVENLABS_SCHOOL_MALE_VOICE_ID') || teenVoiceId;
 const childFemaleVoiceId = readValue(source, 'ELEVENLABS_CHILD_FEMALE_VOICE_ID') || voiceId;
 const schoolFemaleVoiceId = readValue(source, 'ELEVENLABS_SCHOOL_FEMALE_VOICE_ID') || schoolVoiceId;
 const teenFemaleVoiceId = readValue(source, 'ELEVENLABS_TEEN_FEMALE_VOICE_ID') || teenVoiceId;
