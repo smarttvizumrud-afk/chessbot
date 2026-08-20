@@ -59,6 +59,7 @@ try {
     `ELEVENLABS_SCHOOL_FEMALE_VOICE_ID=${schoolFemaleVoiceId}`,
     `ELEVENLABS_TEEN_FEMALE_VOICE_ID=${teenFemaleVoiceId}`,
     `ELEVENLABS_PAP_VOICE_ID=${kazakhVoiceId}`,
+    `ELEVENLABS_KAZAKH_VOICE_ID=${kazakhVoiceId}`,
     '',
   ].join('\n'), { mode: 0o600 });
   const result = spawnSync(process.execPath, [supabaseCli, 'secrets', 'set', '--env-file', secretFile], {

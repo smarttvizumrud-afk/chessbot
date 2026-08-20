@@ -20,7 +20,7 @@ export async function speakCoachText(
   preparedAudio?: HTMLAudioElement,
 ) {
   if (!canSpeak()) return 'unavailable';
-  const cleanText = prepareSpeechText(text);
+  const cleanText = prepareSpeechText(text, lang);
   const voice = elevenLabsVoice(interfaceMode, gender);
 
   if (voice === 'child' || voice === 'child_female') {
@@ -47,16 +47,16 @@ function elevenLabsVoice(interfaceMode: InterfaceMode, gender: Gender): ElevenLa
   return female ? 'teen_female' : 'teen';
 }
 
-function prepareSpeechText(text: string) {
+function prepareSpeechText(text: string, lang: Lang) {
   return cleanSpeechText(text)
     .replace(/^[^:]{1,24}:\s*/, '')
-    .replace(/\bAI\b/g, 'эй ай')
-    .replace(/\bO-O-O\b/g, 'длинная рокировка')
-    .replace(/\bO-O\b/g, 'короткая рокировка')
-    .replace(/\b([KQRBN])x([a-h][1-8])\b/g, (_match, piece: string, square: string) => `${pieceNameForSpeech(piece)} бьет на ${square}`)
-    .replace(/\b([KQRBN])([a-h][1-8])\b/g, (_match, piece: string, square: string) => `${pieceNameForSpeech(piece)} на ${square}`)
-    .replace(/\b([a-h])x([a-h][1-8])\b/g, 'пешка бьет на $2')
-    .replace(/\b([a-h][1-8])\b/g, 'поле $1')
+    .replace(/\bAI\b/g, aiText(lang))
+    .replace(/\bO-O-O\b/g, castleText(lang, 'long'))
+    .replace(/\bO-O\b/g, castleText(lang, 'short'))
+    .replace(/\b([KQRBN])x([a-h][1-8])\b/g, (_match, piece: string, square: string) => captureText(lang, piece, square))
+    .replace(/\b([KQRBN])([a-h][1-8])\b/g, (_match, piece: string, square: string) => moveText(lang, piece, square))
+    .replace(/\b([a-h])x([a-h][1-8])\b/g, (_match, _file: string, square: string) => pawnCaptureText(lang, square))
+    .replace(/\b([a-h][1-8])\b/g, (_match, square: string) => squareText(lang, square))
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -71,13 +71,50 @@ function cleanSpeechText(text: string) {
     .trim();
 }
 
-function pieceNameForSpeech(piece: string) {
-  if (piece === 'K') return 'король';
-  if (piece === 'Q') return 'ферзь';
-  if (piece === 'R') return 'ладья';
-  if (piece === 'B') return 'слон';
-  if (piece === 'N') return 'конь';
-  return 'фигура';
+function aiText(lang: Lang) {
+  if (lang === 'en') return 'A I';
+  return 'эй ай';
+}
+
+function castleText(lang: Lang, side: 'short' | 'long') {
+  if (lang === 'kk') return side === 'short' ? 'қысқа рокировка' : 'ұзын рокировка';
+  if (lang === 'en') return side === 'short' ? 'short castle' : 'long castle';
+  return side === 'short' ? 'короткая рокировка' : 'длинная рокировка';
+}
+
+function captureText(lang: Lang, piece: string, square: string) {
+  if (lang === 'en') return `${pieceName(piece, lang)} takes on ${square}`;
+  if (lang === 'kk') return `${pieceName(piece, lang)} ${square} шаршысында алады`;
+  return `${pieceName(piece, lang)} бьет на ${square}`;
+}
+
+function moveText(lang: Lang, piece: string, square: string) {
+  if (lang === 'en') return `${pieceName(piece, lang)} to ${square}`;
+  if (lang === 'kk') return `${pieceName(piece, lang)} ${square} шаршысына жүреді`;
+  return `${pieceName(piece, lang)} на ${square}`;
+}
+
+function pawnCaptureText(lang: Lang, square: string) {
+  if (lang === 'en') return `pawn takes on ${square}`;
+  if (lang === 'kk') return `пешка ${square} шаршысында алады`;
+  return `пешка бьет на ${square}`;
+}
+
+function squareText(lang: Lang, square: string) {
+  if (lang === 'en') return `square ${square}`;
+  if (lang === 'kk') return `${square} шаршысы`;
+  return `поле ${square}`;
+}
+
+function pieceName(piece: string, lang: Lang) {
+  const names: Record<string, Record<Lang, string>> = {
+    K: { ru: 'король', en: 'king', kk: 'король' },
+    Q: { ru: 'ферзь', en: 'queen', kk: 'ферзі' },
+    R: { ru: 'ладья', en: 'rook', kk: 'ладья' },
+    B: { ru: 'слон', en: 'bishop', kk: 'піл' },
+    N: { ru: 'конь', en: 'knight', kk: 'ат' },
+  };
+  return names[piece]?.[lang] ?? (lang === 'en' ? 'piece' : 'фигура');
 }
 
 export function speechErrorText(lang: Lang, error?: unknown) {
